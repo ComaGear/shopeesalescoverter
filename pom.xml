@@ -13,7 +13,7 @@
         <maven.compiler.release>11</maven.compiler.release>
         <javafx.version>17.0.1</javafx.version>
         <javafx.maven.plugin.version>0.0.8</javafx.maven.plugin.version>
-        <!-- <mainClass>com.colbertlum.IrsSalesConverterApplication</mainClass> -->
+        <mainClass>com.colbertlum.ShopeeSalesConvertApplication</mainClass>
         <java.version>17</java.version>
     </properties>
     <dependencies>
