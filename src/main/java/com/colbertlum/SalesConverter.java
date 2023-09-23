@@ -14,6 +14,10 @@ public class SalesConverter {
     private ArrayList<Meas> measList;
     private List<MoveOut> EmptySkuMoveOuts;
 
+    public List<MoveOut> getEmptySkuMoveOuts() {
+        return EmptySkuMoveOuts;
+    }
+
     public SalesConverter(List<MoveOut> moveOuts, ArrayList<Meas> measList){
         this.moveOuts = moveOuts;
         this.measList = measList;
