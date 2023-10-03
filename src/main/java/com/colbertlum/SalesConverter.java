@@ -13,9 +13,24 @@ public class SalesConverter {
     private List<MoveOut> moveOuts;
     private ArrayList<Meas> measList;
     private List<MoveOut> EmptySkuMoveOuts;
+    private List<MoveOut> notExistSkuMoveOuts;
+
+    public List<MoveOut> getNotExistSkuMoveOuts() {
+        return notExistSkuMoveOuts;
+    }
+
+    public boolean hasNotExistSkuMoveOut(){
+        if(notExistSkuMoveOuts == null) return false;
+        return !notExistSkuMoveOuts.isEmpty();
+    }
 
     public List<MoveOut> getEmptySkuMoveOuts() {
         return EmptySkuMoveOuts;
+    }
+
+    public boolean hasEmptySkuMoveOut(){
+        if(EmptySkuMoveOuts == null) return false;
+        return !EmptySkuMoveOuts.isEmpty();
     }
 
     public SalesConverter(List<MoveOut> moveOuts, ArrayList<Meas> measList){
@@ -67,6 +82,11 @@ public class SalesConverter {
 
         for(MoveOut moveOut : moveOuts){
             Meas meas = binarySearch(moveOut, measList);
+            if(meas == null) {
+                if(notExistSkuMoveOuts == null ) this.notExistSkuMoveOuts = new ArrayList<MoveOut>();
+                notExistSkuMoveOuts.add(moveOut);
+                continue;
+            }
             moveOut.setId(meas.getId());
             moveOut.setQuantity(meas.getMeasurement() * moveOut.getQuantity());
         }

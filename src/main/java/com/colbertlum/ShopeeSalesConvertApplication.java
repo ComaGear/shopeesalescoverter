@@ -22,7 +22,11 @@ import org.xml.sax.SAXException;
 import org.xml.sax.XMLReader;
 
 import com.colbertlum.contentHandler.BigSellerReportContentHandler;
+import com.colbertlum.contentHandler.MeasContentHandler;
+import com.colbertlum.contentHandler.uomContentHandler;
+import com.colbertlum.entity.Meas;
 import com.colbertlum.entity.MoveOut;
+import com.colbertlum.entity.UOM;
 
 import javafx.application.Application;
 import javafx.scene.Scene;
@@ -56,8 +60,8 @@ public class ShopeeSalesConvertApplication extends Application {
         this.priStage = primaryStage;
 
         primaryStage.setTitle("Shopee Sales Converter");
-        primaryStage.setWidth(600);
-        primaryStage.setHeight(400);
+        primaryStage.setWidth(1000);
+        primaryStage.setHeight(500);
 
         MenuBar menuBar = setupMenuBar();
 
@@ -84,7 +88,7 @@ public class ShopeeSalesConvertApplication extends Application {
         });
 
         VBox vBox = new VBox(menuBar, reportBarBox, processButton);
-        Scene scene = new Scene(vBox, 600, 300);
+        Scene scene = new Scene(vBox, 1000, 500);
         
         // primaryStage.setScene(scene);
 
@@ -98,17 +102,83 @@ public class ShopeeSalesConvertApplication extends Application {
     }
 
     private void processSales() {
-        getMoveOuts();
+        List<MoveOut> moveOuts = getMoveOuts();
 
-        getIrsUoms();
+        List<com.colbertlum.entity.UOM> irsUoms = getIrsUoms();
 
-        getMeasList();
+        ArrayList<Meas> measList = getMeasList();
+
+        SalesConverter salesConverter = new SalesConverter(moveOuts, measList);
+        salesConverter.process();
+        salesConverter.getEmptySkuMoveOuts();
+        
+        SalesImputer salesImputer = new SalesImputer(salesConverter.getEmptySkuMoveOuts(), salesConverter.getNotExistSkuMoveOuts());
+        // SalesImputer salesImputer = new SalesImputer(null, null);
+        salesImputer.setMeasList(measList);
+        Stage dialogStage = new Stage();
+        dialogStage.setX(priStage.getX() + 10);
+        dialogStage.setY(priStage.getY() + 10);
+        salesImputer.initDialog(dialogStage);
+        salesImputer.getStage().showAndWait();
+
+
+
     }
 
-    private void getMeasList() {
+    public static ArrayList<Meas> getMeasList() {
+
+        ArrayList<Meas> measList = new ArrayList<Meas>();
+
+        try {
+            String pathStr = getProperty(MEAS);
+            File file = new File(pathStr);
+            XSSFReader xssfReader = new XSSFReader(OPCPackage.open(file));
+            MeasContentHandler contentHandler = new MeasContentHandler(xssfReader.getSharedStringsTable(), xssfReader.getStylesTable(),
+                measList);
+            XMLReader xmlReader = XMLHelper.newXMLReader();
+            xmlReader.setContentHandler(contentHandler);
+            InputSource sheetData = new InputSource(xssfReader.getSheetsData().next());
+            xmlReader.parse(sheetData);
+        } catch (IOException | OpenXML4JException e) {
+            Stage warningStage = initWarningStage("you must select meas file");
+            warningStage.show();
+        } catch (SAXException e) {
+            // TODO Auto-generated catch block
+            e.printStackTrace();
+        } catch (ParserConfigurationException e) {
+            // TODO Auto-generated catch block
+            e.printStackTrace();
+        }
+
+        return measList;
     }
 
-    private void getIrsUoms() {
+    public static List<UOM> getIrsUoms() {
+
+        ArrayList<UOM> uoms = new ArrayList<UOM>();
+
+        try {
+            String pathStr = getProperty(UOM);
+            File file = new File(pathStr);
+            XSSFReader xssfReader = new XSSFReader(OPCPackage.open(file));
+            uomContentHandler contentHandler = new uomContentHandler(xssfReader.getSharedStringsTable(), xssfReader.getStylesTable(),
+                uoms);
+            XMLReader xmlReader = XMLHelper.newXMLReader();
+            xmlReader.setContentHandler(contentHandler);
+            InputSource sheetData = new InputSource(xssfReader.getSheetsData().next());
+            xmlReader.parse(sheetData);
+        } catch (IOException | OpenXML4JException e) {
+            Stage warningStage = initWarningStage("you must select uom file");
+            warningStage.show();
+        } catch (SAXException e) {
+            // TODO Auto-generated catch block
+            e.printStackTrace();
+        } catch (ParserConfigurationException e) {
+            // TODO Auto-generated catch block
+            e.printStackTrace();
+        }
+
+        return uoms;
     }
 
     private List<MoveOut> getMoveOuts() {
@@ -166,7 +236,7 @@ public class ShopeeSalesConvertApplication extends Application {
         priStage.setScene(sceneStack.peek());
     }
 
-    private Stage initWarningStage(String warningMessage){
+    public static Stage initWarningStage(String warningMessage){
         Stage dialogStage = new Stage();
 
         Scene scene = new Scene(new HBox(new Text(warningMessage)));
@@ -259,7 +329,7 @@ public class ShopeeSalesConvertApplication extends Application {
     }
 
     private static void saveProperties(Properties properties) throws IOException{
-        FileOutputStream fileOutputStream = new FileOutputStream("./IrsSalesConverter.properties");
+        FileOutputStream fileOutputStream = new FileOutputStream("./ShopeeSalesConvertApplication.properties");
 
         properties.store(fileOutputStream, null);
 
