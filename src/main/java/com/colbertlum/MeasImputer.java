@@ -9,6 +9,11 @@ import java.util.function.Predicate;
 import com.colbertlum.entity.Meas;
 import com.colbertlum.entity.UOM;
 
+import javafx.scene.control.Label;
+import javafx.scene.control.TextField;
+import javafx.scene.control.Tooltip;
+import javafx.scene.layout.VBox;
+
 public class MeasImputer {
 
     public static void imputeNameField(ArrayList<Meas> measList) {
@@ -19,7 +24,7 @@ public class MeasImputer {
 
             @Override
             public int compare(Meas o1, Meas o2) {
-                return o1.getId().compareTo(o2.getId());
+                return o1.getId().toLowerCase().compareTo(o2.getId().toLowerCase());
             }
             
         });
@@ -30,7 +35,7 @@ public class MeasImputer {
 
             @Override
             public int compare(UOM o1, UOM o2) {
-                return o1.getProductId().compareTo(o2.getProductId());
+                return o1.getProductId().toLowerCase().compareTo(o2.getProductId().toLowerCase());
             }
             
         });
@@ -49,8 +54,8 @@ public class MeasImputer {
 
         while(lo <= hi) {
             int mid = lo + (hi-lo) / 2;
-            if(uoms.get(mid).getProductId().compareTo(meas.getId()) > 0) hi = mid-1; 
-            else if(uoms.get(mid).getProductId().compareTo(meas.getId()) < 0) lo = mid+1;
+            if(uoms.get(mid).getProductId().toLowerCase().compareTo(meas.getId().toLowerCase()) > 0) hi = mid-1; 
+            else if(uoms.get(mid).getProductId().toLowerCase().compareTo(meas.getId().toLowerCase()) < 0) lo = mid+1;
             else{
                 return uoms.get(mid);
             }
@@ -58,6 +63,23 @@ public class MeasImputer {
         return null;
     }
 
-    
+    public static VBox generatePanel(){
+        Label productNameLabel = new Label("Product Name");
+        TextField productNameField = new TextField();
+        productNameField.setPromptText("search item by product description");
+        productNameField.setPrefWidth(200);
+        Label measurementLabel = new Label("Measurement");
+        TextField measurementField = new TextField();
+        measurementField.setPromptText("measure size default was 1.00");
+        Label parentSkuLabel = new Label("parent Sku");
+        TextField parentSkuField = new TextField();
+        parentSkuField.setTooltip(new Tooltip("connect meas with parent sku id as child sku"));
+        parentSkuField.setPromptText("grouping with same sku");
+        Label label = new Label("Update Rule");
+        TextField updateRuleField = new TextField();
+        updateRuleField.setPromptText("default was 3t");
+
+        
+    }
     
 }

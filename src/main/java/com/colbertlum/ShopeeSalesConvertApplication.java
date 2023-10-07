@@ -46,7 +46,7 @@ public class ShopeeSalesConvertApplication extends Application {
 
     private static final String MEAS = "meas";
     private static final String UOM = "uom";
-    private static final String REPORT = "report";
+    public static final String REPORT = "report";
     private String reportPath = "";
     private Stack<Scene> sceneStack;
     private Stage priStage;
@@ -308,7 +308,7 @@ public class ShopeeSalesConvertApplication extends Application {
         return properties;
     }
 
-    private static String getProperty(String key){
+    public static String getProperty(String key){
         try{
             Properties properties = getProperties();
             return properties.getProperty(key);

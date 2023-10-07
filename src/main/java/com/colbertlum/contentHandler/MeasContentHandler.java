@@ -106,7 +106,7 @@ public class MeasContentHandler extends DefaultHandler{
                 case 2:
                     meas.setMeasurement(Double.parseDouble(string));
                     break;
-                case 4:
+                case 3:
                     meas.setUpdateRule(string);
                 default:
                     break;
