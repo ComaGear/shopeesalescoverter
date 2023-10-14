@@ -44,12 +44,13 @@ import javafx.stage.Stage;
 public class ShopeeSalesConvertApplication extends Application {
 
 
-    private static final String MEAS = "meas";
+    public static final String MEAS = "meas";
     private static final String UOM = "uom";
     public static final String REPORT = "report";
     private String reportPath = "";
     private Stack<Scene> sceneStack;
     private Stage priStage;
+    private MeasImputer measImputer;
     public static void main(String[] args) {
         Application.launch(args);
     }
@@ -106,15 +107,15 @@ public class ShopeeSalesConvertApplication extends Application {
 
         List<com.colbertlum.entity.UOM> irsUoms = getIrsUoms();
 
-        ArrayList<Meas> measList = getMeasList();
 
-        SalesConverter salesConverter = new SalesConverter(moveOuts, measList);
+        if(this.measImputer == null) this.measImputer = new MeasImputer(); 
+        SalesConverter salesConverter = new SalesConverter(moveOuts, this.measImputer.getMeasList());
         salesConverter.process();
         salesConverter.getEmptySkuMoveOuts();
         
         SalesImputer salesImputer = new SalesImputer(salesConverter.getEmptySkuMoveOuts(), salesConverter.getNotExistSkuMoveOuts());
         // SalesImputer salesImputer = new SalesImputer(null, null);
-        salesImputer.setMeasList(measList);
+        salesImputer.setMeasList(this.measImputer.getMeasList());
         Stage dialogStage = new Stage();
         dialogStage.setX(priStage.getX() + 10);
         dialogStage.setY(priStage.getY() + 10);

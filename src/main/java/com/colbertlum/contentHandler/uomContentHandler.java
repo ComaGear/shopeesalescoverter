@@ -116,7 +116,6 @@ public class uomContentHandler extends DefaultHandler{
         if ("row".equals(qName)) {
             if (readingRow > 0)
                 if(uom.getProductId() != null && uom.getRate() == 1){
-                    String id = uom.getProductId();
                     UOMs.add(uom);
                 } 
             this.readingRow += 1;

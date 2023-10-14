@@ -55,8 +55,11 @@ public class SalesImputer {
     private String moveOutSearchMode;
     private String meaSearchMode;
     private String selectedMeasSku;
+    private MeasImputer measImputer;
 
     public SalesImputer(List<MoveOut> emptySkuMoveOuts, List<MoveOut> notExistSkuMoveOuts) {
+
+        this.measImputer = new MeasImputer();
 
         if(emptySkuMoveOuts == null && notExistSkuMoveOuts == null) throw new NullPointerException();
         
@@ -76,23 +79,26 @@ public class SalesImputer {
     
     public void setMeasList(ArrayList<Meas> measList){
         this.measList = measList;
-        if(measList.get(0).getName() == null) MeasImputer.imputeNameField(measList);
+        if(measList.get(0).getName() == null) measImputer.imputeNameField(measList);
     }
 
     public void initDialog(Stage stage){
         this.stage = stage;
         
         stage.setTitle("sales Imputer");
-        stage.setWidth(1000);
-        stage.setHeight(500);
+        stage.setWidth(1400);
+        stage.setHeight(600);
 
 
         VBox moveOutListViewPanel = this.generateMoveOutListViewPanel();
 
         VBox measListVieewPanel = this.generateMeasListViewPanel();
+
+        VBox measPanel = measImputer.generatePanel();
         
         VBox vBox = new VBox(moveOutListViewPanel, measListVieewPanel);
-        stage.setScene(new Scene(vBox));
+        HBox hBox = new HBox(vBox, measPanel);
+        stage.setScene(new Scene(hBox));
     }
 
     private VBox generateMeasListViewPanel() {
@@ -104,7 +110,7 @@ public class SalesImputer {
         MenuItem skuSelectMenuItem = new MenuItem(SKU);
         MenuItem nameSelectMenuItem = new MenuItem(NAME);
         MenuItem idSellectMenuItem = new MenuItem(ID);
-        MenuButton menuButton = new MenuButton("s earch by NAME", null, skuSelectMenuItem, nameSelectMenuItem, idSellectMenuItem);
+        MenuButton menuButton = new MenuButton("search by NAME", null, skuSelectMenuItem, nameSelectMenuItem, idSellectMenuItem);
         menuButton.setPrefWidth(120);
 
         skuSelectMenuItem.setOnAction(a ->{
