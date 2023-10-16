@@ -4,12 +4,17 @@ import java.util.ArrayList;
 import java.util.List;
 
 import org.junit.jupiter.api.Test;
+import org.testfx.framework.junit.ApplicationTest;
 
 import com.colbertlum.MeasImputer;
+import com.colbertlum.SalesConverter;
+import com.colbertlum.SalesImputer;
 import com.colbertlum.ShopeeSalesConvertApplication;
 import com.colbertlum.entity.Meas;
 
-public class MeasImputerTest {
+import javafx.stage.Stage;
+
+public class MeasImputerTest extends ApplicationTest {
     
     @Test
     public void fillNameTest(){
@@ -36,5 +41,12 @@ public class MeasImputerTest {
 
         ArrayList<Meas> measList = measImputer.getMeasList();
         assertEquals("22320137-a", measList.get(469).getRelativeId());
+    }
+
+    @Override
+    public void start(Stage stage) throws Exception {
+        SalesImputer salesImputer = new SalesImputer(null, null);
+        stage.setScene(salesImputer.getScene());
+        stage.show();
     }
 }

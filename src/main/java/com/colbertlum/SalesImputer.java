@@ -6,6 +6,7 @@ import java.io.FileNotFoundException;
 import java.io.FileOutputStream;
 import java.io.IOException;
 import java.util.ArrayList;
+import java.util.Comparator;
 import java.util.Iterator;
 import java.util.List;
 
@@ -18,6 +19,7 @@ import org.apache.poi.ss.usermodel.WorkbookFactory;
 import com.colbertlum.entity.Meas;
 import com.colbertlum.entity.MoveOut;
 
+import javafx.application.Application;
 import javafx.beans.InvalidationListener;
 import javafx.beans.value.ChangeListener;
 import javafx.beans.value.ObservableValue;
@@ -37,9 +39,11 @@ import javafx.scene.layout.HBox;
 import javafx.scene.layout.VBox;
 import javafx.scene.text.Text;
 import javafx.stage.Stage;
+import javafx.stage.Window;
+import javafx.stage.WindowEvent;
 import javafx.util.Callback;
 
-public class SalesImputer {
+public class SalesImputer extends Application {
 
     /**
      *
@@ -130,7 +134,8 @@ public class SalesImputer {
         });
         this.meaSearchMode = NAME;
 
-        HBox searchHBox = new HBox(menuButton, searchBar);
+        Button editButton = new Button("edit it");
+        HBox searchHBox = new HBox(menuButton, searchBar, editButton);
 
         Text skuHeaderText = new Text("SKU");
         skuHeaderText.setWrappingWidth(97);
@@ -153,6 +158,37 @@ public class SalesImputer {
             HBox hBox = observable.getValue();
             Text skuText = (Text) hBox.getChildren().get(0);
             this.selectedMeasSku = skuText.getText();
+        });
+
+        editButton.setOnAction(a ->{
+            HBox selectedItem = measListView.getSelectionModel().getSelectedItem();
+            String relativeId = ((Text) selectedItem.getChildren().get(0)).getText();
+            
+            measList.sort(new Comparator<Meas>() {
+
+                @Override
+                public int compare(Meas o1, Meas o2) {
+                    return o1.getRelativeId().toLowerCase().compareTo(o2.getRelativeId().toLowerCase());
+                }
+                
+            });
+            Meas meas = null;
+            int lo = 0;
+            int hi = measList.size()-1;
+            while(lo <= hi) {
+                int mid = lo + (hi-lo) / 2;
+                if(measList.get(mid).getRelativeId().toLowerCase().compareTo(relativeId.toLowerCase()) > 0) hi = mid-1; 
+                else if(measList.get(mid).getRelativeId().toLowerCase().compareTo(relativeId.toLowerCase()) < 0) lo = mid+1;
+                else{
+                    meas =  measList.get(mid);
+                    break;
+                }
+            }
+
+            if(meas != null){
+                measImputer.changeButtonMode(MeasImputer.UPDATE);
+                measImputer.editMeas(meas);
+            }
         });
 
         searchBar.textProperty().addListener((observable, oldValue, newValue) ->{
@@ -412,5 +448,33 @@ public class SalesImputer {
             this.status = status;
             this.moveOut = moveOut;
         }
+    }
+
+    @Override
+    public void start(Stage primaryStage) throws Exception {
+        this.stage = primaryStage;
+        
+        stage.setTitle("sales Imputer");
+        stage.setWidth(1400);
+        stage.setHeight(600);
+
+        stage.setScene(getScene());
+    }
+
+    public Scene getScene(){
+        VBox moveOutListViewPanel = this.generateMoveOutListViewPanel();
+
+        VBox measListViewPanel = this.generateMeasListViewPanel();
+
+        VBox measPanel = measImputer.generatePanel();
+        
+        VBox vBox = new VBox(moveOutListViewPanel, measListViewPanel);
+        HBox hBox = new HBox(vBox, measPanel);
+        return new Scene(hBox);
+    }
+
+    @Override
+    public void stop() throws Exception {
+        this.saveChange(moveOutStatusList);
     }
 }

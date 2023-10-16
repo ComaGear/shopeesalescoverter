@@ -36,12 +36,16 @@ import javafx.scene.text.Text;
 public class MeasImputer {
 
     private static final String CREATE = "CEATE";
-    private static final String UPDATE = "UPDATE";
+    public static final String UPDATE = "UPDATE";
     private List<UOM> irsUoms;
     private TextField productNameField;
     private String selectedProductId;
     private ArrayList<Meas> measList;
     private String buttonMode;
+    private Meas selectMeas;
+    private Button createButton;
+    private TextField measurementField;
+    private TextField updateRuleField;
 
     public ArrayList<Meas> getMeasList() {
         return measList;
@@ -100,7 +104,7 @@ public class MeasImputer {
         productNameField.setPromptText("search item by product description");
         productNameField.setPrefWidth(200);
         Label measurementLabel = new Label("Measurement");
-        TextField measurementField = new TextField();
+        measurementField = new TextField();
         measurementField.textProperty().addListener((observable, oldValue, newValue) ->{
             if(!newValue.matches("\\d*")){
                 measurementField.setText(newValue.replaceAll("[^\\d]", ""));
@@ -112,17 +116,17 @@ public class MeasImputer {
         parentSkuField.setTooltip(new Tooltip("connect meas with parent sku id as child sku"));
         parentSkuField.setPromptText("grouping with same sku");
         Label updateRuleLabel = new Label("Update Rule");
-        TextField updateRuleField = new TextField();
+        updateRuleField = new TextField();
         updateRuleField.setPromptText("default was 3t");
 
-        Button createButton = new Button("create");
+        createButton = new Button("create");
         createButton.setPrefWidth(300);
-
+        changeButtonMode(CREATE);
         createButton.setOnAction(a-> {
+
             switch(this.buttonMode){
                 case CREATE:
                     String parentSku = null;
-
                     if(this.selectedProductId == null || this.selectedProductId.isEmpty()) return;
                     if(measurementField.getText() == null || measurementField.getText().isEmpty()) return;
 
@@ -140,19 +144,53 @@ public class MeasImputer {
                     }
                     
                     measList.add(meas);
-                    
                     break;
                 case UPDATE:
+                    
+                    if(this.selectMeas == null|| measurementField.getText() == null || measurementField.getText().isEmpty()) return;
+
+                    this.selectMeas.setUpdateRule(updateRuleField.getText());
+                    this.selectMeas.setMeasurement(Double.parseDouble(measurementField.getText()));
+                    changeButtonMode(CREATE);
+
                     break;
                 default:
                     break;
             }
+
+            this.productNameField.clear();
+            this.measurementField.clear();
+            this.updateRuleField.clear();
+            parentSkuField.clear();
+            selectMeas = null;
+            selectedProductId = null;
         });
 
 
         return new VBox(productNameLabel, productNameField, measurementLabel, 
             measurementField, parentSkuLabel, parentSkuField, updateRuleLabel, updateRuleField, createButton,
             generatedUOMListView());
+    }
+
+    public void changeButtonMode(String mode){
+        switch(mode){
+            case CREATE:
+                this.buttonMode = CREATE;
+                if(this.createButton != null) this.createButton.setText(CREATE);
+                break;
+            case UPDATE:
+                this.buttonMode = UPDATE;
+                if(this.createButton != null) this.createButton.setText(UPDATE);
+                break;
+        }
+    }
+
+    public void editMeas(Meas meas){
+        this.selectMeas = meas;
+        changeButtonMode(UPDATE);
+        this.productNameField.setText(meas.getName());
+        this.measurementField.setText(Double.toString(meas.getMeasurement()));
+        this.updateRuleField.setText(meas.getUpdateRule());
     }
 
     private String createNewSku() {
