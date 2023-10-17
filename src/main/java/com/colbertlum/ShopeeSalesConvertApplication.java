@@ -18,6 +18,9 @@ import org.apache.poi.openxml4j.exceptions.OpenXML4JException;
 import org.apache.poi.openxml4j.opc.OPCPackage;
 import org.apache.poi.util.XMLHelper;
 import org.apache.poi.xssf.eventusermodel.XSSFReader;
+import org.apache.poi.xssf.usermodel.XSSFRow;
+import org.apache.poi.xssf.usermodel.XSSFSheet;
+import org.apache.poi.xssf.usermodel.XSSFWorkbook;
 import org.xml.sax.InputSource;
 import org.xml.sax.SAXException;
 import org.xml.sax.XMLReader;
@@ -101,7 +104,7 @@ public class ShopeeSalesConvertApplication extends Application {
         
         processButton.setOnAction(e ->{
             List<MoveOut> processedMoveOuts = processSales();
-            String outputFilePath = getProperty(OUTPUT_PATH) + outputFileNameTextField.getText();
+            String outputFilePath = getProperty(OUTPUT_PATH) + "\\"+ outputFileNameTextField.getText() + ".xlsx";
             saveOutputToFile(processedMoveOuts, outputFilePath);
         });
 
@@ -132,9 +135,6 @@ public class ShopeeSalesConvertApplication extends Application {
 
     private List<MoveOut> processSales() {
         List<MoveOut> moveOuts = getMoveOuts();
-
-        List<com.colbertlum.entity.UOM> irsUoms = getIrsUoms();
-
 
         if(this.measImputer == null) this.measImputer = new MeasImputer(); 
         SalesConverter salesConverter = new SalesConverter(moveOuts, this.measImputer.getMeasList());
@@ -214,7 +214,7 @@ public class ShopeeSalesConvertApplication extends Application {
         return uoms;
     }
 
-    private List<MoveOut> getMoveOuts() {
+    public List<MoveOut> getMoveOuts() {
 
         ArrayList<MoveOut> moveOuts = new ArrayList<MoveOut>();
         
@@ -323,6 +323,41 @@ public class ShopeeSalesConvertApplication extends Application {
     }
 
     private void saveOutputToFile(List<MoveOut> moveOuts, String outputFilePath){
+        XSSFWorkbook workbook = new XSSFWorkbook();
+        XSSFSheet sheet = workbook.createSheet("sheet1");
+        
+
+        int rowCount = 0;
+        XSSFRow headerRow = sheet.createRow(rowCount++);
+        headerRow.createCell(0).setCellValue("Code");
+        headerRow.createCell(1).setCellValue("Description");
+        headerRow.createCell(2).setCellValue("Qty");
+        headerRow.createCell(3).setCellValue("unit");
+        headerRow.createCell(4).setCellValue("Unit Price");
+
+        for(MoveOut moveOut : moveOuts){
+
+            if(moveOut.getQuantity() == 0) continue; 
+
+            XSSFRow row = sheet.createRow(rowCount++);
+            row.createCell(0).setCellValue(moveOut.getId());
+            row.createCell(1).setCellValue(moveOut.getProductName());
+            row.createCell(2).setCellValue(moveOut.getQuantity());
+            row.createCell(3).setCellValue("");
+            row.createCell(4).setCellValue(moveOut.getProductSubTotal() / moveOut.getQuantity());
+        }
+
+        try{
+            
+            FileOutputStream fileOutputStream = new FileOutputStream(outputFilePath);
+            // FileOutputStream fileOutputStream = new FileOutputStream("C:\\Users\\comag\\Desktop\\" + outputFileNameStr + ".xlsx");
+            workbook.write(fileOutputStream);
+
+            fileOutputStream.close();
+        }catch(IOException exception){
+            exception.printStackTrace();
+            System.out.println(exception.toString());
+        }
     }
 
     private static Properties getProperties() throws IOException{

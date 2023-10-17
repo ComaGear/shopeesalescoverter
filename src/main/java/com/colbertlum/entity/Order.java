@@ -6,7 +6,14 @@ public class Order {
     private double transactionFee;
     private double orderTotalAmount;
     private double shippingFee;
+    private double shopeeVoucher;
 
+    public double getShopeeVoucher() {
+        return shopeeVoucher;
+    }
+    public void setShopeeVoucher(double shopeeVoucher) {
+        this.shopeeVoucher = shopeeVoucher;
+    }
     public String getId() {
         return id;
     }

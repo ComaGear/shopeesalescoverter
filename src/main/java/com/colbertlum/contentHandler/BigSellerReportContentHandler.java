@@ -30,6 +30,9 @@ public class BigSellerReportContentHandler extends DefaultHandler {
     private static final String TRANSACTION_FEE = "Transaction Fee";
     private static final String SHIPPING_FEE = "Shipping Fee";
 
+    private static final String VOUCHER = "Voucher";
+
+
 
     private static final String SKU = "SKU";
     private static final String VARIATION_NAME = "Variation Name";
@@ -124,6 +127,8 @@ public class BigSellerReportContentHandler extends DefaultHandler {
                     case QUANTITY:
                         headerPosition.put(columString, QUANTITY);
                         break;
+                    case VOUCHER:
+                        headerPosition.put(columString, VOUCHER);
                 }
                 return;
             }
@@ -176,6 +181,9 @@ public class BigSellerReportContentHandler extends DefaultHandler {
                     break;
                 case QUANTITY:
                     moveOut.setQuantity(Double.parseDouble(string));
+                    break;
+                case VOUCHER:
+                    order.setShopeeVoucher(Double.parseDouble(string));
                     break;
                 default:
                     break;

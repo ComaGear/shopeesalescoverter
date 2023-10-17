@@ -53,7 +53,7 @@ public class SalesConverter {
 
             double subtotal = moveOut.getPrice() * moveOut.getQuantity(); 
             double totalFee = order.getManagementFee() + order.getTransactionFee();
-            double totalAmountReduceShippingFee = order.getOrderTotalAmount() - order.getShippingFee();
+            double totalAmountReduceShippingFee = order.getOrderTotalAmount() + order.getShopeeVoucher() - order.getShippingFee();
 
             double subFee = totalFee * (subtotal / totalAmountReduceShippingFee);
             double priceReduceFee = (subtotal - subFee) / moveOut.getQuantity();
@@ -99,8 +99,8 @@ public class SalesConverter {
 
         while(lo <= hi) {
             int mid = lo + (hi-lo) / 2;
-            if(measList.get(mid).getRelativeId().compareTo(moveOut.getSku()) == -1) hi = mid-1; 
-            else if(measList.get(mid).getRelativeId().compareTo(moveOut.getSku()) == 1) lo = mid+1;
+            if(measList.get(mid).getRelativeId().compareTo(moveOut.getSku()) > 0) hi = mid-1; 
+            else if(measList.get(mid).getRelativeId().compareTo(moveOut.getSku()) < 0) lo = mid+1;
             else{
                 return measList.get(mid);
             }
