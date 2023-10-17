@@ -323,9 +323,6 @@ public class ShopeeSalesConvertApplication extends Application {
     }
 
     private void saveOutputToFile(List<MoveOut> moveOuts, String outputFilePath){
-        try {
-            
-        }
     }
 
     private static Properties getProperties() throws IOException{
