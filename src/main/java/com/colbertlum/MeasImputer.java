@@ -5,6 +5,7 @@ import java.io.FileInputStream;
 import java.io.FileNotFoundException;
 import java.io.FileOutputStream;
 import java.io.IOException;
+import java.lang.ref.SoftReference;
 import java.util.ArrayList;
 import java.util.Arrays;
 import java.util.Comparator;
@@ -46,6 +47,11 @@ public class MeasImputer {
     private Button createButton;
     private TextField measurementField;
     private TextField updateRuleField;
+    private boolean measChanged = false;
+
+    public boolean isMeasChanged() {
+        return measChanged;
+    }
 
     public ArrayList<Meas> getMeasList() {
         return measList;
@@ -107,7 +113,7 @@ public class MeasImputer {
         measurementField = new TextField();
         measurementField.textProperty().addListener((observable, oldValue, newValue) ->{
             if(!newValue.matches("\\d*")){
-                measurementField.setText(newValue.replaceAll("[^\\d]", ""));
+                measurementField.setText(newValue.replaceAll("[^\\d.]", ""));
             }
         });
         measurementField.setPromptText("measure size default was 1.00");
@@ -152,6 +158,9 @@ public class MeasImputer {
                     this.selectMeas.setUpdateRule(updateRuleField.getText());
                     this.selectMeas.setMeasurement(Double.parseDouble(measurementField.getText()));
                     changeButtonMode(CREATE);
+                    
+                    this.measChanged = true;
+                    
 
                     break;
                 default:

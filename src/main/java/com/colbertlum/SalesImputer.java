@@ -5,6 +5,7 @@ import java.io.FileInputStream;
 import java.io.FileNotFoundException;
 import java.io.FileOutputStream;
 import java.io.IOException;
+import java.lang.ref.SoftReference;
 import java.util.ArrayList;
 import java.util.Comparator;
 import java.util.Iterator;
@@ -24,6 +25,7 @@ import javafx.beans.InvalidationListener;
 import javafx.beans.value.ChangeListener;
 import javafx.beans.value.ObservableValue;
 import javafx.collections.ObservableList;
+import javafx.event.EventHandler;
 import javafx.scene.Node;
 import javafx.scene.Scene;
 import javafx.scene.control.Button;
@@ -43,7 +45,7 @@ import javafx.stage.Window;
 import javafx.stage.WindowEvent;
 import javafx.util.Callback;
 
-public class SalesImputer extends Application {
+public class SalesImputer {
 
     /**
      *
@@ -60,6 +62,8 @@ public class SalesImputer extends Application {
     private String meaSearchMode;
     private String selectedMeasSku;
     private MeasImputer measImputer;
+    protected boolean moveOutChanged;
+    protected boolean measChanged;
 
     public SalesImputer(List<MoveOut> emptySkuMoveOuts, List<MoveOut> notExistSkuMoveOuts) {
 
@@ -92,6 +96,19 @@ public class SalesImputer extends Application {
         stage.setTitle("sales Imputer");
         stage.setWidth(1400);
         stage.setHeight(600);
+        stage.setOnCloseRequest(new EventHandler<WindowEvent>() {
+
+            @Override
+            public void handle(WindowEvent event) {
+                if(moveOutChanged == true){
+                    saveChange(moveOutStatusList);
+                }
+                if(measImputer != null && measImputer.isMeasChanged() == true){
+                    measImputer.saveChange();
+                }
+            }
+            
+        });
 
 
         VBox moveOutListViewPanel = this.generateMoveOutListViewPanel();
@@ -156,8 +173,10 @@ public class SalesImputer extends Application {
         measListView.getSelectionModel().setSelectionMode(SelectionMode.SINGLE);
         measListView.getSelectionModel().selectedItemProperty().addListener((observable, oldValue, newValue) ->{
             HBox hBox = observable.getValue();
-            Text skuText = (Text) hBox.getChildren().get(0);
+            if(hBox != null){
+                Text skuText = (Text) hBox.getChildren().get(0);
             this.selectedMeasSku = skuText.getText();
+            }
         });
 
         editButton.setOnAction(a ->{
@@ -363,7 +382,7 @@ public class SalesImputer extends Application {
                 moveOutStatus.getMoveOut().setSku(this.selectedMeasSku);
                 refillMoveOutListView(moveOutListView, moveOutStatusList);
 
-                saveChange(moveOutStatusList);
+                this.moveOutChanged = true;
             }
         });
 
@@ -450,17 +469,6 @@ public class SalesImputer extends Application {
         }
     }
 
-    @Override
-    public void start(Stage primaryStage) throws Exception {
-        this.stage = primaryStage;
-        
-        stage.setTitle("sales Imputer");
-        stage.setWidth(1400);
-        stage.setHeight(600);
-
-        stage.setScene(getScene());
-    }
-
     public Scene getScene(){
         VBox moveOutListViewPanel = this.generateMoveOutListViewPanel();
 
@@ -471,10 +479,5 @@ public class SalesImputer extends Application {
         VBox vBox = new VBox(moveOutListViewPanel, measListViewPanel);
         HBox hBox = new HBox(vBox, measPanel);
         return new Scene(hBox);
-    }
-
-    @Override
-    public void stop() throws Exception {
-        this.saveChange(moveOutStatusList);
     }
 }

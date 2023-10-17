@@ -6,6 +6,7 @@ import java.io.FileNotFoundException;
 import java.io.FileOutputStream;
 import java.io.IOException;
 import java.io.InputStream;
+import java.time.LocalDate;
 import java.util.ArrayList;
 import java.util.List;
 import java.util.Properties;
@@ -29,21 +30,26 @@ import com.colbertlum.entity.MoveOut;
 import com.colbertlum.entity.UOM;
 
 import javafx.application.Application;
+import javafx.event.EventHandler;
 import javafx.scene.Scene;
 import javafx.scene.control.Button;
 import javafx.scene.control.Menu;
 import javafx.scene.control.MenuBar;
 import javafx.scene.control.MenuItem;
+import javafx.scene.control.TextField;
+import javafx.scene.control.cell.TextFieldListCell;
 import javafx.scene.layout.HBox;
 import javafx.scene.layout.VBox;
 import javafx.scene.text.Font;
 import javafx.scene.text.Text;
 import javafx.stage.FileChooser;
 import javafx.stage.Stage;
+import javafx.stage.WindowEvent;
 
 public class ShopeeSalesConvertApplication extends Application {
 
 
+    private static final String OUTPUT_PATH = "output-path";
     public static final String MEAS = "meas";
     private static final String UOM = "uom";
     public static final String REPORT = "report";
@@ -51,6 +57,7 @@ public class ShopeeSalesConvertApplication extends Application {
     private Stack<Scene> sceneStack;
     private Stage priStage;
     private MeasImputer measImputer;
+    private Stage dialogStage;
     public static void main(String[] args) {
         Application.launch(args);
     }
@@ -76,19 +83,31 @@ public class ShopeeSalesConvertApplication extends Application {
         Button selectReportButton = new Button("select report");
         selectReportButton.setOnAction(e -> {
             File report = fileChooser.showOpenDialog(priStage);
+            if(report == null) return;
             reportPathText.setText(report.getPath());
             saveProperty(REPORT, report.getPath());
             reportPath = report.getPath();
         });
+        selectReportButton.setPrefWidth(80);
         HBox reportBarBox = new HBox(selectReportButton, reportPathText);
 
+        TextField outputFileNameTextField = new TextField();
+        LocalDate now = LocalDate.now();
+        String date = now.getYear() + "." + now.getMonthValue() + "." + now.getDayOfMonth();
+        outputFileNameTextField.setText("onlineSalesReport_" + date);
+
         Button processButton = new Button("PROCESS");
+        processButton.setPrefWidth(80);
         
         processButton.setOnAction(e ->{
-            processSales();
+            List<MoveOut> processedMoveOuts = processSales();
+            String outputFilePath = getProperty(OUTPUT_PATH) + outputFileNameTextField.getText();
+            saveOutputToFile(processedMoveOuts, outputFilePath);
         });
 
-        VBox vBox = new VBox(menuBar, reportBarBox, processButton);
+        HBox processBarBox = new HBox(processButton, outputFileNameTextField);
+
+        VBox vBox = new VBox(menuBar, reportBarBox, processBarBox);
         Scene scene = new Scene(vBox, 1000, 500);
         
         // primaryStage.setScene(scene);
@@ -96,13 +115,22 @@ public class ShopeeSalesConvertApplication extends Application {
         pushScene(scene);
         primaryStage.show();
 
-        // Stage salesImputerStage = new Stage();
-        // SalesImputer salesImputer = new SalesImputer();
-        // salesImputer.initDialog(salesImputerStage);
-        // salesImputerStage.show();
+        primaryStage.setOnCloseRequest(new EventHandler<WindowEvent>() {
+
+            @Override
+            public void handle(WindowEvent event) {
+                if(dialogStage != null) dialogStage.close();
+            }
+            
+        });
+
+        //// Stage salesImputerStage = new Stage();
+        //// SalesImputer salesImputer = new SalesImputer();
+        //// salesImputer.initDialog(salesImputerStage);
+        //// salesImputerStage.show();
     }
 
-    private void processSales() {
+    private List<MoveOut> processSales() {
         List<MoveOut> moveOuts = getMoveOuts();
 
         List<com.colbertlum.entity.UOM> irsUoms = getIrsUoms();
@@ -111,19 +139,23 @@ public class ShopeeSalesConvertApplication extends Application {
         if(this.measImputer == null) this.measImputer = new MeasImputer(); 
         SalesConverter salesConverter = new SalesConverter(moveOuts, this.measImputer.getMeasList());
         salesConverter.process();
-        salesConverter.getEmptySkuMoveOuts();
         
-        SalesImputer salesImputer = new SalesImputer(salesConverter.getEmptySkuMoveOuts(), salesConverter.getNotExistSkuMoveOuts());
-        // SalesImputer salesImputer = new SalesImputer(null, null);kking
-        salesImputer.setMeasList(this.measImputer.getMeasList());
-        Stage dialogStage = new Stage();
-        dialogStage.setX(priStage.getX() + 10);
-        dialogStage.setY(priStage.getY() + 10);
-        salesImputer.initDialog(dialogStage);
-        salesImputer.getStage().showAndWait();
+        if(salesConverter.hasEmptySkuMoveOut() || salesConverter.hasNotExistSkuMoveOut()){
+            SalesImputer salesImputer = new SalesImputer(salesConverter.getEmptySkuMoveOuts(), salesConverter.getNotExistSkuMoveOuts());
+            // SalesImputer salesImputer = new SalesImputer(null, null);kking
+            salesImputer.setMeasList(this.measImputer.getMeasList());
+            dialogStage = new Stage();
+            dialogStage.setX(priStage.getX() + 10);
+            dialogStage.setY(priStage.getY() + 10);
+            salesImputer.initDialog(dialogStage);
+            salesImputer.getStage().showAndWait();
 
+            moveOuts = getMoveOuts();
+            salesConverter = new SalesConverter(moveOuts, this.measImputer.getMeasList());
+            salesConverter.process();
+        }
 
-
+        return moveOuts;
     }
 
     public static ArrayList<Meas> getMeasList() {
@@ -288,6 +320,12 @@ public class ShopeeSalesConvertApplication extends Application {
 
 
         return new Scene(vBox, 600, 400);
+    }
+
+    private void saveOutputToFile(List<MoveOut> moveOuts, String outputFilePath){
+        try {
+            
+        }
     }
 
     private static Properties getProperties() throws IOException{
