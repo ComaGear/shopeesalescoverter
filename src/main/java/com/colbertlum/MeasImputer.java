@@ -5,6 +5,7 @@ import java.io.FileInputStream;
 import java.io.FileNotFoundException;
 import java.io.FileOutputStream;
 import java.io.IOException;
+import java.lang.ref.SoftReference;
 import java.util.ArrayList;
 import java.util.Comparator;
 import java.util.List;
@@ -15,7 +16,6 @@ import org.apache.poi.ss.usermodel.Sheet;
 import org.apache.poi.ss.usermodel.Workbook;
 import org.apache.poi.ss.usermodel.WorkbookFactory;
 
-import com.colbertlum.Meas.UOMCellFactory;
 import com.colbertlum.entity.Meas;
 import com.colbertlum.entity.UOM;
 
@@ -45,6 +45,11 @@ public class MeasImputer {
     private Button createButton;
     private TextField measurementField;
     private TextField updateRuleField;
+    private boolean measChanged = false;
+
+    public boolean isMeasChanged() {
+        return measChanged;
+    }
 
     public ArrayList<Meas> getMeasList() {
         return measList;
@@ -106,7 +111,7 @@ public class MeasImputer {
         measurementField = new TextField();
         measurementField.textProperty().addListener((observable, oldValue, newValue) ->{
             if(!newValue.matches("\\d*")){
-                measurementField.setText(newValue.replaceAll("[^\\d]", ""));
+                measurementField.setText(newValue.replaceAll("[^\\d.]", ""));
             }
         });
         measurementField.setPromptText("measure size default was 1.00");
@@ -151,6 +156,9 @@ public class MeasImputer {
                     this.selectMeas.setUpdateRule(updateRuleField.getText());
                     this.selectMeas.setMeasurement(Double.parseDouble(measurementField.getText()));
                     changeButtonMode(CREATE);
+                    
+                    this.measChanged = true;
+                    
 
                     break;
                 default:
@@ -265,21 +273,17 @@ public class MeasImputer {
     }
 
     public VBox generatedUOMListView(){
-        // ListView<HBox> uomListView = new ListView<HBox>();
-        ListView<UOM> uomListView = new ListView<UOM>();
+        ListView<HBox> uomListView = new ListView<HBox>();
         uomListView.getSelectionModel().setSelectionMode(SelectionMode.SINGLE);
         
         if(this.irsUoms == null) this.irsUoms = ShopeeSalesConvertApplication.getIrsUoms();
 
-        uomListView.setCellFactory(new UOMCellFactory());
-
-        // for(UOM uom : irsUoms){
-        //     Text descriptionText = new Text(uom.getDescription());
-        //     Text idText = new Text(uom.getProductId());
-        //     idText.setVisible(false);
-        //     uomListView.getItems().add(new HBox(descriptionText, idText));
-        // }
-        uomListView.getItems().addAll(irsUoms);
+        for(UOM uom : irsUoms){
+            Text descriptionText = new Text(uom.getDescription());
+            Text idText = new Text(uom.getProductId());
+            idText.setVisible(false);
+            uomListView.getItems().add(new HBox(descriptionText, idText));
+        }
 
         TextField searchBar = new TextField();
         searchBar.setPromptText("search by name");
@@ -312,28 +316,27 @@ public class MeasImputer {
             if(newValue.isEmpty()){
                 matchedUoms = new ArrayList<UOM>(this.irsUoms);
             }
-            uomListView.getItems().addAll(matchedUoms);
-            // for(UOM uom : matchedUoms){
-            //     Text descriptionText = new Text(uom.getDescription());
-            //     Text idText = new Text(uom.getProductId());
-            //     idText.setVisible(false);
-                // uomListView.getItems().add(new HBox(descriptionText, idText));
-            // }
+            for(UOM uom : matchedUoms){
+                Text descriptionText = new Text(uom.getDescription());
+                Text idText = new Text(uom.getProductId());
+                idText.setVisible(false);
+                uomListView.getItems().add(new HBox(descriptionText, idText));
+            }
         });
         
         Button useButton = new Button("use it");
 
-        // useButton.setOnAction(a ->{
+        useButton.setOnAction(a ->{
             
-        //     HBox selectedItem = uomListView.getSelectionModel().getSelectedItem();
-        //     Text idText = (Text) selectedItem.getChildren().get(1);
-        //     Text descriptionText = (Text) selectedItem.getChildren().get(0);
+            HBox selectedItem = uomListView.getSelectionModel().getSelectedItem();
+            Text idText = (Text) selectedItem.getChildren().get(1);
+            Text descriptionText = (Text) selectedItem.getChildren().get(0);
             
-        //     if(productNameField != null){
-        //         productNameField.setText((descriptionText.getText()));
-        //         this.selectedProductId = idText.getText();
-        //     }
-        // });
+            if(productNameField != null){
+                productNameField.setText((descriptionText.getText()));
+                this.selectedProductId = idText.getText();
+            }
+        });
 
         return new VBox(new HBox(searchBar, useButton), uomListView);
         
