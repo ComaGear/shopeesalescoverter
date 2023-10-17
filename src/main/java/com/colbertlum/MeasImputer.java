@@ -32,6 +32,7 @@ import javafx.scene.text.Text;
 import javafx.util.Callback;
 
 public class MeasImputer {
+  // TODO : separate uoms with observableList, also meas
 
     private static final String CREATE = "CEATE";
     public static final String UPDATE = "UPDATE";
