@@ -1,13 +1,10 @@
 import static org.junit.jupiter.api.Assertions.assertEquals;
 
 import java.util.ArrayList;
-import java.util.List;
-
 import org.junit.jupiter.api.Test;
 import org.testfx.framework.junit.ApplicationTest;
 
 import com.colbertlum.MeasImputer;
-import com.colbertlum.SalesConverter;
 import com.colbertlum.SalesImputer;
 import com.colbertlum.ShopeeSalesConvertApplication;
 import com.colbertlum.entity.Meas;
