@@ -35,3 +35,4 @@ build/
 
 IrsSalesConverter.properties
 ShopeeSalesConvertApplication.properties
+dependency-reduced-pom.xml

@@ -39,6 +39,7 @@ import javafx.scene.control.Button;
 import javafx.scene.control.Menu;
 import javafx.scene.control.MenuBar;
 import javafx.scene.control.MenuItem;
+import javafx.scene.control.Separator;
 import javafx.scene.control.TextField;
 import javafx.scene.control.cell.TextFieldListCell;
 import javafx.scene.layout.HBox;
@@ -110,7 +111,9 @@ public class ShopeeSalesConvertApplication extends Application {
 
         HBox processBarBox = new HBox(processButton, outputFileNameTextField);
 
-        VBox vBox = new VBox(menuBar, reportBarBox, processBarBox);
+        Separator separator = new Separator();
+        
+        VBox vBox = new VBox(menuBar, reportBarBox, processBarBox, separator);
         Scene scene = new Scene(vBox, 1000, 500);
         
         // primaryStage.setScene(scene);
@@ -126,11 +129,6 @@ public class ShopeeSalesConvertApplication extends Application {
             }
             
         });
-
-        //// Stage salesImputerStage = new Stage();
-        //// SalesImputer salesImputer = new SalesImputer();
-        //// salesImputer.initDialog(salesImputerStage);
-        //// salesImputerStage.show();
     }
 
     private List<MoveOut> processSales() {
