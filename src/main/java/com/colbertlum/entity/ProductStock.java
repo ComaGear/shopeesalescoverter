@@ -18,5 +18,9 @@ public class ProductStock {
     public void setId(String id) {
         this.id = id;
     }
+    
+    public void setStock(double stock){
+        this.stock = stock;
+    }
 
 }

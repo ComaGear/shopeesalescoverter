@@ -57,6 +57,8 @@ public class ShopeeSalesConvertApplication extends Application {
     public static final String MEAS = "meas";
     private static final String UOM = "uom";
     public static final String REPORT = "report";
+    public static final String ONLINE_SALES_PATH = "onlineSales-path";
+    public static final String STOCK_REPORT_PATH = "stock-report-path";
     private String reportPath = "";
     private Stack<Scene> sceneStack;
     private Stage priStage;

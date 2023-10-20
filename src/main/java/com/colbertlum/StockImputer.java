@@ -17,9 +17,6 @@ import com.colbertlum.entity.ProductStock;
 
 public class StockImputer {
 
-    /**
-     *
-     */
     private static final String COMMA_DELIMITER = ",";
     private Map<String, Double> updateRuleMap;
     private List<ProductStock> productStocks;
