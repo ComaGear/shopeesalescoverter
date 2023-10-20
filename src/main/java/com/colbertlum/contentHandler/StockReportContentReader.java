@@ -15,8 +15,8 @@ import com.colbertlum.entity.ProductStock;
 public class StockReportContentReader {
 
 
-    private static final String STOCK = "\"Stock\"";
-    private static final String PRODUCT_CODE = "\"Product Code\"";
+    private static final String STOCK = "Stock";
+    private static final String PRODUCT_CODE = "Product Code";
     private static final String COMMA_DELIMITER = ",";
 
     public static List<ProductStock> getStockReport() throws IOException{
@@ -32,7 +32,7 @@ public class StockReportContentReader {
                 if(readHeader == false){
                     for(int i = 0; i < values.length; i++){
                         String head = values[i];
-                        head = head.replaceAll("^[a-zA-Z0-9_]+$", "");
+                        head = head.replaceAll("[^a-zA-Z0-9\\s]", "");
                         switch(head){
                             case PRODUCT_CODE:
                                 headerMap.put(i, PRODUCT_CODE);
@@ -47,19 +47,22 @@ public class StockReportContentReader {
                 }
 
                 for(int i = 0; i < values.length; i++){
-                        String column = "";
-                        if(headerMap.containsKey(i)) column = headerMap.get(i);
-                        ProductStock productStock = new ProductStock();
+                    String column = "";
+                    if(headerMap.containsKey(i)) column = headerMap.get(i);
+                    ProductStock productStock = new ProductStock();
+                    String value = values[i];
+                    value = value.replaceAll("[^a-zA-Z0-9\\s]", "");
 
-                        switch(column){
-                            case PRODUCT_CODE:
-                                productStock.setId(values[i]);
-                                break;
-                            case STOCK:
-                                productStock.setStock(Double.parseDouble(values[i]));
-                                break;
-                        }
+                    switch(column){
+                        case PRODUCT_CODE:
+                            productStock.setId(value);
+                            break;
+                        case STOCK:
+                            productStock.setStock(Double.parseDouble(value));
+                            break;
                     }
+                    if(productStock.getId() != null) stocks.add(productStock);
+                }
             }
         } catch (NumberFormatException e) {
             // TODO Auto-generated catch block
