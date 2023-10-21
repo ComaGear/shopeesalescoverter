@@ -46,13 +46,13 @@ public class StockReportContentReader {
                     continue;
                 }
 
+                ProductStock productStock = new ProductStock();
                 for(int i = 0; i < values.length; i++){
                     String column = "";
                     if(headerMap.containsKey(i)) column = headerMap.get(i);
-                    ProductStock productStock = new ProductStock();
+                    
                     String value = values[i];
                     value = value.replaceAll("[^a-zA-Z0-9\\s]", "");
-
                     switch(column){
                         case PRODUCT_CODE:
                             productStock.setId(value);
@@ -61,8 +61,9 @@ public class StockReportContentReader {
                             productStock.setStock(Double.parseDouble(value));
                             break;
                     }
-                    if(productStock.getId() != null) stocks.add(productStock);
+                    
                 }
+                if(productStock.getId() != null) stocks.add(productStock);
             }
         } catch (NumberFormatException e) {
             // TODO Auto-generated catch block

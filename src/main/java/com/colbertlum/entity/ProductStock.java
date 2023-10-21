@@ -7,7 +7,7 @@ public class ProductStock {
     Double minKeepStock;
 
     public Double getAvailableStock(){
-        if(stock > 0) return stock - minKeepStock;
+        if(stock > 0) return stock - (minKeepStock == null ? 0 : minKeepStock);
         else return 0d;
     }
 

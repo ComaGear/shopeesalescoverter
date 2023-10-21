@@ -5,6 +5,7 @@ import static org.junit.jupiter.api.Assertions.*;
 import java.io.File;
 import java.io.IOException;
 import java.util.ArrayList;
+import java.util.Arrays;
 import java.util.List;
 
 import javax.xml.parsers.ParserConfigurationException;
@@ -21,13 +22,77 @@ import org.xml.sax.XMLReader;
 
 import com.colbertlum.ShopeeSalesConvertApplication;
 import com.colbertlum.StockImputer;
+import com.colbertlum.Exception.OnlineSalesInfoException;
 import com.colbertlum.contentHandler.OnlineSalesInfoContentHandler;
 import com.colbertlum.contentHandler.StockReportContentReader;
+import com.colbertlum.entity.Meas;
 import com.colbertlum.entity.OnlineSalesInfo;
+import com.colbertlum.entity.OnlineSalesInfoStatus;
 import com.colbertlum.entity.ProductStock;
 
 public class StockImputerTest {
+    
 
+    @Test
+    public void figureStockShouldSuccess() throws IOException{
+        List<ProductStock> stockReport;
+        stockReport = StockReportContentReader.getStockReport();
+        ArrayList<Meas> measList = ShopeeSalesConvertApplication.getMeasList();
+        StockImputer stockImputer = new StockImputer(stockReport, measList);
+
+
+        ArrayList<OnlineSalesInfo> onlineSalesInfoList = new ArrayList<OnlineSalesInfo>();
+        try {
+            String pathStr = ShopeeSalesConvertApplication.getProperty(ShopeeSalesConvertApplication.ONLINE_SALES_PATH);
+            File file = new File(pathStr);
+            XSSFReader xssfReader = new XSSFReader(OPCPackage.open(file));
+            OnlineSalesInfoContentHandler contentHandler = new OnlineSalesInfoContentHandler(xssfReader.getSharedStringsTable(), xssfReader.getStylesTable(), onlineSalesInfoList);
+            XMLReader xmlReader = XMLHelper.newXMLReader();
+            xmlReader.setContentHandler(contentHandler);
+            InputSource sheetData = new InputSource(xssfReader.getSheetsData().next());
+            xmlReader.parse(sheetData);
+        } catch (InvalidFormatException e) {
+            // TODO Auto-generated catch block
+            e.printStackTrace();
+        } catch (IOException e) {
+            // TODO Auto-generated catch block
+            e.printStackTrace();
+        } catch (OpenXML4JException e) {
+            // TODO Auto-generated catch block
+            e.printStackTrace();
+        } catch (SAXException e) {
+            // TODO Auto-generated catch block
+            e.printStackTrace();
+        } catch (ParserConfigurationException e) {
+            // TODO Auto-generated catch block
+            e.printStackTrace();
+        }
+
+        int originStock = 0;
+        for(OnlineSalesInfo info : onlineSalesInfoList){
+            originStock += info.getQuantity();
+        }
+
+        
+        try {
+            stockImputer.figureStock(onlineSalesInfoList);
+        } catch (OnlineSalesInfoException e) {
+            List<OnlineSalesInfoStatus> onlineSalesInfoStatusList = e.getOnlineSalesInfoStatusList();
+            for(OnlineSalesInfoStatus status : onlineSalesInfoStatusList){
+                assertNotNull(status.getStatus());
+                assertNotNull(status.getOnlineSalesInfo());
+            }
+        }
+
+        int stock = 0;
+        for(OnlineSalesInfo info : onlineSalesInfoList){
+            stock += info.getQuantity();
+        }
+
+        assertNotEquals(originStock, stock);
+        
+        
+    }
     @Test
     public void readingStockReport(){
         List<ProductStock> stockReport = null;
@@ -40,6 +105,10 @@ public class StockImputerTest {
 
         assertNotNull(stockReport);
         assertNotEquals("Product Code", stockReport.get(0).getId());
+        for(ProductStock stock : stockReport){
+            assertNotNull(stock.getId());
+            assertNotNull(stock.getAvailableStock());
+        }
     }
 
     @Test
@@ -72,6 +141,11 @@ public class StockImputerTest {
         }
         assertNotEquals(0, onlineSalesInfoList.size());
         assertNotNull(onlineSalesInfoList.get(0).getSku());
+        for(OnlineSalesInfo info : onlineSalesInfoList){
+            assertNotNull(info.getProductId());
+            assertNotNull(info.getPrice());
+            assertNotNull(info.getQuantity());
+        }
     }
     
     @Test
