@@ -4,24 +4,32 @@ import java.io.BufferedReader;
 import java.io.File;
 import java.io.FileInputStream;
 import java.io.FileOutputStream;
-import java.io.FileReader;
 import java.io.IOException;
-import java.io.InputStream;
 import java.io.InputStreamReader;
-import java.net.URL;
 import java.util.ArrayList;
 import java.util.Comparator;
 import java.util.HashMap;
 import java.util.List;
 import java.util.Map;
 
+import javax.xml.parsers.ParserConfigurationException;
+
+import org.apache.poi.openxml4j.exceptions.InvalidFormatException;
+import org.apache.poi.openxml4j.exceptions.OpenXML4JException;
+import org.apache.poi.openxml4j.opc.OPCPackage;
 import org.apache.poi.ss.usermodel.Cell;
 import org.apache.poi.ss.usermodel.Row;
 import org.apache.poi.ss.usermodel.Sheet;
 import org.apache.poi.ss.usermodel.Workbook;
 import org.apache.poi.ss.usermodel.WorkbookFactory;
+import org.apache.poi.util.XMLHelper;
+import org.apache.poi.xssf.eventusermodel.XSSFReader;
+import org.xml.sax.InputSource;
+import org.xml.sax.SAXException;
+import org.xml.sax.XMLReader;
 
 import com.colbertlum.Exception.OnlineSalesInfoException;
+import com.colbertlum.contentHandler.OnlineSalesInfoContentHandler;
 import com.colbertlum.entity.Meas;
 import com.colbertlum.entity.OnlineSalesInfo;
 import com.colbertlum.entity.OnlineSalesInfoStatus;
@@ -75,8 +83,6 @@ public class StockImputer {
             } catch (Throwable e) {
                 updateRuleDouble = 0.5d;
             }
-            String parentsku = info.getParentSku();
-             String productId = info.getProductId();
             double availableStock = (productStock.getAvailableStock() / meas.getMeasurement()) * updateRuleDouble;
             if(availableStock > 0) {
                 int floor = (int) Math.floor(availableStock);
@@ -90,6 +96,32 @@ public class StockImputer {
         }
 
         return onlineStocks;
+    }
+
+    public List<OnlineSalesInfo> getOnlineSalesInfoList(File file) throws IOException{
+        ArrayList<OnlineSalesInfo> onlineSalesInfoList = new ArrayList<OnlineSalesInfo>();
+        try {
+            XSSFReader xssfReader = new XSSFReader(OPCPackage.open(file));
+            OnlineSalesInfoContentHandler contentHandler = new OnlineSalesInfoContentHandler(xssfReader.getSharedStringsTable(), xssfReader.getStylesTable(), onlineSalesInfoList);
+            XMLReader xmlReader = XMLHelper.newXMLReader();
+            xmlReader.setContentHandler(contentHandler);
+            InputSource sheetData = new InputSource(xssfReader.getSheetsData().next());
+            xmlReader.parse(sheetData);
+        } catch (InvalidFormatException e) {
+            // TODO Auto-generated catch block
+            e.printStackTrace();
+        } catch (OpenXML4JException e) {
+            // TODO Auto-generated catch block
+            e.printStackTrace();
+        } catch (SAXException e) {
+            // TODO Auto-generated catch block
+            e.printStackTrace();
+        } catch (ParserConfigurationException e) {
+            // TODO Auto-generated catch block
+            e.printStackTrace();
+        }
+
+        return onlineSalesInfoList;
     }
 
     public void updateOnlineSalesInfo(OnlineSalesInfo info, List<OnlineSalesInfo> infoList){
@@ -189,10 +221,8 @@ public class StockImputer {
                 updateRuleMap.put(values[0], Double.parseDouble(values[1]));
             }
         } catch (NumberFormatException e) {
-            // TODO Auto-generated catch block
             e.printStackTrace();
         } catch (IOException e) {
-            // TODO Auto-generated catch block
             e.printStackTrace();
         }
     }

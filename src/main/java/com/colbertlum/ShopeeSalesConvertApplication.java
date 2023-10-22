@@ -25,27 +25,33 @@ import org.xml.sax.InputSource;
 import org.xml.sax.SAXException;
 import org.xml.sax.XMLReader;
 
+import com.colbertlum.Exception.OnlineSalesInfoException;
 import com.colbertlum.contentHandler.BigSellerReportContentHandler;
 import com.colbertlum.contentHandler.MeasContentHandler;
+import com.colbertlum.contentHandler.StockReportContentReader;
 import com.colbertlum.contentHandler.uomContentHandler;
 import com.colbertlum.entity.Meas;
 import com.colbertlum.entity.MoveOut;
+import com.colbertlum.entity.OnlineSalesInfo;
 import com.colbertlum.entity.UOM;
 
 import javafx.application.Application;
+import javafx.event.ActionEvent;
 import javafx.event.EventHandler;
 import javafx.scene.Scene;
+import javafx.scene.control.Alert;
 import javafx.scene.control.Button;
 import javafx.scene.control.Menu;
 import javafx.scene.control.MenuBar;
 import javafx.scene.control.MenuItem;
 import javafx.scene.control.Separator;
 import javafx.scene.control.TextField;
-import javafx.scene.control.cell.TextFieldListCell;
+import javafx.scene.control.Alert.AlertType;
 import javafx.scene.layout.HBox;
 import javafx.scene.layout.VBox;
 import javafx.scene.text.Font;
 import javafx.scene.text.Text;
+import javafx.stage.DirectoryChooser;
 import javafx.stage.FileChooser;
 import javafx.stage.Stage;
 import javafx.stage.WindowEvent;
@@ -100,6 +106,8 @@ public class ShopeeSalesConvertApplication extends Application {
         TextField outputFileNameTextField = new TextField();
         LocalDate now = LocalDate.now();
         String date = now.getYear() + "." + now.getMonthValue() + "." + now.getDayOfMonth();
+        Text outputPathText = new Text(getProperty(OUTPUT_PATH));
+        outputFileNameTextField.setPrefWidth(200);
         outputFileNameTextField.setText("onlineSalesReport_" + date);
 
         Button processButton = new Button("PROCESS");
@@ -111,11 +119,26 @@ public class ShopeeSalesConvertApplication extends Application {
             saveOutputToFile(processedMoveOuts, outputFilePath);
         });
 
-        HBox processBarBox = new HBox(processButton, outputFileNameTextField);
+        HBox processBarBox = new HBox(processButton, outputPathText, outputFileNameTextField);
 
         Separator separator = new Separator();
         
-        VBox vBox = new VBox(menuBar, reportBarBox, processBarBox, separator);
+        Text onlineMassUpdateFilePathText = new Text(getProperty(ONLINE_SALES_PATH));
+        Button selectOnlineSalesInfoButton = new Button("select mass update item sales stock generate by shopee");
+        selectOnlineSalesInfoButton.setPrefWidth(300);
+        selectOnlineSalesInfoButton.setOnAction(e ->{
+            File onlineMassUpdateSalesFile = fileChooser.showOpenDialog(primaryStage);
+            onlineMassUpdateFilePathText.setText(onlineMassUpdateSalesFile.getPath());
+            saveProperty(ONLINE_SALES_PATH, onlineMassUpdateSalesFile.getPath());
+        });
+        Button imputeStockButton = new Button("Impute Stock");
+        imputeStockButton.setPrefWidth(100);
+        imputeStockButton.setOnAction(handleImputeAction());
+        
+        VBox massUpdateBox = new VBox(new HBox(selectOnlineSalesInfoButton, imputeStockButton), onlineMassUpdateFilePathText);
+
+
+        VBox vBox = new VBox(menuBar, reportBarBox, processBarBox, separator, massUpdateBox);
         Scene scene = new Scene(vBox, 1000, 500);
         
         // primaryStage.setScene(scene);
@@ -131,6 +154,51 @@ public class ShopeeSalesConvertApplication extends Application {
             }
             
         });
+    }
+
+    private EventHandler<ActionEvent> handleImputeAction() {
+        return e -> {
+            StockImputer stockImputer = null;
+            try {
+                stockImputer = new StockImputer(StockReportContentReader.getStockReport(), getMeasList());
+            } catch (IOException e1) {
+                Alert alert = new Alert(AlertType.ERROR);
+                alert.setContentText("you must select valid Stock Report File \n that generate from biztory");
+                alert.showAndWait();
+                return;
+            }
+
+            List<OnlineSalesInfo> onlineSalesInfoList;
+            try {
+                onlineSalesInfoList = stockImputer.getOnlineSalesInfoList(new File(getProperty(ONLINE_SALES_PATH)));
+            } catch (IOException e1) {
+                Alert alert = new Alert(AlertType.ERROR);
+                alert.setContentText(e1.getMessage());
+                alert.showAndWait();
+                return;
+            }
+
+            try {
+                stockImputer.figureStock(onlineSalesInfoList);
+            } catch (OnlineSalesInfoException e1) {
+                Stage imputerStage = new Stage();
+                imputerStage.setX(priStage.getX() + 5);
+                imputerStage.setY(priStage.getY() + 5);
+                StockImputingController stockImputingController = new StockImputingController(imputerStage, e1.getOnlineSalesInfoStatusList());
+                stockImputingController.initStage();
+                stockImputingController.getStage().showAndWait();
+
+                imputerStage.setOnCloseRequest(new EventHandler<WindowEvent>(){
+
+                    @Override
+                    public void handle(WindowEvent event) {
+                        stockImputingController.getFixedOnlineInfo();
+                    }
+
+                });
+            }
+            
+        };
     }
 
     private List<MoveOut> processSales() {
@@ -289,34 +357,49 @@ public class ShopeeSalesConvertApplication extends Application {
             popScene();
         });
 
+        int buttonWidth = 300;
+
         Font font = new Font("monospace", 16);
         Text uomPathText = new Text(getProperty(UOM));
         uomPathText.setFont(font);
         Text measPathText = new Text(getProperty(MEAS));
         measPathText.setFont(font);
-
+        Text outputPathText = new Text(getProperty(OUTPUT_PATH));
+        outputPathText.setFont(font);
 
         FileChooser fileChooser = new FileChooser();
         fileChooser.getExtensionFilters().add(new FileChooser.ExtensionFilter("excel File", "*.xlsx"));
         // fileChooser.setInitialDirectory(new File(pathname));
 
-        Button selectUomButton = new Button("select Report");
+        Button selectUomButton = new Button("select UOM File (Irs System Export data)");
+        selectUomButton.setPrefWidth(buttonWidth);
         selectUomButton.setOnAction(e -> {
             File report = fileChooser.showOpenDialog(priStage);
             uomPathText.setText(report.getPath());
             saveProperty(UOM, report.getPath());
         });
 
-        Button selectMeasButton = new Button("select uom file");
+        Button selectMeasButton = new Button("select Online Meas File");
+        selectMeasButton.setPrefWidth(buttonWidth);
         selectMeasButton.setOnAction(e -> {
             File uomFile = fileChooser.showOpenDialog(priStage);
             measPathText.setText(uomFile.getPath());
             saveProperty(MEAS, uomFile.getPath());
         });
 
+        DirectoryChooser folderChooser = new DirectoryChooser();
+        Button selectOutputPathButton = new Button("selct output generate path");
+        selectOutputPathButton.setPrefWidth(buttonWidth);
+        selectOutputPathButton.setOnAction(e ->{
+            File outputFolder = folderChooser.showDialog(priStage);
+            outputPathText.setText(outputFolder.getPath());
+            saveProperty(OUTPUT_PATH, outputFolder.getPath());
+        });
 
 
-        VBox vBox = new VBox(backButton, measPathText, selectMeasButton, uomPathText, selectUomButton);
+
+
+        VBox vBox = new VBox(backButton, measPathText, selectMeasButton, uomPathText, selectUomButton, outputPathText, selectOutputPathButton);
 
 
         return new Scene(vBox, 600, 400);
@@ -354,6 +437,7 @@ public class ShopeeSalesConvertApplication extends Application {
             workbook.write(fileOutputStream);
 
             fileOutputStream.close();
+            workbook.close();
         }catch(IOException exception){
             exception.printStackTrace();
             System.out.println(exception.toString());
@@ -374,7 +458,7 @@ public class ShopeeSalesConvertApplication extends Application {
         properties = new Properties();
 
         properties.load(inputStream);
-        inputStream.close();
+        if(inputStream != null )inputStream.close();
 
         return properties;
     }

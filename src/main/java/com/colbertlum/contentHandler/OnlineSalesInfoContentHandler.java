@@ -15,9 +15,7 @@ import org.xml.sax.Attributes;
 import org.xml.sax.SAXException;
 import org.xml.sax.helpers.DefaultHandler;
 
-import com.colbertlum.entity.MoveOut;
 import com.colbertlum.entity.OnlineSalesInfo;
-import com.colbertlum.entity.Order;
 
 public class OnlineSalesInfoContentHandler extends DefaultHandler{
     enum dataType {
