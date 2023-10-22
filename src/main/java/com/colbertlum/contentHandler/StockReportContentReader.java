@@ -52,7 +52,7 @@ public class StockReportContentReader {
                     if(headerMap.containsKey(i)) column = headerMap.get(i);
                     
                     String value = values[i];
-                    value = value.replaceAll("[^a-zA-Z0-9\\s]", "");
+                    value = value.replaceAll("[^a-zA-Z0-9\\s.-]", "");
                     switch(column){
                         case PRODUCT_CODE:
                             productStock.setId(value);

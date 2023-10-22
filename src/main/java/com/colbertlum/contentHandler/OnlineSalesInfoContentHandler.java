@@ -98,6 +98,9 @@ public class OnlineSalesInfoContentHandler extends DefaultHandler{
                     case PRODUCT_ID:
                         headerPosition.put(columString, PRODUCT_ID);
                         break;
+                    case PRICE:
+                        headerPosition.put(columString, PRICE);
+                        break;
                     case VARIATION_ID:
                         headerPosition.put(columString, VARIATION_ID);
                         break;
@@ -134,7 +137,7 @@ public class OnlineSalesInfoContentHandler extends DefaultHandler{
         }
 
         if ("row".equals(qName)) {
-            if (readingRow > 6)
+            if (readingRow >= 6)
                 if(info.getProductId() != null && info.getProductId() != ""){
 
                     info.setFoundRow(readingRow);

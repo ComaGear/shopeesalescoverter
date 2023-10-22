@@ -60,10 +60,11 @@ public class OnlineSalesInfo {
     }
 
     public String getSku() {
-        return sku != null ? sku : parentSku;
+        return sku;
     }
 
     public void setSku(String sku) {
+        if(parentSku != null && this.parentSku.equals(sku)) return; 
         this.sku = sku;
     }
 

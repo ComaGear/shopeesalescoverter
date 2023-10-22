@@ -31,7 +31,92 @@ import com.colbertlum.entity.OnlineSalesInfoStatus;
 import com.colbertlum.entity.ProductStock;
 
 public class StockImputerTest {
+
+    @Test
+    public void updateMassUpdateFileStock() throws IOException{
+        ArrayList<OnlineSalesInfo> onlineSalesInfoList = new ArrayList<OnlineSalesInfo>();
+        String pathStr = ShopeeSalesConvertApplication.getProperty(ShopeeSalesConvertApplication.ONLINE_SALES_PATH);
+        try {
+            File file = new File(pathStr);
+            XSSFReader xssfReader = new XSSFReader(OPCPackage.open(file));
+            OnlineSalesInfoContentHandler contentHandler = new OnlineSalesInfoContentHandler(xssfReader.getSharedStringsTable(), xssfReader.getStylesTable(), onlineSalesInfoList);
+            XMLReader xmlReader = XMLHelper.newXMLReader();
+            xmlReader.setContentHandler(contentHandler);
+            InputSource sheetData = new InputSource(xssfReader.getSheetsData().next());
+            xmlReader.parse(sheetData);
+        } catch (InvalidFormatException e) {
+            // TODO Auto-generated catch block
+            e.printStackTrace();
+        } catch (IOException e) {
+            // TODO Auto-generated catch block
+            e.printStackTrace();
+        } catch (OpenXML4JException e) {
+            // TODO Auto-generated catch block
+            e.printStackTrace();
+        } catch (SAXException e) {
+            // TODO Auto-generated catch block
+            e.printStackTrace();
+        } catch (ParserConfigurationException e) {
+            // TODO Auto-generated catch block
+            e.printStackTrace();
+        }
+
+        StockImputer stockImputer = new StockImputer(StockReportContentReader.getStockReport(), ShopeeSalesConvertApplication.getMeasList());
+        try {
+            stockImputer.figureStock(onlineSalesInfoList);
+        } catch (OnlineSalesInfoException e) {
+            List<OnlineSalesInfoStatus> onlineSalesInfoStatusList = e.getOnlineSalesInfoStatusList();
+            for(OnlineSalesInfoStatus status : onlineSalesInfoStatusList){
+                OnlineSalesInfo onlineSalesInfo = status.getOnlineSalesInfo();
+                onlineSalesInfo.setQuantity(1);
+                stockImputer.updateOnlineSalesInfo(onlineSalesInfo, onlineSalesInfoList);
+            }
+        }
+
+        StockImputer.saveOutputToFile(onlineSalesInfoList, new File(pathStr));
+    }
     
+
+    @Test
+    public void saveFileShouldSuccess() throws IOException{
+
+        ArrayList<OnlineSalesInfo> onlineSalesInfoList = new ArrayList<OnlineSalesInfo>();
+        String pathStr = ShopeeSalesConvertApplication.getProperty(ShopeeSalesConvertApplication.ONLINE_SALES_PATH);
+        try {
+            File file = new File(pathStr);
+            XSSFReader xssfReader = new XSSFReader(OPCPackage.open(file));
+            OnlineSalesInfoContentHandler contentHandler = new OnlineSalesInfoContentHandler(xssfReader.getSharedStringsTable(), xssfReader.getStylesTable(), onlineSalesInfoList);
+            XMLReader xmlReader = XMLHelper.newXMLReader();
+            xmlReader.setContentHandler(contentHandler);
+            InputSource sheetData = new InputSource(xssfReader.getSheetsData().next());
+            xmlReader.parse(sheetData);
+        } catch (InvalidFormatException e) {
+            // TODO Auto-generated catch block
+            e.printStackTrace();
+        } catch (IOException e) {
+            // TODO Auto-generated catch block
+            e.printStackTrace();
+        } catch (OpenXML4JException e) {
+            // TODO Auto-generated catch block
+            e.printStackTrace();
+        } catch (SAXException e) {
+            // TODO Auto-generated catch block
+            e.printStackTrace();
+        } catch (ParserConfigurationException e) {
+            // TODO Auto-generated catch block
+            e.printStackTrace();
+        }
+
+        // try modify some record;
+
+        onlineSalesInfoList.get(0).setParentSku("22");
+        onlineSalesInfoList.get(0).setSku("22-a");
+        onlineSalesInfoList.get(0).setPrice(1d);
+        onlineSalesInfoList.get(3).setQuantity(0);
+
+        StockImputer.saveOutputToFile(onlineSalesInfoList, new File(pathStr));
+
+    }
 
     @Test
     public void figureStockShouldSuccess() throws IOException{
@@ -140,10 +225,10 @@ public class StockImputerTest {
             e.printStackTrace();
         }
         assertNotEquals(0, onlineSalesInfoList.size());
-        assertNotNull(onlineSalesInfoList.get(0).getSku());
+        assertNotNull(onlineSalesInfoList.get(3).getSku());
         for(OnlineSalesInfo info : onlineSalesInfoList){
             assertNotNull(info.getProductId());
-            assertNotNull(info.getPrice());
+            assertNotEquals(0d, info.getPrice());
             assertNotNull(info.getQuantity());
         }
     }

@@ -2,15 +2,24 @@ package com.colbertlum;
 
 import java.io.BufferedReader;
 import java.io.File;
+import java.io.FileInputStream;
+import java.io.FileOutputStream;
 import java.io.FileReader;
 import java.io.IOException;
 import java.io.InputStream;
 import java.io.InputStreamReader;
 import java.net.URL;
 import java.util.ArrayList;
+import java.util.Comparator;
 import java.util.HashMap;
 import java.util.List;
 import java.util.Map;
+
+import org.apache.poi.ss.usermodel.Cell;
+import org.apache.poi.ss.usermodel.Row;
+import org.apache.poi.ss.usermodel.Sheet;
+import org.apache.poi.ss.usermodel.Workbook;
+import org.apache.poi.ss.usermodel.WorkbookFactory;
 
 import com.colbertlum.Exception.OnlineSalesInfoException;
 import com.colbertlum.entity.Meas;
@@ -37,6 +46,7 @@ public class StockImputer {
         for(OnlineSalesInfo info : onlineStocks){
 
             String sku = info.getSku();
+            if(sku == null) sku = info.getParentSku();
             if(sku == null || sku.isEmpty()){
                 infoStatusList.add(new OnlineSalesInfoStatus().setOnlineSalesInfo(info).setStatus("empty sku"));
                 continue;
@@ -55,18 +65,23 @@ public class StockImputer {
             }
             
             double updateRuleDouble = 1d;
+            if(meas.getUpdateRule() != null && meas.getUpdateRule().equals(SELF_MANUAL_INPUT)){
+                infoStatusList.add(new OnlineSalesInfoStatus().setOnlineSalesInfo(info).setStatus("manual set stock"));
+                continue;
+            }
             try {
-                if(meas.getUpdateRule() == SELF_MANUAL_INPUT){
-                    infoStatusList.add(new OnlineSalesInfoStatus().setOnlineSalesInfo(info).setStatus("manual set stock"));
-                    continue;
-                }
                 if(meas.getUpdateRule() == null) updateRuleDouble = getUpdateRuleMeasure("default");
                 else updateRuleDouble = getUpdateRuleMeasure(meas.getUpdateRule());
             } catch (Throwable e) {
                 updateRuleDouble = 0.5d;
             }
-            double availableStock = (productStock.getAvailableStock() * meas.getMeasurement()) * updateRuleDouble;
-            if(availableStock > 0) info.setQuantity((int) Math.floor(availableStock));
+            String parentsku = info.getParentSku();
+             String productId = info.getProductId();
+            double availableStock = (productStock.getAvailableStock() / meas.getMeasurement()) * updateRuleDouble;
+            if(availableStock > 0) {
+                int floor = (int) Math.floor(availableStock);
+                info.setQuantity(floor);
+            }
             else info.setQuantity(0);
         }
 
@@ -75,6 +90,83 @@ public class StockImputer {
         }
 
         return onlineStocks;
+    }
+
+    public void updateOnlineSalesInfo(OnlineSalesInfo info, List<OnlineSalesInfo> infoList){
+        
+        infoList.sort(new Comparator<OnlineSalesInfo>() {
+
+            @Override
+            public int compare(OnlineSalesInfo o1, OnlineSalesInfo o2) {
+                int compareTo = o1.getProductId().compareTo(o2.getProductId());
+                if(compareTo == 0){
+                    return o1.getVariationId().compareTo(o2.getVariationId());
+                }
+                return compareTo;
+            }
+        });
+
+        int lo = 0;
+        int hi = measList.size()-1;
+        OnlineSalesInfo foundInfo = null;
+
+        while(lo <= hi){
+            int mid = lo + (hi - lo) / 2;
+            if(infoList.get(mid).getProductId().compareTo(info.getProductId()) > 0) hi = mid-1;
+            else if(infoList.get(mid).getProductId().compareTo(info.getProductId()) < 0) lo = mid+1;
+            else {
+                if(infoList.get(mid).getVariationId().compareTo(info.getVariationId()) > 0) hi = mid-1;
+                else if(infoList.get(mid).getVariationId().compareTo(info.getVariationId()) < 0) lo = mid+1;
+                foundInfo = infoList.get(mid);
+                break;
+            }
+        }
+
+        if(foundInfo != null){
+            foundInfo.setQuantity(info.getQuantity());
+            foundInfo.setParentSku(info.getParentSku());
+            foundInfo.setSku(info.getSku());
+            foundInfo.setPrice(info.getPrice());
+        }
+    }
+
+    public static void saveOutputToFile(List<OnlineSalesInfo> infoList, File file) throws IOException{
+        FileInputStream fileInputStream = new FileInputStream(file);
+        Workbook workbook = WorkbookFactory.create(fileInputStream);
+        Sheet sheet = workbook.getSheetAt(0);
+        for(OnlineSalesInfo info : infoList){
+            int foundRow = info.getFoundRow();
+            Row row = sheet.getRow(foundRow);
+            Cell cell = row.getCell(0);
+            if(cell == null || !cell.getStringCellValue().equals(info.getProductId())
+                || row.getCell(2) == null || !row.getCell(2).getStringCellValue().equals(info.getVariationId())){
+                return;
+            }
+            if(info.getParentSku() != null){
+                Cell parentSKuCell = row.getCell(4);
+                if(parentSKuCell == null) parentSKuCell = row.createCell(4);
+                parentSKuCell.setCellValue(info.getParentSku());
+            } 
+            if(info.getSku() != null){
+                Cell skuCell = row.getCell(5);
+                if(skuCell == null) skuCell = row.createCell(5);
+                skuCell.setCellValue(info.getSku());
+            }
+            Cell priceCell = row.getCell(6);
+            if(priceCell == null) priceCell = row.createCell(6);
+            priceCell.setCellValue(info.getPrice());
+
+            Cell stockCell = row.getCell(7);
+            if(stockCell == null) stockCell = row.createCell(7);
+            stockCell.setCellValue(info.getQuantity());
+        }
+
+        fileInputStream.close();
+
+        FileOutputStream fileOutputStream = new FileOutputStream(file);
+        workbook.write(fileOutputStream);
+        workbook.close();
+        fileOutputStream.close();
     }
 
     public Double getUpdateRuleMeasure(String updateRule) throws Throwable{
