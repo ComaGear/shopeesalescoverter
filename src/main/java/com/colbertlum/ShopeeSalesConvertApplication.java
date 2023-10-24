@@ -41,6 +41,7 @@ import javafx.event.EventHandler;
 import javafx.scene.Scene;
 import javafx.scene.control.Alert;
 import javafx.scene.control.Button;
+import javafx.scene.control.ButtonType;
 import javafx.scene.control.Menu;
 import javafx.scene.control.MenuBar;
 import javafx.scene.control.MenuItem;
@@ -192,10 +193,28 @@ public class ShopeeSalesConvertApplication extends Application {
 
                     @Override
                     public void handle(WindowEvent event) {
-                        stockImputingController.getFixedOnlineInfo();
+                        List<OnlineSalesInfo> fixedOnlineInfo = stockImputingController.getFixedOnlineInfo();
+                        for(OnlineSalesInfo info : fixedOnlineInfo){
+                            StockImputer stockImputer2 = null;
+                            try {
+                                stockImputer2 = new StockImputer(StockReportContentReader.getStockReport(), getMeasList());
+                            } catch (IOException e) {
+                                Alert alert = new Alert(AlertType.ERROR);
+                                alert.setContentText(e.getMessage());
+                                alert.showAndWait();
+                            }
+                            stockImputer2.updateOnlineSalesInfo(info, onlineSalesInfoList);
+                        }
                     }
-
                 });
+                try {
+                    StockImputer.saveOutputToFile(onlineSalesInfoList, new File(getProperty(ONLINE_SALES_PATH)));
+                    new Alert(AlertType.INFORMATION, "Online Sales Info Updated", ButtonType.OK).show();
+                } catch (IOException e2) {
+                    Alert alert = new Alert(AlertType.ERROR);
+                    alert.setContentText(e2.getMessage());
+                    alert.showAndWait();
+                }
             }
             
         };

@@ -28,6 +28,7 @@ public class StockImputingController {
     }
 
     public List<OnlineSalesInfo> getFixedOnlineInfo() {
+        return null;
     }
 
 
