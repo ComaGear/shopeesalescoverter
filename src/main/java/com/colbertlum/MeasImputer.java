@@ -138,13 +138,15 @@ public class MeasImputer {
                     if(parentSkuField.getText() != null || !parentSkuField.getText().isEmpty()) parentSku = parentSkuField.getText();
                     if(updateRuleField.getText() != null || !parentSkuField.getText().isEmpty()) meas.setUpdateRule(updateRuleField.getText());
 
-                    if(parentSku != null){
+                    if(parentSku != null && !parentSku.isEmpty()){
                         meas.setRelativeId(createNewChildSku(parentSku));
                     } else {
                         meas.setRelativeId(createNewSku());
                     }
                     
                     measList.add(meas);
+                    this.imputeNameField(measList);
+                    this.measChanged = true;
                     break;
                 case UPDATE:
                     
@@ -155,8 +157,6 @@ public class MeasImputer {
                     changeButtonMode(CREATE);
                     
                     this.measChanged = true;
-                    
-
                     break;
                 default:
                     break;
@@ -340,6 +340,15 @@ public class MeasImputer {
     }
 
     public void saveChange(){
+
+        measList.sort(new Comparator<Meas>() {
+
+            @Override
+            public int compare(Meas o1, Meas o2) {
+                return o1.getRelativeId().toLowerCase().compareTo(o2.getRelativeId().toLowerCase());
+            }
+            
+        });
         
         String measPath = ShopeeSalesConvertApplication.getProperty(ShopeeSalesConvertApplication.MEAS);
         try {

@@ -55,8 +55,6 @@ public class SalesImputer {
 
     public SalesImputer(List<MoveOut> emptySkuMoveOuts, List<MoveOut> notExistSkuMoveOuts) {
 
-        this.measImputer = new MeasImputer();
-
         if(emptySkuMoveOuts == null && notExistSkuMoveOuts == null) throw new NullPointerException();
         
         moveOutStatusList = new ArrayList<MoveOutStatus>();
@@ -101,11 +99,11 @@ public class SalesImputer {
 
         VBox moveOutListViewPanel = this.generateMoveOutListViewPanel();
 
-        VBox measListVieewPanel = this.generateMeasListViewPanel();
+        VBox measListViewPanel = this.generateMeasListViewPanel();
 
         VBox measPanel = measImputer.generatePanel();
         
-        VBox vBox = new VBox(moveOutListViewPanel, measListVieewPanel);
+        VBox vBox = new VBox(moveOutListViewPanel, measListViewPanel);
         HBox hBox = new HBox(vBox, measPanel);
         stage.setScene(new Scene(hBox));
     }
@@ -306,13 +304,15 @@ public class SalesImputer {
         Text skuHeaderText = new Text("SKU");
         skuHeaderText.setWrappingWidth(97);
         Text nameHeaderText = new Text(NAME);
-        nameHeaderText.setWrappingWidth(650);
+        nameHeaderText.setWrappingWidth(450);
+        Text variationHeaderText = new Text("VARIATION");
+        variationHeaderText.setWrappingWidth(200);
         Text foundRowHeader = new Text("ROW POSITION");
         foundRowHeader.setWrappingWidth(100);
         Text statusHeader = new Text("STATUS");
         statusHeader.setWrappingWidth(100);
 
-        HBox headerHBox = new HBox(skuHeaderText, nameHeaderText, foundRowHeader, statusHeader);
+        HBox headerHBox = new HBox(skuHeaderText, nameHeaderText, variationHeaderText, foundRowHeader, statusHeader);
 
         ListView<HBox> moveOutListView = new ListView<HBox>();
         refillMoveOutListView(moveOutListView, moveOutStatusList);
@@ -364,7 +364,7 @@ public class SalesImputer {
         applyButton.setOnAction(event ->{
             ObservableList<HBox> selectedItems = moveOutListView.getSelectionModel().getSelectedItems();
             for(HBox i : selectedItems){
-                Text text = (Text)i.getChildren().get(2);
+                Text text = (Text)i.getChildren().get(3);
                 String foundRow = text.getText();
                 MoveOutStatus moveOutStatus = getMoveOutFromStatusListByFoundRow(foundRow);
                 moveOutStatus.getMoveOut().setSku(this.selectedMeasSku);
@@ -385,13 +385,15 @@ public class SalesImputer {
             Text skuText = new Text(moveOutStatus.getMoveOut().getSku());
             skuText.setWrappingWidth(90);
             Text nameText = new Text(moveOutStatus.getMoveOut().getProductName());
-            nameText.setWrappingWidth(650);
+            nameText.setWrappingWidth(450);
+            Text variationText = new Text(moveOutStatus.getMoveOut().getVariationName());
+            variationText.setWrappingWidth(200);
             Text foundRow = new Text(Integer.toString(moveOutStatus.getMoveOut().getFoundRow()));
             foundRow.setWrappingWidth(100);
             Text status = new Text(moveOutStatus.getStatus());
             status.setWrappingWidth(100);
 
-            listView.getItems().add(new HBox(skuText, nameText, foundRow, status));
+            listView.getItems().add(new HBox(skuText, nameText, variationText, foundRow, status));
         }
     }
 
@@ -464,5 +466,9 @@ public class SalesImputer {
         VBox vBox = new VBox(moveOutListViewPanel, measListViewPanel);
         HBox hBox = new HBox(vBox, measPanel);
         return new Scene(hBox);
+    }
+
+    public void setMeasImputer(MeasImputer measImputer) {
+        this.measImputer = measImputer;
     }
 }

@@ -229,7 +229,7 @@ public class ShopeeSalesConvertApplication extends Application {
         
         if(salesConverter.hasEmptySkuMoveOut() || salesConverter.hasNotExistSkuMoveOut()){
             SalesImputer salesImputer = new SalesImputer(salesConverter.getEmptySkuMoveOuts(), salesConverter.getNotExistSkuMoveOuts());
-            // SalesImputer salesImputer = new SalesImputer(null, null);kking
+            salesImputer.setMeasImputer(measImputer);
             salesImputer.setMeasList(this.measImputer.getMeasList());
             dialogStage = new Stage();
             dialogStage.setX(priStage.getX() + 10);
