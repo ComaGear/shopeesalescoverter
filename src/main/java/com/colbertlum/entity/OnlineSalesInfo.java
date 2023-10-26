@@ -9,7 +9,25 @@ public class OnlineSalesInfo {
     private String productId;
     private String variationId;
     private int foundRow;
+    private String productName;
+    private String variationName;
     
+
+    public String getProductName() {
+        return productName;
+    }
+
+    public void setProductName(String productName) {
+        this.productName = productName;
+    }
+
+    public String getVariationName() {
+        return variationName;
+    }
+
+    public void setVariationName(String variationName) {
+        this.variationName = variationName;
+    }
 
     public int getFoundRow() {
         return foundRow;

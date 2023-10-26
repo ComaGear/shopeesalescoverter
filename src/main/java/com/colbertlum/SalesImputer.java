@@ -52,6 +52,7 @@ public class SalesImputer {
     private MeasImputer measImputer;
     protected boolean moveOutChanged;
     protected boolean measChanged;
+    private String measSearchMode;
 
     public SalesImputer(List<MoveOut> emptySkuMoveOuts, List<MoveOut> notExistSkuMoveOuts) {
 
@@ -99,7 +100,7 @@ public class SalesImputer {
 
         VBox moveOutListViewPanel = this.generateMoveOutListViewPanel();
 
-        VBox measListViewPanel = this.generateMeasListViewPanel();
+        VBox measListViewPanel = this.generateMeasListViewPanel(this.measList);
 
         VBox measPanel = measImputer.generatePanel();
         
@@ -108,7 +109,7 @@ public class SalesImputer {
         stage.setScene(new Scene(hBox));
     }
 
-    private VBox generateMeasListViewPanel() {
+    private VBox generateMeasListViewPanel(List<Meas> measList) {
 
         TextField searchBar = new TextField("");
         searchBar.setPromptText("search item by NAME");
@@ -120,22 +121,23 @@ public class SalesImputer {
         MenuButton menuButton = new MenuButton("search by NAME", null, skuSelectMenuItem, nameSelectMenuItem, idSellectMenuItem);
         menuButton.setPrefWidth(120);
 
+        measSearchMode = NAME;
         skuSelectMenuItem.setOnAction(a ->{
             menuButton.setText("search by SKU");
             searchBar.setPromptText("search item by SKU");
-            this.moveOutSearchMode = SKU;
+            measSearchMode = SKU;
         });
         nameSelectMenuItem.setOnAction(a ->{
             menuButton.setText("search by NAME");
             searchBar.setPromptText("search item by NAME");
-            this.moveOutSearchMode = NAME;
+            measSearchMode = NAME;
         });
         idSellectMenuItem.setOnAction(a ->{
             menuButton.setText("search by ID");
             searchBar.setPromptText("search item by ID");
-            this.moveOutSearchMode = ID;
+            measSearchMode = ID;
         });
-        this.meaSearchMode = NAME;
+
 
         Button editButton = new Button("edit it");
         HBox searchHBox = new HBox(menuButton, searchBar, editButton);
@@ -202,7 +204,7 @@ public class SalesImputer {
             
             for(Meas meas : measList){
                 String matchStr = null;
-                switch(this.moveOutSearchMode){
+                switch(this.measSearchMode){
                     case NAME: 
                         if(meas.getName() == null) continue;
                         matchStr = meas.getName().toLowerCase();
