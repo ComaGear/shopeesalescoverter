@@ -207,14 +207,14 @@ public class ShopeeSalesConvertApplication extends Application {
                         }
                     }
                 });
-                try {
-                    StockImputer.saveOutputToFile(onlineSalesInfoList, new File(getProperty(ONLINE_SALES_PATH)));
-                    new Alert(AlertType.INFORMATION, "Online Sales Info Updated", ButtonType.OK).show();
-                } catch (IOException e2) {
-                    Alert alert = new Alert(AlertType.ERROR);
-                    alert.setContentText(e2.getMessage());
-                    alert.showAndWait();
-                }
+            }
+            try {
+                StockImputer.saveOutputToFile(onlineSalesInfoList, new File(getProperty(ONLINE_SALES_PATH)));
+                new Alert(AlertType.INFORMATION, "Online Sales Info Updated", ButtonType.OK).show();
+            } catch (IOException e2) {
+                Alert alert = new Alert(AlertType.ERROR);
+                alert.setContentText(e2.getMessage());
+                alert.showAndWait();
             }
             
         };
@@ -242,6 +242,9 @@ public class ShopeeSalesConvertApplication extends Application {
             salesConverter.process();
         }
 
+        Alert alert = new Alert(AlertType.INFORMATION);
+        alert.setContentText("output file to : " + getProperty(OUTPUT_PATH));
+        alert.show();
         return moveOuts;
     }
 

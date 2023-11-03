@@ -40,7 +40,7 @@ public class SalesConverter {
 
     public List<MoveOut> process(){
 
-        this.EmptySkuMoveOuts = this.cleanEmtrySku(this.moveOuts); // getting out emptry sku moveOut
+        this.EmptySkuMoveOuts = this.cleanEmptySku(this.moveOuts); // getting out emptry sku moveOut
         this.calculateActualPrice(this.moveOuts);
         this.convertMeas();
         return this.moveOuts;
@@ -89,6 +89,7 @@ public class SalesConverter {
             }
             moveOut.setId(meas.getId());
             moveOut.setQuantity(meas.getMeasurement() * moveOut.getQuantity());
+            moveOut.setPrice(moveOut.getPrice() / meas.getMeasurement());
         }
     }
     
@@ -108,24 +109,23 @@ public class SalesConverter {
         return null;
     }
 
-    private List<MoveOut> cleanEmtrySku(List<MoveOut> moveOuts){
-        moveOuts.sort(new Comparator<MoveOut>() {
+    private List<MoveOut> cleanEmptySku(List<MoveOut> moveOuts){
+        // moveOuts.sort(new Comparator<MoveOut>() {
 
-            @Override
-            public int compare(MoveOut o1, MoveOut o2) {
-                if(o1.getSku() == null || o1.getSku().equals("")) return -1;
-                if(o2.getSku() == null || o2.getSku().equals("")) return 1;
-                return o1.getSku().compareTo(o2.getSku());
-            }
+        //     @Override
+        //     public int compare(MoveOut o1, MoveOut o2) {
+        //         if(o1.getSku() == null || o1.getSku().equals("")) return -1;
+        //         if(o2.getSku() == null || o2.getSku().equals("")) return 1;
+        //         return o1.getSku().compareTo(o2.getSku());
+        //     }
             
-        });
+        // });
 
         List<MoveOut> EmptySkuMoveOuts = new ArrayList<MoveOut>();  
         for(MoveOut moveOut : moveOuts){
-            if(moveOut.getSku() == null || moveOut.getSku().equals("")){
+            if(moveOut.getSku() == null || moveOut.getSku().isEmpty()){
                 EmptySkuMoveOuts.add(moveOut);
             }
-            break;
         }
 
         moveOuts.removeAll(EmptySkuMoveOuts);

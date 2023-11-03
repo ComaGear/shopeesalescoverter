@@ -32,6 +32,7 @@ public class OnlineSalesInfoStatusCellFactory implements Callback<ListView<Onlin
                     setGraphic(null);
                 } else {
                     CheckBox checkBox = new CheckBox();
+                    if(selectOnlineSalesList.contains(infoStatus)) checkBox.setSelected(true);
                     checkBox.setOnAction(a -> {
                         if(checkBox.isSelected()) {
                             selectOnlineSalesList.add(infoStatus);
@@ -39,16 +40,29 @@ public class OnlineSalesInfoStatusCellFactory implements Callback<ListView<Onlin
                             selectOnlineSalesList.remove(infoStatus);
                         }
                     });
+                    checkBox.setPrefWidth(20);
 
                     Text productNameText = new Text(infoStatus.getOnlineSalesInfo().getProductName());
+                    productNameText.setWrappingWidth(500);
+
                     Text variationName = new Text(infoStatus.getOnlineSalesInfo().getVariationName());
+                    variationName.setWrappingWidth(200);
 
                     TextField stockTextField = new TextField();
+                    infoStatus.getOnlineSalesInfo().setQuantity(0);
                     stockTextField.setPromptText("stock");
                     stockTextField.textProperty().addListener((observable, oldValue, newValue) -> {
                         if(!newValue.matches("\\d*")){
                             stockTextField.setText(newValue.replaceAll("[^\\d]", ""));
                         }
+
+                        if(newValue != null && !newValue.isEmpty() && Integer.parseInt(newValue) > 0) {
+                            infoStatus.getOnlineSalesInfo().setQuantity(Integer.parseInt(newValue));
+                        }
+                    });
+                    stockTextField.setPrefWidth(50);
+                    stockTextField.textProperty().addListener((observable, oldValue, newValue) -> {
+
                     });
                     
                     TextField priceTextField = new TextField(decimalFormat.format(infoStatus.getOnlineSalesInfo().getPrice()));
@@ -56,11 +70,22 @@ public class OnlineSalesInfoStatusCellFactory implements Callback<ListView<Onlin
                         if(!newValue.matches("\\d*"))
                             newValue = newValue.replaceAll("[^\\d.]", "");
                         priceTextField.setText(decimalFormat.format(Double.parseDouble(newValue)));
+
+                        if(Double.parseDouble(newValue) != infoStatus.getOnlineSalesInfo().getPrice()){
+                            infoStatus.getOnlineSalesInfo().setPrice(Double.parseDouble(newValue));
+                        }
                     });
+                    priceTextField.setPrefWidth(50);
                     
-                    Text skuText = new Text(infoStatus.getOnlineSalesInfo().getSku());
+                    String sku = infoStatus.getOnlineSalesInfo().getSku();
+                    if(sku == null || sku.isEmpty()) sku = infoStatus.getOnlineSalesInfo().getParentSku();
+                    Text skuText = new Text(sku);
+                    skuText.setWrappingWidth(80);
+
+                    Text statusText = new Text(infoStatus.getStatus());
+                    statusText.setWrappingWidth(150);
                     
-                    setGraphic(new HBox(checkBox, productNameText, variationName, skuText, stockTextField, priceTextField));
+                    setGraphic(new HBox(checkBox, productNameText, variationName, skuText, stockTextField, priceTextField, statusText));
                 }
             }
         };

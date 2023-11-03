@@ -24,6 +24,7 @@ import org.apache.poi.ss.usermodel.Workbook;
 import org.apache.poi.ss.usermodel.WorkbookFactory;
 import org.apache.poi.util.XMLHelper;
 import org.apache.poi.xssf.eventusermodel.XSSFReader;
+import org.apache.poi.xssf.usermodel.XSSFWorkbook;
 import org.xml.sax.InputSource;
 import org.xml.sax.SAXException;
 import org.xml.sax.XMLReader;
@@ -37,15 +38,47 @@ import com.colbertlum.entity.ProductStock;
 
 public class StockImputer {
 
-    /**
-     *
-     */
+    private static final String DEFAULT = "default";
+    public static final String MANUAL_SET_STOCK_STATUS = "manual set stock";
+    public static final String NOT_EXIST_PRODUCT_ID_STATUS = "not exist product id";
+    public static final String NOT_EXIST_SKU_STATUS = "not exist sku";
     private static final String SELF_MANUAL_INPUT = "self";
     private static final String COMMA_DELIMITER = ",";
     private Map<String, Double> updateRuleMap;
     private List<ProductStock> productStocks;
     private List<Meas> measList;
     private List<OnlineSalesInfoStatus> infoStatusList;
+
+    // public List<OnlineSalesInfoStatus> filterNotValidAndRemove(List<OnlineSalesInfo> onlineSalesInfos){
+    //     if(infoStatusList == null) infoStatusList = new ArrayList<OnlineSalesInfoStatus>();
+
+    //     for(OnlineSalesInfo info : onlineSalesInfos){
+    //         String sku = info.getParentSku();
+    //         if(sku == null || sku.isEmpty()){
+    //             infoStatusList.add(new OnlineSalesInfoStatus().setOnlineSalesInfo(info).setStatus("empty sku"));
+    //             continue;
+    //             // may be just ignoring it.
+    //         }
+
+    //         Meas meas = getMeas(sku);
+    //         if(meas == null){
+    //             infoStatusList.add(new OnlineSalesInfoStatus().setOnlineSalesInfo(info).setStatus("not exist sku"));
+    //             continue;
+    //         }
+
+    //         ProductStock productStock = getProductStock(meas.getId());
+    //         if(productStock == null && meas.getUpdateRule() != "disc"){
+    //             infoStatusList.add(new OnlineSalesInfoStatus().setOnlineSalesInfo(info).setStatus("not exist product id"));
+    //             continue;
+    //         }
+
+    //         if(meas.getUpdateRule() != null && meas.getUpdateRule().equals(SELF_MANUAL_INPUT)){
+                
+    //         }
+    //     }
+
+    //     return infoStatusList;
+    // }
 
     public List<OnlineSalesInfo> figureStock(List<OnlineSalesInfo> onlineStocks) throws OnlineSalesInfoException{
         
@@ -56,29 +89,30 @@ public class StockImputer {
             String sku = info.getSku();
             if(sku == null) sku = info.getParentSku();
             if(sku == null || sku.isEmpty()){
-                infoStatusList.add(new OnlineSalesInfoStatus().setOnlineSalesInfo(info).setStatus("empty sku"));
+                // infoStatusList.add(new OnlineSalesInfoStatus().setOnlineSalesInfo(info).setStatus("empty sku"));
                 continue;
+                // may be just ignoring it.
             }
 
             Meas meas = getMeas(sku);
             if(meas == null){
-                infoStatusList.add(new OnlineSalesInfoStatus().setOnlineSalesInfo(info).setStatus("not exist sku"));
+                infoStatusList.add(new OnlineSalesInfoStatus().setOnlineSalesInfo(info).setStatus(NOT_EXIST_SKU_STATUS));
                 continue;
             }
 
             ProductStock productStock = getProductStock(meas.getId());
             if(productStock == null && meas.getUpdateRule() != "disc"){
-                infoStatusList.add(new OnlineSalesInfoStatus().setOnlineSalesInfo(info).setStatus("not exist product id"));
+                infoStatusList.add(new OnlineSalesInfoStatus().setOnlineSalesInfo(info).setStatus(NOT_EXIST_PRODUCT_ID_STATUS));
                 continue;
             }
             
             double updateRuleDouble = 1d;
             if(meas.getUpdateRule() != null && meas.getUpdateRule().equals(SELF_MANUAL_INPUT)){
-                infoStatusList.add(new OnlineSalesInfoStatus().setOnlineSalesInfo(info).setStatus("manual set stock"));
+                infoStatusList.add(new OnlineSalesInfoStatus().setOnlineSalesInfo(info).setStatus(MANUAL_SET_STOCK_STATUS));
                 continue;
             }
             try {
-                if(meas.getUpdateRule() == null) updateRuleDouble = getUpdateRuleMeasure("default");
+                if(meas.getUpdateRule() == null) updateRuleDouble = getUpdateRuleMeasure(DEFAULT);
                 else updateRuleDouble = getUpdateRuleMeasure(meas.getUpdateRule());
             } catch (Throwable e) {
                 updateRuleDouble = 0.5d;
@@ -164,7 +198,8 @@ public class StockImputer {
 
     public static void saveOutputToFile(List<OnlineSalesInfo> infoList, File file) throws IOException{
         FileInputStream fileInputStream = new FileInputStream(file);
-        Workbook workbook = WorkbookFactory.create(fileInputStream);
+        XSSFWorkbook workbook = new XSSFWorkbook(fileInputStream);
+        // Workbook workbook = WorkbookFactory.create(fileInputStream);
         Sheet sheet = workbook.getSheetAt(0);
         for(OnlineSalesInfo info : infoList){
             int foundRow = info.getFoundRow();
@@ -233,8 +268,8 @@ public class StockImputer {
         
         while(lo <= hi){
             int mid = lo + (hi - lo) / 2;
-            if(productStocks.get(mid).getId().toLowerCase().compareTo(id) > 0) hi = mid-1;
-            else if(productStocks.get(mid).getId().toLowerCase().compareTo(id) < 0) lo = mid+1;
+            if(productStocks.get(mid).getId().toLowerCase().compareTo(id.toLowerCase()) > 0) hi = mid-1;
+            else if(productStocks.get(mid).getId().toLowerCase().compareTo(id.toLowerCase()) < 0) lo = mid+1;
             else return productStocks.get(mid);
         }
         return null;

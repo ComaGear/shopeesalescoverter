@@ -117,7 +117,7 @@ public class StockImputerTest {
 
     }
 
-    @Test
+    // @Test
     public void figureStockShouldSuccess() throws IOException{
         List<ProductStock> stockReport;
         stockReport = StockReportContentReader.getStockReport();

@@ -10,10 +10,12 @@ import java.util.Comparator;
 import java.util.List;
 
 import org.apache.poi.EncryptedDocumentException;
+import org.apache.poi.ss.usermodel.Cell;
 import org.apache.poi.ss.usermodel.Row;
 import org.apache.poi.ss.usermodel.Sheet;
 import org.apache.poi.ss.usermodel.Workbook;
 import org.apache.poi.ss.usermodel.WorkbookFactory;
+import org.apache.poi.xssf.usermodel.XSSFWorkbook;
 
 import com.colbertlum.entity.Meas;
 import com.colbertlum.entity.MoveOut;
@@ -21,12 +23,15 @@ import com.colbertlum.entity.MoveOut;
 import javafx.collections.ObservableList;
 import javafx.event.EventHandler;
 import javafx.scene.Scene;
+import javafx.scene.control.Alert;
 import javafx.scene.control.Button;
+import javafx.scene.control.ButtonType;
 import javafx.scene.control.ListView;
 import javafx.scene.control.MenuButton;
 import javafx.scene.control.MenuItem;
 import javafx.scene.control.SelectionMode;
 import javafx.scene.control.TextField;
+import javafx.scene.control.Alert.AlertType;
 import javafx.scene.layout.HBox;
 import javafx.scene.layout.VBox;
 import javafx.scene.text.Text;
@@ -38,9 +43,9 @@ public class SalesImputer {
     /**
      *
      */
-    private static final String ID = "ID";
-    private static final String NAME = "NAME";
-    private static final String SKU = "SKU";
+    static final String ID = "ID";
+    static final String NAME = "NAME";
+    static final String SKU = "SKU";
 
     private Stage stage;
     private ArrayList<MoveOutStatus> moveOutStatusList;
@@ -48,7 +53,6 @@ public class SalesImputer {
     private ArrayList<Meas> measList;
     private String moveOutSearchMode;
     private String meaSearchMode;
-    private String selectedMeasSku;
     private MeasImputer measImputer;
     protected boolean moveOutChanged;
     protected boolean measChanged;
@@ -100,7 +104,7 @@ public class SalesImputer {
 
         VBox moveOutListViewPanel = this.generateMoveOutListViewPanel();
 
-        VBox measListViewPanel = this.generateMeasListViewPanel(this.measList);
+        VBox measListViewPanel = measImputer.generateMeasListViewPanel(this.measList);
 
         VBox measPanel = measImputer.generatePanel();
         
@@ -109,160 +113,8 @@ public class SalesImputer {
         stage.setScene(new Scene(hBox));
     }
 
-    private VBox generateMeasListViewPanel(List<Meas> measList) {
-
-        TextField searchBar = new TextField("");
-        searchBar.setPromptText("search item by NAME");
-        searchBar.setMinWidth(300);
-        
-        MenuItem skuSelectMenuItem = new MenuItem(SKU);
-        MenuItem nameSelectMenuItem = new MenuItem(NAME);
-        MenuItem idSellectMenuItem = new MenuItem(ID);
-        MenuButton menuButton = new MenuButton("search by NAME", null, skuSelectMenuItem, nameSelectMenuItem, idSellectMenuItem);
-        menuButton.setPrefWidth(120);
-
-        measSearchMode = NAME;
-        skuSelectMenuItem.setOnAction(a ->{
-            menuButton.setText("search by SKU");
-            searchBar.setPromptText("search item by SKU");
-            measSearchMode = SKU;
-        });
-        nameSelectMenuItem.setOnAction(a ->{
-            menuButton.setText("search by NAME");
-            searchBar.setPromptText("search item by NAME");
-            measSearchMode = NAME;
-        });
-        idSellectMenuItem.setOnAction(a ->{
-            menuButton.setText("search by ID");
-            searchBar.setPromptText("search item by ID");
-            measSearchMode = ID;
-        });
-
-
-        Button editButton = new Button("edit it");
-        HBox searchHBox = new HBox(menuButton, searchBar, editButton);
-
-        Text skuHeaderText = new Text("SKU");
-        skuHeaderText.setWrappingWidth(97);
-        Text nameHeaderText = new Text(NAME);
-        nameHeaderText.setWrappingWidth(650);
-        Text rateHeader = new Text("RATE");
-        rateHeader.setWrappingWidth(100);
-        Text idHeader = new Text("ID");
-        idHeader.setWrappingWidth(100);
-        Text ruleHeader = new Text("RULE");
-        ruleHeader.setWrappingWidth(100);
-
-        HBox headerHBox = new HBox(skuHeaderText, nameHeaderText, rateHeader, idHeader, ruleHeader);
-
-        ListView<HBox> measListView = new ListView<HBox>();
-        refillMeasListView(measListView, measList);
-
-        measListView.getSelectionModel().setSelectionMode(SelectionMode.SINGLE);
-        measListView.getSelectionModel().selectedItemProperty().addListener((observable, oldValue, newValue) ->{
-            HBox hBox = observable.getValue();
-            if(hBox != null){
-                Text skuText = (Text) hBox.getChildren().get(0);
-            this.selectedMeasSku = skuText.getText();
-            }
-        });
-
-        editButton.setOnAction(a ->{
-            HBox selectedItem = measListView.getSelectionModel().getSelectedItem();
-            String relativeId = ((Text) selectedItem.getChildren().get(0)).getText();
-            
-            measList.sort(new Comparator<Meas>() {
-
-                @Override
-                public int compare(Meas o1, Meas o2) {
-                    return o1.getRelativeId().toLowerCase().compareTo(o2.getRelativeId().toLowerCase());
-                }
-                
-            });
-            Meas meas = null;
-            int lo = 0;
-            int hi = measList.size()-1;
-            while(lo <= hi) {
-                int mid = lo + (hi-lo) / 2;
-                if(measList.get(mid).getRelativeId().toLowerCase().compareTo(relativeId.toLowerCase()) > 0) hi = mid-1; 
-                else if(measList.get(mid).getRelativeId().toLowerCase().compareTo(relativeId.toLowerCase()) < 0) lo = mid+1;
-                else{
-                    meas =  measList.get(mid);
-                    break;
-                }
-            }
-
-            if(meas != null){
-                measImputer.changeButtonMode(MeasImputer.UPDATE);
-                measImputer.editMeas(meas);
-            }
-        });
-
-        searchBar.textProperty().addListener((observable, oldValue, newValue) ->{
-            ArrayList<Meas> matchedMeasList = new ArrayList<Meas>();
-            String[] splitStr = searchBar.getText().split("\\s+");
-            
-            for(Meas meas : measList){
-                String matchStr = null;
-                switch(this.measSearchMode){
-                    case NAME: 
-                        if(meas.getName() == null) continue;
-                        matchStr = meas.getName().toLowerCase();
-                        break;
-                    case SKU:
-                        if(meas.getRelativeId() == null) continue;
-                        matchStr = meas.getRelativeId().toLowerCase();
-                        break;
-                    case ID:
-                        if(meas.getId() == null) continue;
-                        matchStr = meas.getId().toLowerCase();
-                        break;
-                    default:
-                        return;
-                }
-                int i = 0;
-                int match = 0;
-
-                while(i < splitStr.length && !(matchStr.indexOf(splitStr[i].toLowerCase()) < 0)){
-
-                    int subIndex = matchStr.indexOf(splitStr[i].toLowerCase());
-                    matchStr = matchStr.substring(subIndex+splitStr[i].length(), matchStr.length());
-                    match++;
-                    i++;
-                }
-
-                if(i >= splitStr.length && match >= splitStr.length){
-                    matchedMeasList.add(meas);
-                }
-            }
-
-            measListView.getItems().clear();
-            if(newValue.isEmpty()){
-                matchedMeasList = this.measList;
-            }
-            refillMeasListView(measListView, matchedMeasList);
-        });
-
-        return new VBox(searchHBox, headerHBox, measListView);
-    }
-
-    private void refillMeasListView(ListView<HBox> measListView, List<Meas> measList) {
-        for(Meas mea :  measList){
-
-            Text relativeIdText = new Text(mea.getRelativeId());
-            relativeIdText.setWrappingWidth(90);
-            Text nameText = new Text(mea.getName());
-            nameText.setWrappingWidth(650);
-            Text measuremenText = new Text(Double.toString(mea.getMeasurement()));
-            measuremenText.setWrappingWidth(100);
-            Text idText = new Text(mea.getId());
-            idText.setWrappingWidth(100);
-            Text updateRuleText = new Text(mea.getUpdateRule());
-            updateRuleText.setWrappingWidth(100);
-
-            measListView.getItems().add(new HBox(relativeIdText, nameText, measuremenText, idText, updateRuleText));
-        }
-    }
+    // TODO Move it two method to MeasImputer
+    
 
     private MoveOutStatus getMoveOutFromStatusListByFoundRow(String foundRow) {
         if(moveOutStatusList == null) return null;
@@ -369,11 +221,13 @@ public class SalesImputer {
                 Text text = (Text)i.getChildren().get(3);
                 String foundRow = text.getText();
                 MoveOutStatus moveOutStatus = getMoveOutFromStatusListByFoundRow(foundRow);
-                moveOutStatus.getMoveOut().setSku(this.selectedMeasSku);
-                refillMoveOutListView(moveOutListView, moveOutStatusList);
+                moveOutStatus.getMoveOut().setSku(measImputer.getSelectedMeasSku());
+
 
                 this.moveOutChanged = true;
             }
+
+            refillMoveOutListView(moveOutListView, moveOutStatusList);
         });
 
         return new VBox(moveOutsSearchHBox, headerHBox, moveOutListView);
@@ -404,12 +258,25 @@ public class SalesImputer {
         
         try {
             FileInputStream fileInputStream = new FileInputStream(new File(sourcePath));
-            Workbook workbook = WorkbookFactory.create(fileInputStream);
+            XSSFWorkbook workbook = new XSSFWorkbook(fileInputStream);
+            // Workbook workbook = WorkbookFactory.create(fileInputStream);
             Sheet sheet = workbook.getSheetAt(0);
+            Row headerRow = sheet.getRow(0);
+
+            // validate column
+            Cell skuHeaderCell = headerRow.getCell(30);
+            String skuHeaderCellValue = skuHeaderCell.getStringCellValue();
+            skuHeaderCellValue.replaceAll("[^a-zA-z0-9]", "");
+            if(skuHeaderCell == null || !skuHeaderCellValue.equals("SKU")) {
+                new Alert(AlertType.ERROR, "SKU header is moved or select wrong sales file", ButtonType.OK).show();
+            }
+
             for(MoveOutStatus moveOutStatus : resolveMoveOutStatus){
                 int foundRow = moveOutStatus.getMoveOut().getFoundRow();
                 Row row = sheet.getRow(foundRow);
-                row.getCell(30).setCellValue(moveOutStatus.getMoveOut().getSku());
+                Cell skuCell = row.getCell(30);
+                if(skuCell == null) skuCell = row.createCell(30);
+                skuCell.setCellValue(moveOutStatus.getMoveOut().getSku());
             }
 
             fileInputStream.close();
@@ -461,7 +328,8 @@ public class SalesImputer {
     public Scene getScene(){
         VBox moveOutListViewPanel = this.generateMoveOutListViewPanel();
 
-        VBox measListViewPanel = this.generateMeasListViewPanel();
+        if(this.measImputer == null) this.measImputer = new MeasImputer(); 
+        VBox measListViewPanel = measImputer.generateMeasListViewPanel(measImputer.getMeasList());
 
         VBox measPanel = measImputer.generatePanel();
         

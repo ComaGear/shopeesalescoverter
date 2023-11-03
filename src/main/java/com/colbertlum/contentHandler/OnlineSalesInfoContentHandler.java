@@ -28,6 +28,8 @@ public class OnlineSalesInfoContentHandler extends DefaultHandler{
     private static final String STOCK = "Stock";
     private static final String PRODUCT_ID = "Product ID";
     private static final String VARIATION_ID = "Variation ID";
+    private static final String PRODUCT_NAME = "Product Name";
+    private static final String VARIATION_NAME = "Variation Name";
 
 
     private StylesTable stylesTable;
@@ -102,6 +104,11 @@ public class OnlineSalesInfoContentHandler extends DefaultHandler{
                     case VARIATION_ID:
                         headerPosition.put(columString, VARIATION_ID);
                         break;
+                    case PRODUCT_NAME:
+                        headerPosition.put(columString, PRODUCT_NAME);
+                        break;
+                    case VARIATION_NAME:
+                        headerPosition.put(columString, VARIATION_NAME);
                 }
                 return;
             }
@@ -128,6 +135,12 @@ public class OnlineSalesInfoContentHandler extends DefaultHandler{
                     break;
                 case VARIATION_ID:
                     info.setVariationId(string);
+                    break;
+                case PRODUCT_NAME:
+                    info.setProductName(string);
+                    break;
+                case VARIATION_NAME:
+                    info.setVariationName(string);
                     break;
                 default:
                     break;
