@@ -38,6 +38,10 @@ import com.colbertlum.entity.ProductStock;
 
 public class StockImputer {
 
+    /**
+     *
+     */
+    public static final String EMPTY_SKU = "empty sku";
     private static final String DEFAULT = "default";
     public static final String MANUAL_SET_STOCK_STATUS = "manual set stock";
     public static final String NOT_EXIST_PRODUCT_ID_STATUS = "not exist product id";
@@ -89,7 +93,7 @@ public class StockImputer {
             String sku = info.getSku();
             if(sku == null) sku = info.getParentSku();
             if(sku == null || sku.isEmpty()){
-                // infoStatusList.add(new OnlineSalesInfoStatus().setOnlineSalesInfo(info).setStatus("empty sku"));
+                infoStatusList.add(new OnlineSalesInfoStatus().setOnlineSalesInfo(info).setStatus(EMPTY_SKU));
                 continue;
                 // may be just ignoring it.
             }
@@ -121,8 +125,9 @@ public class StockImputer {
             if(availableStock > 0) {
                 int floor = (int) Math.floor(availableStock);
                 info.setQuantity(floor);
+            }else {
+                info.setQuantity(0);
             }
-            else info.setQuantity(0);
         }
 
         if(!infoStatusList.isEmpty()){

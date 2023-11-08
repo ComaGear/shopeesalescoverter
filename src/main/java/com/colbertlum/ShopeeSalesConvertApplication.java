@@ -25,6 +25,7 @@ import org.xml.sax.InputSource;
 import org.xml.sax.SAXException;
 import org.xml.sax.XMLReader;
 
+import com.colbertlum.Controller.StockImputingController;
 import com.colbertlum.Exception.OnlineSalesInfoException;
 import com.colbertlum.contentHandler.BigSellerReportContentHandler;
 import com.colbertlum.contentHandler.MeasContentHandler;
@@ -71,6 +72,7 @@ public class ShopeeSalesConvertApplication extends Application {
     private Stage priStage;
     private MeasImputer measImputer;
     private Stage dialogStage;
+    private StockImputingController stockImputingController;
     public static void main(String[] args) {
         Application.launch(args);
     }
@@ -185,28 +187,29 @@ public class ShopeeSalesConvertApplication extends Application {
                 Stage imputerStage = new Stage();
                 imputerStage.setX(priStage.getX() + 5);
                 imputerStage.setY(priStage.getY() + 5);
-                StockImputingController stockImputingController = new StockImputingController(imputerStage, e1.getOnlineSalesInfoStatusList());
+                stockImputingController = new StockImputingController(imputerStage, e1.getOnlineSalesInfoStatusList());
                 stockImputingController.initStage();
                 stockImputingController.getStage().showAndWait();
 
-                imputerStage.setOnCloseRequest(new EventHandler<WindowEvent>(){
+                // imputerStage.setOnCloseRequest(new EventHandler<WindowEvent>(){
 
-                    @Override
-                    public void handle(WindowEvent event) {
-                        List<OnlineSalesInfo> fixedOnlineInfo = stockImputingController.getFixedOnlineInfo();
-                        for(OnlineSalesInfo info : fixedOnlineInfo){
-                            StockImputer stockImputer2 = null;
-                            try {
-                                stockImputer2 = new StockImputer(StockReportContentReader.getStockReport(), getMeasList());
-                            } catch (IOException e) {
-                                Alert alert = new Alert(AlertType.ERROR);
-                                alert.setContentText(e.getMessage());
-                                alert.showAndWait();
-                            }
-                            stockImputer2.updateOnlineSalesInfo(info, onlineSalesInfoList);
-                        }
-                    }
-                });
+                //     @Override
+                //     public void handle(WindowEvent event) {
+                //         List<OnlineSalesInfo> fixedOnlineInfo = stockImputingController.getFixedOnlineInfo();
+                //         StockImputer stockImputer2 = null;
+                //         try {
+                //             stockImputer2 = new StockImputer(StockReportContentReader.getStockReport(), getMeasList());
+                //         } catch (IOException e) {
+                //             Alert alert = new Alert(AlertType.ERROR);
+                //             alert.setContentText(e.getMessage());
+                //             alert.showAndWait();
+                //         }
+                //         for(OnlineSalesInfo info : fixedOnlineInfo){
+                //             stockImputer2.updateOnlineSalesInfo(info, onlineSalesInfoList);
+                //         }
+                //         new Alert(AlertType.INFORMATION, Integer.toString(fixedOnlineInfo.get(0).getQuantity()), ButtonType.OK).show();
+                //     }
+                // });
             }
             try {
                 StockImputer.saveOutputToFile(onlineSalesInfoList, new File(getProperty(ONLINE_SALES_PATH)));

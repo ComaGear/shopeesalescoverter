@@ -115,7 +115,7 @@ public class OnlineSalesInfoContentHandler extends DefaultHandler{
 
             String column = "";
             
-            if (readingRow > 6 && headerPosition.containsKey(columString))
+            if (readingRow >= 6 && headerPosition.containsKey(columString))
                 column = headerPosition.get(columString);
             switch (column) {
                 case PARENT_SKU:

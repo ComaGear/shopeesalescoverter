@@ -1,8 +1,11 @@
-package com.colbertlum;
+package com.colbertlum.Controller;
 
 import java.util.ArrayList;
 import java.util.List;
 
+import com.colbertlum.MeasImputer;
+import com.colbertlum.StockImputer;
+import com.colbertlum.cellFactory.OnlineSalesInfoStatusCellFactory;
 import com.colbertlum.entity.Meas;
 import com.colbertlum.entity.OnlineSalesInfo;
 import com.colbertlum.entity.OnlineSalesInfoStatus;
@@ -31,6 +34,7 @@ public class StockImputingController {
     private List<OnlineSalesInfoStatus> selectOnlineSalesList;
     private MeasImputer measImputer;
     private ObservableList<OnlineSalesInfoStatus> observableOnlineInfoList;
+    private ListView<OnlineSalesInfoStatus> onlineSalesInfoStatusListView;
 
     public StockImputingController(Stage imputerStage, List<OnlineSalesInfoStatus> onlineSalesInfoStatusList) {
         this.imputerStage = imputerStage;
@@ -45,19 +49,24 @@ public class StockImputingController {
     public void initStage() {
 
         
-        ListView<OnlineSalesInfoStatus> onlineSalesInfoStatusListView = new ListView<OnlineSalesInfoStatus>();
+        onlineSalesInfoStatusListView = new ListView<OnlineSalesInfoStatus>();
         onlineSalesInfoStatusListView.setCellFactory(new OnlineSalesInfoStatusCellFactory(this.selectOnlineSalesList));
         observableOnlineInfoList = FXCollections.observableArrayList();
         observableOnlineInfoList.setAll(this.onlineSalesInfoStatusList);
         onlineSalesInfoStatusListView.getItems().setAll(observableOnlineInfoList);
 
+        MenuItem emptySkuMenuItem = new MenuItem("empty sku");
         MenuItem manualSetMenuItem = new MenuItem("manual set");
         MenuItem notExistSkuMenuItem = new MenuItem("not exist sku");
         MenuItem notExistProductIdMenuItem = new MenuItem("not exist product id");
-        MenuButton viewByMenuButton = new MenuButton("View All", null, manualSetMenuItem, notExistSkuMenuItem, notExistProductIdMenuItem);
+        MenuButton viewByMenuButton = new MenuButton("View All", null, emptySkuMenuItem, manualSetMenuItem, notExistSkuMenuItem, notExistProductIdMenuItem);
         viewByMenuButton.setPrefWidth(150);
+        emptySkuMenuItem.setOnAction(a -> {
+            viewByMenuButton.setText("view by " + emptySkuMenuItem.getText());
+            refillOnlineListView(filterStatusBy(StockImputer.EMPTY_SKU));
+        });
         manualSetMenuItem.setOnAction(a -> {
-            viewByMenuButton.setText("view by" + manualSetMenuItem.getText());
+            viewByMenuButton.setText("view by " + manualSetMenuItem.getText());
             refillOnlineListView(filterStatusBy(StockImputer.MANUAL_SET_STOCK_STATUS));
         });
         notExistSkuMenuItem.setOnAction(a -> {
@@ -69,12 +78,12 @@ public class StockImputingController {
             refillOnlineListView(filterStatusBy(StockImputer.NOT_EXIST_PRODUCT_ID_STATUS));
         });
 
-        
 
         Button applyMeasButton = new Button("apply To");
         applyMeasButton.setOnAction(a ->{
             for(OnlineSalesInfoStatus status : selectOnlineSalesList) {
                 status.getOnlineSalesInfo().setSku(measImputer.getSelectedMeasSku());
+                refillOnlineListView(new ArrayList<OnlineSalesInfoStatus>(observableOnlineInfoList));
             }
         });
 
@@ -101,7 +110,7 @@ public class StockImputingController {
 
 
 
-        VBox onlineSalesInfoPanel = new VBox(onlineSalesListViewHeader, onlineSalesInfoStatusListView);
+        VBox onlineSalesInfoPanel = new VBox(onlineListViewOperationHBox, onlineSalesListViewHeader, onlineSalesInfoStatusListView);
 
         VBox listViewPanel = new VBox(onlineSalesInfoPanel, measImputer.generateMeasListViewPanel(measImputer.getMeasList()));
 
@@ -111,12 +120,13 @@ public class StockImputingController {
     private void refillOnlineListView(List<OnlineSalesInfoStatus> onlineSalesInfoStatusList) {
         this.observableOnlineInfoList.clear();
         this.observableOnlineInfoList.addAll(onlineSalesInfoStatusList);
+        this.onlineSalesInfoStatusListView.setItems(observableOnlineInfoList);
     }
 
     private List<OnlineSalesInfoStatus> filterStatusBy(String string) {
         ArrayList<OnlineSalesInfoStatus> arrayList = new ArrayList<OnlineSalesInfoStatus>();
         for(OnlineSalesInfoStatus status : onlineSalesInfoStatusList){
-            if(status.getStatus().equals(string)) observableOnlineInfoList.add(status);
+            if(status.getStatus().equals(string)) arrayList.add(status);
         }
         return arrayList;
     }
@@ -126,7 +136,11 @@ public class StockImputingController {
     }
 
     public List<OnlineSalesInfo> getFixedOnlineInfo() {
-        return null;
+        ArrayList<OnlineSalesInfo> arrayList = new ArrayList<OnlineSalesInfo>();
+        for(OnlineSalesInfoStatus infoStatus : this.onlineSalesInfoStatusList){
+            arrayList.add(infoStatus.getOnlineSalesInfo());
+        }
+        return arrayList;
     }
 
 

@@ -67,7 +67,7 @@ public class StockImputerTest {
             List<OnlineSalesInfoStatus> onlineSalesInfoStatusList = e.getOnlineSalesInfoStatusList();
             for(OnlineSalesInfoStatus status : onlineSalesInfoStatusList){
                 OnlineSalesInfo onlineSalesInfo = status.getOnlineSalesInfo();
-                onlineSalesInfo.setQuantity(1);
+                // onlineSalesInfo.setQuantity(0);
                 stockImputer.updateOnlineSalesInfo(onlineSalesInfo, onlineSalesInfoList);
             }
         }

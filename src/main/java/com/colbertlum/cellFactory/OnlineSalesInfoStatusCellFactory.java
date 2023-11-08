@@ -1,4 +1,4 @@
-package com.colbertlum;
+package com.colbertlum.cellFactory;
 
 import java.text.DecimalFormat;
 import java.util.List;
@@ -49,21 +49,18 @@ public class OnlineSalesInfoStatusCellFactory implements Callback<ListView<Onlin
                     variationName.setWrappingWidth(200);
 
                     TextField stockTextField = new TextField();
-                    infoStatus.getOnlineSalesInfo().setQuantity(0);
                     stockTextField.setPromptText("stock");
+                    stockTextField.setText(Integer.toString(infoStatus.getOnlineSalesInfo().getQuantity()));
                     stockTextField.textProperty().addListener((observable, oldValue, newValue) -> {
                         if(!newValue.matches("\\d*")){
                             stockTextField.setText(newValue.replaceAll("[^\\d]", ""));
                         }
 
-                        if(newValue != null && !newValue.isEmpty() && Integer.parseInt(newValue) > 0) {
+                        if(newValue != null && !newValue.isEmpty() && Integer.parseInt(newValue) >= 0) {
                             infoStatus.getOnlineSalesInfo().setQuantity(Integer.parseInt(newValue));
                         }
                     });
                     stockTextField.setPrefWidth(50);
-                    stockTextField.textProperty().addListener((observable, oldValue, newValue) -> {
-
-                    });
                     
                     TextField priceTextField = new TextField(decimalFormat.format(infoStatus.getOnlineSalesInfo().getPrice()));
                     priceTextField.textProperty().addListener((observable, oldValue, newValue) -> {
