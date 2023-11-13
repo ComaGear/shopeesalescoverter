@@ -32,7 +32,7 @@ public class StockImputingController {
     private Stage imputerStage;
     private List<OnlineSalesInfoStatus> onlineSalesInfoStatusList;
     private List<OnlineSalesInfoStatus> selectOnlineSalesList;
-    private MeasImputer measImputer;
+    private MeasImputingController measImputingController;
     private ObservableList<OnlineSalesInfoStatus> observableOnlineInfoList;
     private ListView<OnlineSalesInfoStatus> onlineSalesInfoStatusListView;
 
@@ -43,7 +43,7 @@ public class StockImputingController {
         this.imputerStage.setTitle("Online Sales Info Imputer");
         this.onlineSalesInfoStatusList = onlineSalesInfoStatusList;
         this.selectOnlineSalesList = new ArrayList<OnlineSalesInfoStatus>();
-        measImputer = new MeasImputer();
+        measImputingController = new MeasImputingController();
     }
 
     public void initStage() {
@@ -82,7 +82,7 @@ public class StockImputingController {
         Button applyMeasButton = new Button("apply To");
         applyMeasButton.setOnAction(a ->{
             for(OnlineSalesInfoStatus status : selectOnlineSalesList) {
-                status.getOnlineSalesInfo().setSku(measImputer.getSelectedMeasSku());
+                status.getOnlineSalesInfo().setSku(measImputingController.getSelectedMeasSku());
                 refillOnlineListView(new ArrayList<OnlineSalesInfoStatus>(observableOnlineInfoList));
             }
         });
@@ -112,9 +112,9 @@ public class StockImputingController {
 
         VBox onlineSalesInfoPanel = new VBox(onlineListViewOperationHBox, onlineSalesListViewHeader, onlineSalesInfoStatusListView);
 
-        VBox listViewPanel = new VBox(onlineSalesInfoPanel, measImputer.generateMeasListViewPanel(measImputer.getMeasList()));
+        VBox listViewPanel = new VBox(onlineSalesInfoPanel, measImputingController.generateMeasListViewPanel());
 
-        this.imputerStage.setScene(new Scene(new HBox(listViewPanel, measImputer.generatePanel())));
+        this.imputerStage.setScene(new Scene(new HBox(listViewPanel, measImputingController.generatePanel())));
     }
 
     private void refillOnlineListView(List<OnlineSalesInfoStatus> onlineSalesInfoStatusList) {

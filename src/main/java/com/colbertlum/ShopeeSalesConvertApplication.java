@@ -25,6 +25,7 @@ import org.xml.sax.InputSource;
 import org.xml.sax.SAXException;
 import org.xml.sax.XMLReader;
 
+import com.colbertlum.Controller.SalesImputingController;
 import com.colbertlum.Controller.StockImputingController;
 import com.colbertlum.Exception.OnlineSalesInfoException;
 import com.colbertlum.contentHandler.BigSellerReportContentHandler;
@@ -231,14 +232,14 @@ public class ShopeeSalesConvertApplication extends Application {
         salesConverter.process();
         
         if(salesConverter.hasEmptySkuMoveOut() || salesConverter.hasNotExistSkuMoveOut()){
-            SalesImputer salesImputer = new SalesImputer(salesConverter.getEmptySkuMoveOuts(), salesConverter.getNotExistSkuMoveOuts());
-            salesImputer.setMeasImputer(measImputer);
-            salesImputer.setMeasList(this.measImputer.getMeasList());
+            // SalesImputer salesImputer = new SalesImputer(salesConverter.getEmptySkuMoveOuts(), salesConverter.getNotExistSkuMoveOuts());
+            // salesImputer.setMeasImputer(measImputer);
+            SalesImputingController salesImputingController = new SalesImputingController(salesConverter.getEmptySkuMoveOuts(), salesConverter.getNotExistSkuMoveOuts());
             dialogStage = new Stage();
             dialogStage.setX(priStage.getX() + 10);
             dialogStage.setY(priStage.getY() + 10);
-            salesImputer.initDialog(dialogStage);
-            salesImputer.getStage().showAndWait();
+            salesImputingController.initDialog(dialogStage);
+            salesImputingController.getStage().showAndWait();
 
             moveOuts = getMoveOuts();
             salesConverter = new SalesConverter(moveOuts, this.measImputer.getMeasList());
