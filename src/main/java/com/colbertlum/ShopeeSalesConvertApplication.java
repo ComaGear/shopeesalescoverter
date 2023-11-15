@@ -25,6 +25,7 @@ import org.xml.sax.InputSource;
 import org.xml.sax.SAXException;
 import org.xml.sax.XMLReader;
 
+import com.colbertlum.Controller.MeasImputingController;
 import com.colbertlum.Controller.SalesImputingController;
 import com.colbertlum.Controller.StockImputingController;
 import com.colbertlum.Exception.OnlineSalesInfoException;
@@ -104,7 +105,7 @@ public class ShopeeSalesConvertApplication extends Application {
             saveProperty(REPORT, report.getPath());
             reportPath = report.getPath();
         });
-        selectReportButton.setPrefWidth(80);
+        selectReportButton.setPrefWidth(100);
         HBox reportBarBox = new HBox(selectReportButton, reportPathText);
 
         TextField outputFileNameTextField = new TextField();
@@ -115,7 +116,7 @@ public class ShopeeSalesConvertApplication extends Application {
         outputFileNameTextField.setText("onlineSalesReport_" + date);
 
         Button processButton = new Button("PROCESS");
-        processButton.setPrefWidth(80);
+        processButton.setPrefWidth(100);
         
         processButton.setOnAction(e ->{
             List<MoveOut> processedMoveOuts = processSales();
@@ -129,7 +130,7 @@ public class ShopeeSalesConvertApplication extends Application {
         
         Text onlineMassUpdateFilePathText = new Text(getProperty(ONLINE_SALES_PATH));
         Button selectOnlineSalesInfoButton = new Button("select mass update item sales stock generate by shopee");
-        selectOnlineSalesInfoButton.setPrefWidth(300);
+        // selectOnlineSalesInfoButton.setPrefWidth(400);
         selectOnlineSalesInfoButton.setOnAction(e ->{
             File onlineMassUpdateSalesFile = fileChooser.showOpenDialog(primaryStage);
             onlineMassUpdateFilePathText.setText(onlineMassUpdateSalesFile.getPath());
@@ -232,8 +233,6 @@ public class ShopeeSalesConvertApplication extends Application {
         salesConverter.process();
         
         if(salesConverter.hasEmptySkuMoveOut() || salesConverter.hasNotExistSkuMoveOut()){
-            // SalesImputer salesImputer = new SalesImputer(salesConverter.getEmptySkuMoveOuts(), salesConverter.getNotExistSkuMoveOuts());
-            // salesImputer.setMeasImputer(measImputer);
             SalesImputingController salesImputingController = new SalesImputingController(salesConverter.getEmptySkuMoveOuts(), salesConverter.getNotExistSkuMoveOuts());
             dialogStage = new Stage();
             dialogStage.setX(priStage.getX() + 10);
@@ -342,10 +341,31 @@ public class ShopeeSalesConvertApplication extends Application {
         Menu helpMenu = new Menu("Help");
         menuBar.getMenus().add(helpMenu);
         
-        MenuItem menuItem = new MenuItem("Settings");
-        helpMenu.getItems().add(menuItem);
-        menuItem.setOnAction(e ->{
+        MenuItem settingMenuItem = new MenuItem("Settings");
+        helpMenu.getItems().add(settingMenuItem);
+        settingMenuItem.setOnAction(e ->{
             this.pushScene(initSettingScene());
+        });
+
+        MenuItem measMenuItem = new MenuItem("modify Measurement");
+        helpMenu.getItems().add(measMenuItem);
+        measMenuItem.setOnAction(e ->{
+            MeasImputingController measImputingController = new MeasImputingController();
+            Stage stage = new Stage();
+            stage.setX(priStage.getX() + 5);
+            stage.setY(priStage.getY() + 5);
+
+            measImputingController.initDialog(stage);
+            stage.showAndWait();
+
+            stage.setOnCloseRequest(new EventHandler<WindowEvent>() {
+
+                @Override
+                public void handle(WindowEvent event) {
+                    measImputingController.close();
+                }
+                
+            });
         });
 
         return menuBar;

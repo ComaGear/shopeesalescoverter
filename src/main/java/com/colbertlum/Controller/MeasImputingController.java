@@ -13,6 +13,7 @@ import com.colbertlum.entity.UOM;
 
 import javafx.collections.FXCollections;
 import javafx.collections.ObservableList;
+import javafx.scene.Scene;
 import javafx.scene.control.Button;
 import javafx.scene.control.Label;
 import javafx.scene.control.ListView;
@@ -24,6 +25,7 @@ import javafx.scene.control.Tooltip;
 import javafx.scene.layout.HBox;
 import javafx.scene.layout.VBox;
 import javafx.scene.text.Text;
+import javafx.stage.Stage;
 
 public class MeasImputingController {
 
@@ -37,7 +39,7 @@ public class MeasImputingController {
     private Button createButton;
     private TextField measurementField;
     private TextField updateRuleField;
-    private Meas selectMeas;
+    private Meas toEditMeas;
 
     public MeasImputer getMeasImputer() {
         return measImputer;
@@ -263,8 +265,9 @@ public class MeasImputingController {
     }
 
     public void editMeas(Meas meas){
-        selectedMeasList.clear();
-        selectedMeasList.add(meas);
+        // selectedMeasList.clear();
+        // selectedMeasList.add(meas);
+        toEditMeas = meas;
         changeButtonMode(MeasImputer.UPDATE);
         this.productNameField.setText(meas.getName());
         this.measurementField.setText(Double.toString(meas.getMeasurement()));
@@ -292,7 +295,7 @@ public class MeasImputingController {
         updateRuleField = new TextField();
         updateRuleField.setPromptText("default was 3t");
 
-        createButton = new Button("create");
+        createButton = new Button(MeasImputer.CREATE);
         createButton.setPrefWidth(300);
         changeButtonMode(MeasImputer.CREATE);
         createButton.setOnAction(a-> {
@@ -322,11 +325,11 @@ public class MeasImputingController {
                     break;
                 case MeasImputer.UPDATE:
                     
-                    if(selectMeas == null 
+                    if(toEditMeas == null 
                         || measurementField.getText() == null || measurementField.getText().isEmpty()) return;
 
-                    selectMeas.setUpdateRule(updateRuleField.getText());
-                    selectMeas.setMeasurement(Double.parseDouble(measurementField.getText()));
+                    toEditMeas.setUpdateRule(updateRuleField.getText());
+                    toEditMeas.setMeasurement(Double.parseDouble(measurementField.getText()));
                     changeButtonMode(MeasImputer.CREATE);
                     
                     measImputer.setMeasChange(true);
@@ -339,7 +342,7 @@ public class MeasImputingController {
             this.measurementField.clear();
             this.updateRuleField.clear();
             parentSkuField.clear();
-            this.selectMeas = null;
+            this.toEditMeas = null;
             selectedProductId = null;
         });
 
@@ -360,5 +363,14 @@ public class MeasImputingController {
 
     public void close() {
         if(measImputer != null && measImputer.isMeasChanged()) measImputer.saveChange();
+    }
+
+    public Stage initDialog(Stage stage) {
+        HBox hBox = new HBox(this.generateMeasListViewPanel(), this.generatePanel());
+
+        stage.setScene(new Scene(hBox));
+        stage.setTitle("Measurement Editor");
+
+        return stage;
     }
 }

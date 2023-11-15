@@ -36,7 +36,7 @@ public class SalesImputingController {
     private ArrayList<MoveOutStatus> selectedMoveOutStatusList;
     private ObservableList<MoveOutStatus> observableMoveOutStatusList;
 
-    public void initDialog(Stage stage){
+    public void initDialog(Stage stage){    
         this.stage = stage;
         
         stage.setTitle("sales Imputer");
@@ -54,7 +54,6 @@ public class SalesImputingController {
             }
             
         });
-
 
         VBox moveOutListViewPanel = this.generateMoveOutListViewPanel();
 
