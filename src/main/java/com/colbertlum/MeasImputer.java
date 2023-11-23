@@ -168,14 +168,15 @@ public class MeasImputer {
         int last = mid;
         int letter = 97; // ASCII for 'b';
         int prefixLetter = 0;
-        for( ; measList.get(last).getRelativeId().contains(parentOriginSku); last++){
+        while(last < measList.size() && measList.get(last).getRelativeId().contains(parentOriginSku)){
             letter++;
             if(letter > 122){
                 letter = 97;
                 prefixLetter = 90;
             }
-        }
 
+            last++;
+        }
         if(prefixLetter == 0){
             return parentOriginSku + "-" + ((char) letter);
         }

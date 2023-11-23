@@ -13,6 +13,7 @@ import com.colbertlum.entity.UOM;
 
 import javafx.collections.FXCollections;
 import javafx.collections.ObservableList;
+import javafx.event.EventHandler;
 import javafx.scene.Scene;
 import javafx.scene.control.Button;
 import javafx.scene.control.Label;
@@ -26,6 +27,7 @@ import javafx.scene.layout.HBox;
 import javafx.scene.layout.VBox;
 import javafx.scene.text.Text;
 import javafx.stage.Stage;
+import javafx.stage.WindowEvent;
 
 public class MeasImputingController {
 
@@ -40,6 +42,7 @@ public class MeasImputingController {
     private TextField measurementField;
     private TextField updateRuleField;
     private Meas toEditMeas;
+    private TextField parentSkuField;
 
     public MeasImputer getMeasImputer() {
         return measImputer;
@@ -288,7 +291,7 @@ public class MeasImputingController {
         });
         measurementField.setPromptText("measure size default was 1.00");
         Label parentSkuLabel = new Label("parent Sku");
-        TextField parentSkuField = new TextField();
+        parentSkuField = new TextField();
         parentSkuField.setTooltip(new Tooltip("connect meas with parent sku id as child sku"));
         parentSkuField.setPromptText("grouping with same sku");
         Label updateRuleLabel = new Label("Update Rule");
@@ -341,7 +344,7 @@ public class MeasImputingController {
             this.productNameField.clear();
             this.measurementField.clear();
             this.updateRuleField.clear();
-            parentSkuField.clear();
+            this.parentSkuField.clear();
             this.toEditMeas = null;
             selectedProductId = null;
         });
@@ -370,6 +373,14 @@ public class MeasImputingController {
 
         stage.setScene(new Scene(hBox));
         stage.setTitle("Measurement Editor");
+
+        stage.setOnCloseRequest(new EventHandler<WindowEvent>() {
+
+            @Override
+            public void handle(WindowEvent event) {
+                if(measImputer != null && measImputer.isMeasChanged()) measImputer.saveChange();
+            }
+        });
 
         return stage;
     }
