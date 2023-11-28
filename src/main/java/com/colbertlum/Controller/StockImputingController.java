@@ -21,6 +21,7 @@ import javafx.scene.control.ListView;
 import javafx.scene.control.Menu;
 import javafx.scene.control.MenuButton;
 import javafx.scene.control.MenuItem;
+import javafx.scene.control.TextField;
 import javafx.scene.layout.HBox;
 import javafx.scene.layout.VBox;
 import javafx.scene.text.Text;
@@ -87,7 +88,28 @@ public class StockImputingController {
             }
         });
 
-        HBox onlineListViewOperationHBox = new HBox(viewByMenuButton, applyMeasButton);
+        TextField stockField = new TextField();
+        stockField.setPromptText("stock apply to all");
+        stockField.setPrefWidth(80);
+        stockField.textProperty().addListener((observable, oldValue, newValue) -> {
+            if(!newValue.matches("\\d*")){
+                stockField.setText(newValue.replaceAll("[^\\d]", ""));
+            }
+        });
+        Button applyStockButton = new Button("Apply Stock to");
+        applyStockButton.setOnAction(a -> {
+            int stock = Integer.parseInt(stockField.getText());
+            stockField.clear();
+
+            for(OnlineSalesInfoStatus infoStatus : selectOnlineSalesList){
+                infoStatus.getOnlineSalesInfo().setQuantity(stock);
+            }
+
+            selectOnlineSalesList.clear();
+            refillOnlineListView(new ArrayList<OnlineSalesInfoStatus>(observableOnlineInfoList));
+        });
+
+        HBox onlineListViewOperationHBox = new HBox(viewByMenuButton, applyMeasButton, applyStockButton, stockField);
 
         Text checkBoxText = new Text();
         checkBoxText.setWrappingWidth(30);
