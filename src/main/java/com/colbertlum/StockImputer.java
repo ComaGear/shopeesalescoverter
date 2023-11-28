@@ -281,6 +281,7 @@ public class StockImputer {
     }
 
     private Meas getMeas(String sku){
+        sku = sku.toLowerCase();
         int lo = 0;
         int hi = measList.size()-1;
         
