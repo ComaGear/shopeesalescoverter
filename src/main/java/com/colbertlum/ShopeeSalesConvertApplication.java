@@ -410,6 +410,8 @@ public class ShopeeSalesConvertApplication extends Application {
         uomPathText.setFont(font);
         Text measPathText = new Text(getProperty(MEAS));
         measPathText.setFont(font);
+        Text stockReportPathText = new Text(getProperty(STOCK_REPORT_PATH));
+        stockReportPathText.setFont(font);
         Text outputPathText = new Text(getProperty(OUTPUT_PATH));
         outputPathText.setFont(font);
 
@@ -433,6 +435,15 @@ public class ShopeeSalesConvertApplication extends Application {
             saveProperty(MEAS, uomFile.getPath());
         });
 
+        Button selectStockReportButton = new Button("select stock report from Biztory");
+        selectStockReportButton.setPrefWidth(buttonWidth);
+        selectStockReportButton.setOnAction(e ->{
+            File stockReportFile = fileChooser.showOpenDialog(priStage);
+            if(!stockReportFile.exists()) return;
+            stockReportPathText.setText(stockReportFile.getPath());
+            saveProperty(STOCK_REPORT_PATH, stockReportFile.getPath());
+        });
+
         DirectoryChooser folderChooser = new DirectoryChooser();
         Button selectOutputPathButton = new Button("selct output generate path");
         selectOutputPathButton.setPrefWidth(buttonWidth);
@@ -445,7 +456,7 @@ public class ShopeeSalesConvertApplication extends Application {
 
 
 
-        VBox vBox = new VBox(backButton, measPathText, selectMeasButton, uomPathText, selectUomButton, outputPathText, selectOutputPathButton);
+        VBox vBox = new VBox(backButton, measPathText, selectMeasButton, uomPathText, selectUomButton, stockReportPathText, selectStockReportButton, outputPathText, selectOutputPathButton);
 
 
         return new Scene(vBox, 600, 400);

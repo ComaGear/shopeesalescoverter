@@ -12,6 +12,7 @@ import com.colbertlum.entity.OnlineSalesInfoStatus;
 
 import javafx.collections.FXCollections;
 import javafx.collections.ObservableList;
+import javafx.event.EventHandler;
 import javafx.scene.Scene;
 import javafx.scene.control.Button;
 import javafx.scene.control.ButtonType;
@@ -45,10 +46,13 @@ public class StockImputingController {
         this.onlineSalesInfoStatusList = onlineSalesInfoStatusList;
         this.selectOnlineSalesList = new ArrayList<OnlineSalesInfoStatus>();
         measImputingController = new MeasImputingController();
+
+        imputerStage.setOnCloseRequest(e ->{
+            measImputingController.close();
+        });
     }
 
     public void initStage() {
-
         
         onlineSalesInfoStatusListView = new ListView<OnlineSalesInfoStatus>();
         onlineSalesInfoStatusListView.setCellFactory(new OnlineSalesInfoStatusCellFactory(this.selectOnlineSalesList));
@@ -84,6 +88,7 @@ public class StockImputingController {
         applyMeasButton.setOnAction(a ->{
             for(OnlineSalesInfoStatus status : selectOnlineSalesList) {
                 status.getOnlineSalesInfo().setSku(measImputingController.getSelectedMeasSku());
+                selectOnlineSalesList.clear(); // TODO check this works.
                 refillOnlineListView(new ArrayList<OnlineSalesInfoStatus>(observableOnlineInfoList));
             }
         });

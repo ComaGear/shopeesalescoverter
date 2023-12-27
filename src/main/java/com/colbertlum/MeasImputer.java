@@ -224,11 +224,15 @@ public class MeasImputer {
 
                 Cell updateRuleCell = row.getCell(3);
                 if(updateRuleCell == null) updateRuleCell = row.createCell(3);
+
+                Cell productNameCell = row.getCell(4);
+                if(productNameCell == null) productNameCell = row.createCell(4);
                 
                 skuCell.setCellValue(meas.getRelativeId());
                 idCell.setCellValue(meas.getId());
                 measurementCell.setCellValue(meas.getMeasurement());
                 updateRuleCell.setCellValue(meas.getUpdateRule());
+                productNameCell.setCellValue(meas.getName());
             }
 
             fileInputStream.close();

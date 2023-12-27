@@ -5,9 +5,12 @@ import java.util.List;
 import com.colbertlum.entity.Meas;
 import com.colbertlum.entity.OnlineSalesInfoStatus;
 
+import javafx.scene.control.Button;
 import javafx.scene.control.CheckBox;
 import javafx.scene.control.ListCell;
 import javafx.scene.control.ListView;
+import javafx.scene.input.Clipboard;
+import javafx.scene.input.ClipboardContent;
 import javafx.scene.layout.HBox;
 import javafx.scene.text.Text;
 import javafx.util.Callback;
@@ -15,6 +18,8 @@ import javafx.util.Callback;
 public class MeasCellFactory implements Callback<ListView<Meas>, ListCell<Meas>> {
 
     private List<Meas> selectedMeasList;
+
+    Clipboard clipboard = Clipboard.getSystemClipboard();
 
     public Meas getSelectedMeas() {
         return selectedMeasList.get(0);
@@ -43,20 +48,27 @@ public class MeasCellFactory implements Callback<ListView<Meas>, ListCell<Meas>>
                     }
                 });
                 checkBox.setPrefWidth(20);
-                
 
                 Text relativeIdText = new Text(meas.getRelativeId());
                 relativeIdText.setWrappingWidth(90);
                 Text nameText = new Text(meas.getName());
-                nameText.setWrappingWidth(650);
+                nameText.setWrappingWidth(550);
                 Text measuremenText = new Text(Double.toString(meas.getMeasurement()));
-                measuremenText.setWrappingWidth(100);
+                measuremenText.setWrappingWidth(50);
                 Text idText = new Text(meas.getId());
                 idText.setWrappingWidth(100);
                 Text updateRuleText = new Text(meas.getUpdateRule());
-                updateRuleText.setWrappingWidth(100);
+                updateRuleText.setWrappingWidth(50);
 
-                setGraphic(new HBox(checkBox, relativeIdText, nameText, measuremenText, idText, updateRuleText));
+                Button copySkuButton = new Button("copy");
+                copySkuButton.setOnAction(e ->{
+                    ClipboardContent clipboardContent = new ClipboardContent();
+                    clipboardContent.putString(meas.getRelativeId());
+                    clipboard.setContent(clipboardContent);
+                });
+
+                setGraphic(new HBox(checkBox, relativeIdText, nameText, measuremenText, idText, updateRuleText, copySkuButton));
+
             }
         };
     }

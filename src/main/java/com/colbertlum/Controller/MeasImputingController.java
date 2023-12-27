@@ -43,6 +43,9 @@ public class MeasImputingController {
     private TextField updateRuleField;
     private Meas toEditMeas;
     private TextField parentSkuField;
+    private TextField searchBar;
+    private ListView<Meas> measListView;
+    private Button updateIdButton;
 
     public MeasImputer getMeasImputer() {
         return measImputer;
@@ -52,6 +55,46 @@ public class MeasImputingController {
         this.observableMeasList.clear();
         this.observableMeasList.addAll(measList);
         measListView.setItems(observableMeasList);
+    }
+
+    private void refeshListView(){
+        ArrayList<Meas> matchedMeasList = new ArrayList<Meas>();
+        String[] splitStr = searchBar.getText().split("\\s+");
+        
+        for(Meas meas : measImputer.getMeasList()){
+            String matchStr = null;
+            switch(this.measSearchMode){
+                case SalesImputer.NAME: 
+                    if(meas.getName() == null) continue;
+                    matchStr = meas.getName().toLowerCase();
+                    break;
+                case SalesImputer.SKU:
+                    if(meas.getRelativeId() == null) continue;
+                    matchStr = meas.getRelativeId().toLowerCase();
+                    break;
+                default:
+                    return;
+            }
+            int i = 0;
+            int match = 0;
+
+            while(i < splitStr.length && !(matchStr.indexOf(splitStr[i].toLowerCase()) < 0)){
+
+                int subIndex = matchStr.indexOf(splitStr[i].toLowerCase());
+                matchStr = matchStr.substring(subIndex+splitStr[i].length(), matchStr.length());
+                match++;
+                i++;
+            }
+
+            if(i >= splitStr.length && match >= splitStr.length){
+                matchedMeasList.add(meas);
+            }
+        }
+
+        if(searchBar.getText().isEmpty()){
+            matchedMeasList = measImputer.getMeasList();
+        }
+        refillMeasListView(measListView, matchedMeasList);
     }
 
     public VBox generatedUOMListView(){
@@ -118,13 +161,23 @@ public class MeasImputingController {
             }
         });
 
-        return new VBox(new HBox(searchBar, useButton), uomListView);
+        updateIdButton = new Button("Update");
+        updateIdButton.setDisable(true);
+        updateIdButton.setOnAction(e->{
+            HBox selectedItem = uomListView.getSelectionModel().getSelectedItem();
+            Text idText = (Text) selectedItem.getChildren().get(1);
+            
+            if(toEditMeas == null) return;
+            toEditMeas.setId(idText.getText());
+        });
+
+        return new VBox(new HBox(searchBar, useButton, updateIdButton), uomListView);
         
     }
 
     public VBox generateMeasListViewPanel() {
 
-        TextField searchBar = new TextField("");
+        searchBar = new TextField("");
         searchBar.setPromptText("search item by NAME");
         searchBar.setMinWidth(300);
         
@@ -152,17 +205,19 @@ public class MeasImputingController {
         Text skuHeaderText = new Text("SKU");
         skuHeaderText.setWrappingWidth(117);
         Text nameHeaderText = new Text(SalesImputer.NAME);
-        nameHeaderText.setWrappingWidth(650);
+        nameHeaderText.setWrappingWidth(550);
         Text rateHeader = new Text("RATE");
-        rateHeader.setWrappingWidth(100);
+        rateHeader.setWrappingWidth(50);
         Text idHeader = new Text("ID");
         idHeader.setWrappingWidth(100);
         Text ruleHeader = new Text("RULE");
-        ruleHeader.setWrappingWidth(100);
+        ruleHeader.setWrappingWidth(50);
+        Text copyHeader = new Text("COPY SKU");
+        copyHeader.setWrappingWidth(80);
 
-        HBox headerHBox = new HBox(skuHeaderText, nameHeaderText, rateHeader, idHeader, ruleHeader);
+        HBox headerHBox = new HBox(skuHeaderText, nameHeaderText, rateHeader, idHeader, ruleHeader, copyHeader);
 
-        ListView<Meas> measListView = new ListView<Meas>();
+        measListView = new ListView<Meas>();
         this.selectedMeasList = new ArrayList<Meas>();
         measListView.setCellFactory(new MeasCellFactory(selectedMeasList));
         observableMeasList = FXCollections.observableArrayList(measImputer.getMeasList());
@@ -259,10 +314,14 @@ public class MeasImputingController {
             case MeasImputer.CREATE:
                 this.buttonMode = MeasImputer.CREATE;
                 if(this.createButton != null) this.createButton.setText(MeasImputer.CREATE);
+
+                if(updateIdButton != null) updateIdButton.setDisable(true);
                 break;
             case MeasImputer.UPDATE:
                 this.buttonMode = MeasImputer.UPDATE;
                 if(this.createButton != null) this.createButton.setText(MeasImputer.UPDATE);
+
+                if(updateIdButton != null) updateIdButton.setDisable(false);
                 break;
         }
     }
@@ -325,6 +384,8 @@ public class MeasImputingController {
                     measImputer.getMeasList().add(meas);
                     measImputer.imputeNameField(measImputer.getMeasList());
                     measImputer.setMeasChange(true);
+
+                    refeshListView();
                     break;
                 case MeasImputer.UPDATE:
                     
@@ -336,6 +397,8 @@ public class MeasImputingController {
                     changeButtonMode(MeasImputer.CREATE);
                     
                     measImputer.setMeasChange(true);
+
+                    refeshListView();
                     break;
                 default:
                     break;
