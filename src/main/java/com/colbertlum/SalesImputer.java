@@ -88,18 +88,37 @@ public class SalesImputer {
             Row headerRow = sheet.getRow(0);
 
             // validate column
-            Cell skuHeaderCell = headerRow.getCell(30);
+            Cell skuHeaderCell;
+            if(ShopeeSalesConvertApplication.getProperty(ShopeeSalesConvertApplication.DATA_SOURCE_TYPE)
+            .equals(ShopeeSalesConvertApplication.SHOPEE_ORDER)){
+                skuHeaderCell = headerRow.getCell(13);
+            } else{
+                skuHeaderCell = headerRow.getCell(30);
+            }
             String skuHeaderCellValue = skuHeaderCell.getStringCellValue();
             skuHeaderCellValue.replaceAll("[^a-zA-z0-9]", "");
-            if(skuHeaderCell == null || !skuHeaderCellValue.equals("SKU")) {
+            if(skuHeaderCell == null || 
+                (!skuHeaderCellValue.equals("SKU") && !(skuHeaderCellValue.equals("SKU Reference No.")))) {
                 new Alert(AlertType.ERROR, "SKU header is moved or select wrong sales file", ButtonType.OK).show();
+            }
+
+            int skuPosition = -1;
+            if(ShopeeSalesConvertApplication.getProperty(ShopeeSalesConvertApplication.DATA_SOURCE_TYPE)
+            .equals(ShopeeSalesConvertApplication.SHOPEE_ORDER)){
+                skuPosition = 13;
+            } else if(ShopeeSalesConvertApplication.getProperty(ShopeeSalesConvertApplication.DATA_SOURCE_TYPE)
+            .equals(ShopeeSalesConvertApplication.BIG_SELLER)){
+                skuPosition = 30;
+            } else {
+                new Alert(AlertType.ERROR, "choose valid data source type", ButtonType.OK).showAndWait();
             }
 
             for(MoveOutStatus moveOutStatus : resolveMoveOutStatus){
                 int foundRow = moveOutStatus.getMoveOut().getFoundRow();
                 Row row = sheet.getRow(foundRow);
-                Cell skuCell = row.getCell(30);
-                if(skuCell == null) skuCell = row.createCell(30);
+                Cell skuCell = row.getCell(skuPosition);
+  
+                if(skuCell == null) skuCell = row.createCell(skuPosition);
                 skuCell.setCellValue(moveOutStatus.getMoveOut().getSku());
             }
 

@@ -8,6 +8,7 @@ import java.io.IOException;
 import java.io.InputStream;
 import java.time.LocalDate;
 import java.util.ArrayList;
+import java.util.Iterator;
 import java.util.List;
 import java.util.Properties;
 import java.util.Stack;
@@ -31,11 +32,13 @@ import com.colbertlum.Controller.StockImputingController;
 import com.colbertlum.Exception.OnlineSalesInfoException;
 import com.colbertlum.contentHandler.BigSellerReportContentHandler;
 import com.colbertlum.contentHandler.MeasContentHandler;
+import com.colbertlum.contentHandler.ShopeeOrderReportContentHandler;
 import com.colbertlum.contentHandler.StockReportContentReader;
 import com.colbertlum.contentHandler.uomContentHandler;
 import com.colbertlum.entity.Meas;
 import com.colbertlum.entity.MoveOut;
 import com.colbertlum.entity.OnlineSalesInfo;
+import com.colbertlum.entity.Order;
 import com.colbertlum.entity.UOM;
 
 import javafx.application.Application;
@@ -45,8 +48,10 @@ import javafx.scene.Scene;
 import javafx.scene.control.Alert;
 import javafx.scene.control.Button;
 import javafx.scene.control.ButtonType;
+import javafx.scene.control.DatePicker;
 import javafx.scene.control.Menu;
 import javafx.scene.control.MenuBar;
+import javafx.scene.control.MenuButton;
 import javafx.scene.control.MenuItem;
 import javafx.scene.control.Separator;
 import javafx.scene.control.TextField;
@@ -63,6 +68,9 @@ import javafx.stage.WindowEvent;
 public class ShopeeSalesConvertApplication extends Application {
 
 
+    public static final String BIG_SELLER = "Big Seller";
+    public static final String SHOPEE_ORDER = "Shopee Order";
+    public static final String DATA_SOURCE_TYPE = "data-source-type";
     private static final String OUTPUT_PATH = "output-path";
     public static final String MEAS = "meas";
     private static final String UOM = "uom";
@@ -75,6 +83,8 @@ public class ShopeeSalesConvertApplication extends Application {
     private MeasImputer measImputer;
     private Stage dialogStage;
     private StockImputingController stockImputingController;
+    private LocalDate startDate;
+    private LocalDate endDate;
     public static void main(String[] args) {
         Application.launch(args);
     }
@@ -88,30 +98,51 @@ public class ShopeeSalesConvertApplication extends Application {
         primaryStage.setWidth(1000);
         primaryStage.setHeight(500);
 
+        Font font = new Font(14);
+
         MenuBar menuBar = setupMenuBar();
 
         String reportPathString = getProperty(REPORT);
         Text reportPathText = new Text(reportPathString);
+        reportPathText.setFont(font);
 
         FileChooser fileChooser = new FileChooser();
         fileChooser.getExtensionFilters().add(new FileChooser.ExtensionFilter("excel File", "*.xlsx"));
         // fileChooser.setInitialDirectory(new File(pathname));
 
-        Button selectReportButton = new Button("select report");
-        selectReportButton.setOnAction(e -> {
+        Button selectBigSellerReportButton = new Button("select report");
+        selectBigSellerReportButton.setOnAction(e -> {
             File report = fileChooser.showOpenDialog(priStage);
             if(report == null) return;
             reportPathText.setText(report.getPath());
             saveProperty(REPORT, report.getPath());
             reportPath = report.getPath();
         });
-        selectReportButton.setPrefWidth(100);
-        HBox reportBarBox = new HBox(selectReportButton, reportPathText);
+        selectBigSellerReportButton.setPrefWidth(100);
+        HBox reportBarBox = new HBox(selectBigSellerReportButton, reportPathText);
+        
+        DatePicker startDatePicker = new DatePicker(LocalDate.now());
+        DatePicker endDatePicker = new DatePicker(LocalDate.now());
+        startDatePicker.setPrefWidth(120);
+        endDatePicker.setPrefWidth(120);
+        startDatePicker.setOnAction(e ->{
+            startDate = startDatePicker.getValue();
+        });
+        endDatePicker.setOnAction(e ->{
+            endDate = endDatePicker.getValue();
+        });
+
+        Text startText = new Text("Start Date : ");
+        Text endText = new Text("End Date : ");
+        startText.setFont(font);
+        endText.setFont(font);
+        HBox datePickerHBox = new HBox(startText, startDatePicker, endText, endDatePicker);
 
         TextField outputFileNameTextField = new TextField();
         LocalDate now = LocalDate.now();
         String date = now.getYear() + "." + now.getMonthValue() + "." + now.getDayOfMonth();
         Text outputPathText = new Text(getProperty(OUTPUT_PATH));
+        outputPathText.setFont(font);
         outputFileNameTextField.setPrefWidth(200);
         outputFileNameTextField.setText("onlineSalesReport_" + date);
 
@@ -129,6 +160,7 @@ public class ShopeeSalesConvertApplication extends Application {
         Separator separator = new Separator();
         
         Text onlineMassUpdateFilePathText = new Text(getProperty(ONLINE_SALES_PATH));
+        onlineMassUpdateFilePathText.setFont(font);
         Button selectOnlineSalesInfoButton = new Button("select mass update item sales stock generate by shopee");
         // selectOnlineSalesInfoButton.setPrefWidth(400);
         selectOnlineSalesInfoButton.setOnAction(e ->{
@@ -142,8 +174,12 @@ public class ShopeeSalesConvertApplication extends Application {
         
         VBox massUpdateBox = new VBox(new HBox(selectOnlineSalesInfoButton, imputeStockButton), onlineMassUpdateFilePathText);
 
-
-        VBox vBox = new VBox(menuBar, reportBarBox, processBarBox, separator, massUpdateBox);
+        VBox vBox;
+        if(getProperty(DATA_SOURCE_TYPE).equals(SHOPEE_ORDER)) {
+            vBox = new VBox(menuBar, reportBarBox, datePickerHBox, processBarBox, separator, massUpdateBox);
+        } else {
+            vBox = new VBox(menuBar, reportBarBox, processBarBox, separator, massUpdateBox);
+        }
         Scene scene = new Scene(vBox, 1000, 500);
         
         // primaryStage.setScene(scene);
@@ -241,7 +277,7 @@ public class ShopeeSalesConvertApplication extends Application {
             salesImputingController.getStage().showAndWait();
 
             moveOuts = getMoveOuts();
-            salesConverter = new SalesConverter(moveOuts, this.measImputer.getMeasList());
+            salesConverter = new SalesConverter(moveOuts, new MeasImputer().getMeasList());
             salesConverter.process();
         }
 
@@ -316,9 +352,15 @@ public class ShopeeSalesConvertApplication extends Application {
             if(pathStr == null) pathStr = reportPath;
             File file = new File(pathStr);
             XSSFReader xssfReader = new XSSFReader(OPCPackage.open(file));
-            BigSellerReportContentHandler contentHandler = new BigSellerReportContentHandler(xssfReader.getSharedStringsTable(), xssfReader.getStylesTable(), moveOuts);
             XMLReader xmlReader = XMLHelper.newXMLReader();
-            xmlReader.setContentHandler(contentHandler);
+            if(getProperty(DATA_SOURCE_TYPE).equals(SHOPEE_ORDER)) {
+                ShopeeOrderReportContentHandler contentHandler = new ShopeeOrderReportContentHandler(xssfReader.getSharedStringsTable(), xssfReader.getStylesTable(), moveOuts);
+                xmlReader.setContentHandler(contentHandler);
+
+            } else {
+                BigSellerReportContentHandler contentHandler = new BigSellerReportContentHandler(xssfReader.getSharedStringsTable(), xssfReader.getStylesTable(), moveOuts);
+                xmlReader.setContentHandler(contentHandler);
+            }
             InputSource sheetData = new InputSource(xssfReader.getSheetsData().next());
             xmlReader.parse(sheetData);
         } catch (IOException | OpenXML4JException e) {
@@ -330,6 +372,35 @@ public class ShopeeSalesConvertApplication extends Application {
         } catch (ParserConfigurationException e) {
             // TODO Auto-generated catch block
             e.printStackTrace();
+        }
+
+        // filtering by start and end date.
+        if(startDate == null || endDate == null){
+            new Alert(AlertType.ERROR, "please choose valid date.", ButtonType.OK).showAndWait();
+            throw new IllegalArgumentException("not valid start or end date");
+        } 
+        if(startDate.isAfter(endDate)){
+            new Alert(AlertType.ERROR, "start date could not greater than end date", ButtonType.OK).showAndWait();
+            throw new IllegalArgumentException("not valid start or end date");
+        } 
+        if(getProperty(DATA_SOURCE_TYPE).equals(SHOPEE_ORDER)) {
+
+            ArrayList<MoveOut> newMoveOuts = new ArrayList<MoveOut>();
+
+            for(MoveOut moveOut : moveOuts){
+
+                String status = moveOut.getOrder().getStatus();
+                if(Order.STATUS_CANCEL.equals(status) || Order.STATUS_UNPAID.equals(status) || Order.STATUS_TO_SHIP.equals(status)){
+                    continue;
+                }
+                LocalDate shipOutDate = moveOut.getOrder().getShipOutDate();
+
+                if(shipOutDate.isBefore(startDate) || shipOutDate.isAfter(endDate)){
+                    continue;
+                }
+                newMoveOuts.add(moveOut);
+            }
+            return newMoveOuts;
         }
 
         return moveOuts;
@@ -414,15 +485,17 @@ public class ShopeeSalesConvertApplication extends Application {
         stockReportPathText.setFont(font);
         Text outputPathText = new Text(getProperty(OUTPUT_PATH));
         outputPathText.setFont(font);
+        Text dataSourceText = new Text("process sales from " + getProperty(DATA_SOURCE_TYPE));
+        dataSourceText.setFont(font);
 
-        FileChooser fileChooser = new FileChooser();
-        fileChooser.getExtensionFilters().add(new FileChooser.ExtensionFilter("excel File", "*.xlsx"));
+        FileChooser xlsxFileChooser = new FileChooser();
+        xlsxFileChooser.getExtensionFilters().add(new FileChooser.ExtensionFilter("excel File", "*.xlsx"));
         // fileChooser.setInitialDirectory(new File(pathname));
 
         Button selectUomButton = new Button("select UOM File (Irs System Export data)");
         selectUomButton.setPrefWidth(buttonWidth);
         selectUomButton.setOnAction(e -> {
-            File report = fileChooser.showOpenDialog(priStage);
+            File report = xlsxFileChooser.showOpenDialog(priStage);
             uomPathText.setText(report.getPath());
             saveProperty(UOM, report.getPath());
         });
@@ -430,22 +503,24 @@ public class ShopeeSalesConvertApplication extends Application {
         Button selectMeasButton = new Button("select Online Meas File");
         selectMeasButton.setPrefWidth(buttonWidth);
         selectMeasButton.setOnAction(e -> {
-            File uomFile = fileChooser.showOpenDialog(priStage);
+            File uomFile = xlsxFileChooser.showOpenDialog(priStage);
             measPathText.setText(uomFile.getPath());
             saveProperty(MEAS, uomFile.getPath());
         });
 
+        FileChooser csvFileChooser = new FileChooser();
+        csvFileChooser.getExtensionFilters().add(new FileChooser.ExtensionFilter("csv File", "*.csv"));
         Button selectStockReportButton = new Button("select stock report from Biztory");
         selectStockReportButton.setPrefWidth(buttonWidth);
         selectStockReportButton.setOnAction(e ->{
-            File stockReportFile = fileChooser.showOpenDialog(priStage);
+            File stockReportFile = csvFileChooser.showOpenDialog(priStage);
             if(!stockReportFile.exists()) return;
             stockReportPathText.setText(stockReportFile.getPath());
             saveProperty(STOCK_REPORT_PATH, stockReportFile.getPath());
         });
 
         DirectoryChooser folderChooser = new DirectoryChooser();
-        Button selectOutputPathButton = new Button("selct output generate path");
+        Button selectOutputPathButton = new Button("select output generate path");
         selectOutputPathButton.setPrefWidth(buttonWidth);
         selectOutputPathButton.setOnAction(e ->{
             File outputFolder = folderChooser.showDialog(priStage);
@@ -453,10 +528,25 @@ public class ShopeeSalesConvertApplication extends Application {
             saveProperty(OUTPUT_PATH, outputFolder.getPath());
         });
 
+        MenuButton reportSourceMenuButton = new MenuButton("Edit Data Source");
+        reportSourceMenuButton.setPrefWidth(buttonWidth);
+        MenuItem bigSellerReportSourceItem = new MenuItem(BIG_SELLER);
+        MenuItem shopeeReportSourceItem = new MenuItem(SHOPEE_ORDER);
+        bigSellerReportSourceItem.setOnAction(e ->{
+            saveProperty(DATA_SOURCE_TYPE, BIG_SELLER);
+            dataSourceText.setText("process sales from Big Seller");
+        });
+        shopeeReportSourceItem.setOnAction(e ->{
+            saveProperty(DATA_SOURCE_TYPE, SHOPEE_ORDER);
+            dataSourceText.setText("process sales from Shopee Order");
+        });
+        reportSourceMenuButton.getItems().add(bigSellerReportSourceItem);
+        reportSourceMenuButton.getItems().add(shopeeReportSourceItem);
+        
 
-
-
-        VBox vBox = new VBox(backButton, measPathText, selectMeasButton, uomPathText, selectUomButton, stockReportPathText, selectStockReportButton, outputPathText, selectOutputPathButton);
+        VBox vBox = new VBox(backButton, measPathText, selectMeasButton, uomPathText, selectUomButton, 
+            stockReportPathText, selectStockReportButton, outputPathText, selectOutputPathButton,
+            dataSourceText, reportSourceMenuButton);
 
 
         return new Scene(vBox, 600, 400);

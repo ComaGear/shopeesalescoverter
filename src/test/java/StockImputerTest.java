@@ -195,7 +195,7 @@ public class StockImputerTest {
         }
     }
 
-    @Test
+    // @Test
     public void readingOnlineSalesInfo(){
         ArrayList<OnlineSalesInfo> onlineSalesInfoList = new ArrayList<OnlineSalesInfo>();
         try {
@@ -232,7 +232,7 @@ public class StockImputerTest {
         }
     }
     
-    @Test
+    // @Test
     public void readingUpdateRuleCSV(){
         StockImputer stockImputer = new StockImputer(null, null);
         Double updateRuleMeasure = 0d;

@@ -230,7 +230,7 @@ public class StockImputer {
 
             Cell stockCell = row.getCell(7);
             if(stockCell == null) stockCell = row.createCell(7);
-            stockCell.setCellValue(info.getQuantity());
+            stockCell.setCellValue(Double.valueOf(info.getQuantity()));
         }
 
         fileInputStream.close();
