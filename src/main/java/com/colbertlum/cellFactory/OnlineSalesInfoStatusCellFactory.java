@@ -66,9 +66,9 @@ public class OnlineSalesInfoStatusCellFactory implements Callback<ListView<Onlin
                     priceTextField.textProperty().addListener((observable, oldValue, newValue) -> {
                         if(!newValue.matches("\\d*"))
                             newValue = newValue.replaceAll("[^\\d.]", "");
-                        priceTextField.setText(decimalFormat.format(Double.parseDouble(newValue)));
+                        priceTextField.setText(newValue);
 
-                        if(Double.parseDouble(newValue) != infoStatus.getOnlineSalesInfo().getPrice()){
+                        if(!newValue.isEmpty() && Double.parseDouble(newValue) != infoStatus.getOnlineSalesInfo().getPrice()){
                             infoStatus.getOnlineSalesInfo().setPrice(Double.parseDouble(newValue));
                         }
                     });

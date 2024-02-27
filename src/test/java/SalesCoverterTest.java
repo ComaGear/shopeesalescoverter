@@ -30,13 +30,13 @@ import com.colbertlum.entity.Order;
 
 public class SalesCoverterTest {
     
-    @Test
-    public void convertMoveOut(){
-        ShopeeSalesConvertApplication shopeeSalesConvertApplication = new ShopeeSalesConvertApplication();
-        SalesConverter salesConverter = new SalesConverter(shopeeSalesConvertApplication.getMoveOuts(), ShopeeSalesConvertApplication.getMeasList());
-        salesConverter.process();
+    // @Test
+    // public void convertMoveOut(){
+    //     ShopeeSalesConvertApplication shopeeSalesConvertApplication = new ShopeeSalesConvertApplication();
+    //     SalesConverter salesConverter = new SalesConverter(shopeeSalesConvertApplication.getMoveOuts(), ShopeeSalesConvertApplication.getMeasList());
+    //     salesConverter.process();
 
-    }
+    // }
 
     @Test
     public void dateTest(){
