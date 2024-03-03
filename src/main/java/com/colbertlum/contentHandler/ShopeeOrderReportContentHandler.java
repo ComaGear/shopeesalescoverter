@@ -42,6 +42,7 @@ public class ShopeeOrderReportContentHandler extends DefaultHandler {
     private static final String SHIPPING_FEE = "Estimated Shipping Fee";
 
     private static final String SKU = "SKU Reference No.";
+    private static final String PARENT_SKU = "Parent SKU Reference No.";
     private static final String VARIATION_NAME = "Variation Name";
     private static final String PRODUCT_NAME = "Product Name";
     private static final String PRICE = "Deal Price";
@@ -59,7 +60,7 @@ public class ShopeeOrderReportContentHandler extends DefaultHandler {
     private int formatIndex;
     private String formatString;
     private int readingRow = 0;
-    private String columString;
+    private String columnString;
     private StringBuilder value;
     private DataFormatter dataFormatter;
 
@@ -108,43 +109,45 @@ public class ShopeeOrderReportContentHandler extends DefaultHandler {
             if (readingRow == 0 && string != null) {
                 switch (string) {
                     case ORDER_ID:
-                        headerPosition.put(columString, ORDER_ID);
+                        headerPosition.put(columnString, ORDER_ID);
                         break;
                     case ORDER_TOTAL:
-                        headerPosition.put(columString, ORDER_TOTAL);
+                        headerPosition.put(columnString, ORDER_TOTAL);
                         break;
                     case SERVICE_FEE:
-                        headerPosition.put(columString, SERVICE_FEE);
+                        headerPosition.put(columnString, SERVICE_FEE);
                         break;
                     case COMMISSION_FEE:
-                        headerPosition.put(columString, COMMISSION_FEE);
+                        headerPosition.put(columnString, COMMISSION_FEE);
                         break;
                     case TRANSACTION_FEE:
-                        headerPosition.put(columString, TRANSACTION_FEE);
+                        headerPosition.put(columnString, TRANSACTION_FEE);
                         break;
                     case SHIPPING_FEE:
-                        headerPosition.put(columString, SHIPPING_FEE);
+                        headerPosition.put(columnString, SHIPPING_FEE);
                         break;
                     case SKU:
-                        headerPosition.put(columString, SKU);
+                        headerPosition.put(columnString, SKU);
                         break;
+                    case PARENT_SKU:
+                        headerPosition.put(columnString, PARENT_SKU);
                     case VARIATION_NAME:
-                        headerPosition.put(columString, VARIATION_NAME);
+                        headerPosition.put(columnString, VARIATION_NAME);
                         break;
                     case PRODUCT_NAME:
-                        headerPosition.put(columString, PRODUCT_NAME);
+                        headerPosition.put(columnString, PRODUCT_NAME);
                         break;
                     case PRICE:
-                        headerPosition.put(columString, PRICE);
+                        headerPosition.put(columnString, PRICE);
                         break;
                     case QUANTITY:
-                        headerPosition.put(columString, QUANTITY);
+                        headerPosition.put(columnString, QUANTITY);
                         break;
                     case SHIP_TIME:
-                        headerPosition.put(columString, SHIP_TIME);
+                        headerPosition.put(columnString, SHIP_TIME);
                         break;
                     case ORDER_STATUS:
-                        headerPosition.put(columString, ORDER_STATUS);
+                        headerPosition.put(columnString, ORDER_STATUS);
                         break;
                         
 
@@ -168,8 +171,8 @@ public class ShopeeOrderReportContentHandler extends DefaultHandler {
             //         break;
             // }
             
-            if (headerPosition.containsKey(columString))
-                column = headerPosition.get(columString);
+            if (headerPosition.containsKey(columnString))
+                column = headerPosition.get(columnString);
             switch (column) {
                 case ORDER_ID:
                     order.setId(string);
@@ -191,6 +194,9 @@ public class ShopeeOrderReportContentHandler extends DefaultHandler {
                     break;
                 case SKU:
                     moveOut.setSku(string);
+                    break;
+                case PARENT_SKU:
+                    moveOut.setParentSku(string);
                     break;
                 case VARIATION_NAME:
                     moveOut.setVariationName(string);
@@ -226,7 +232,9 @@ public class ShopeeOrderReportContentHandler extends DefaultHandler {
 
                     moveOut.setOrder(orderMap.get(order.getId()));
                     moveOut.setFoundRow(readingRow);
-                    moveOuts.add(moveOut);
+                    if(moveOut.getParentSku() != null && !moveOut.getParentSku().isEmpty()
+                         && (moveOut.getSku() == null || moveOut.getSku().isEmpty())) moveOut.setSku(moveOut.getParentSku());
+                    moveOuts.add(moveOut); 
                 }
             this.readingRow += 1;
             this.moveOut = null;
@@ -257,7 +265,7 @@ public class ShopeeOrderReportContentHandler extends DefaultHandler {
                 }
             }
             // this.columnPosition = columnReferenceToPosition(references.substring(0, firstDigit));
-            this.columString = references.substring(0, firstDigit);
+            this.columnString = references.substring(0, firstDigit);
 
             readingVDataType = dataType.NUMBER;
             this.formatIndex = -1;

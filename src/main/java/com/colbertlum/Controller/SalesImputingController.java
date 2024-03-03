@@ -29,12 +29,15 @@ import javafx.stage.WindowEvent;
 
 public class SalesImputingController {
 
+    private static final String FILTER_EMPTY_SKU = "EMPTY_SKU";
+    private static final String FILTER_ALL = "All";
     private Stage stage;
     private String moveOutSearchMode;
     private SalesImputer salesImputer;
     private MeasImputingController measImputingController;
     private ArrayList<MoveOutStatus> selectedMoveOutStatusList;
     private ObservableList<MoveOutStatus> observableMoveOutStatusList;
+    private String filterMode;
 
     public void initDialog(Stage stage){    
         this.stage = stage;
@@ -73,7 +76,20 @@ public class SalesImputingController {
 
     private void refillMoveOutListView(ListView<MoveOutStatus> listView, List<MoveOutStatus> moveOutStatusList){
         this.observableMoveOutStatusList.clear();
-        this.observableMoveOutStatusList.addAll(moveOutStatusList);
+
+        ArrayList<MoveOutStatus> arrayList = new ArrayList<MoveOutStatus>();
+        if(filterMode == FILTER_ALL){
+            arrayList.addAll(moveOutStatusList);
+        } else if(filterMode == FILTER_EMPTY_SKU){
+            for(MoveOutStatus moveOutStatus : moveOutStatusList){
+                if(moveOutStatus.getMoveOut().getSku().isEmpty()) {
+                    arrayList.add(moveOutStatus);
+                }
+            }
+        }
+        
+
+        this.observableMoveOutStatusList.addAll(arrayList);
         listView.setItems(observableMoveOutStatusList);
     }
     
@@ -81,25 +97,31 @@ public class SalesImputingController {
         TextField searchBar = new TextField("");
         searchBar.setPromptText("search item by NAME");
         searchBar.setMinWidth(300);
+
         MenuItem skuSelectMenuItem = new MenuItem(SalesImputer.SKU);
         MenuItem nameSelectMenuItem = new MenuItem(SalesImputer.NAME);
-        MenuButton menuButton = new MenuButton("search by NAME", null, skuSelectMenuItem, nameSelectMenuItem);
-        menuButton.setPrefWidth(120);
-
+        MenuButton SearchByMenuButton = new MenuButton("search by NAME", null, skuSelectMenuItem, nameSelectMenuItem);
+        SearchByMenuButton.setPrefWidth(120);
         skuSelectMenuItem.setOnAction(a ->{
-            menuButton.setText("search by SKU");
+            SearchByMenuButton.setText("search by SKU");
             searchBar.setPromptText("search item by SKU");
             this.moveOutSearchMode = SalesImputer.SKU;
         });
         nameSelectMenuItem.setOnAction(a ->{
-            menuButton.setText("search by NAME");
+            SearchByMenuButton.setText("search by NAME");
             searchBar.setPromptText("search item by NAME");
             this.moveOutSearchMode = SalesImputer.NAME;
         });
         this.moveOutSearchMode = SalesImputer.NAME;
 
+        MenuItem filterEmptyMenuItem = new MenuItem("empty sku");
+        MenuItem filterAllMenuItem = new MenuItem(FILTER_ALL);
+        MenuButton filterMenuButton = new MenuButton("filter by All", null, filterEmptyMenuItem, filterAllMenuItem);
+        this.filterMode = FILTER_ALL;
+        filterMenuButton.setPrefWidth(120);
+
         Button applyButton = new Button("Apply To");
-        HBox moveOutsSearchHBox = new HBox(menuButton, searchBar, applyButton);
+        HBox moveOutsSearchHBox = new HBox(filterMenuButton, SearchByMenuButton, searchBar, applyButton);
 
         Text skuHeaderText = new Text("SKU");
         skuHeaderText.setWrappingWidth(117);
@@ -119,6 +141,17 @@ public class SalesImputingController {
         moveOutListView.setCellFactory(salesCellFactory);
         this.observableMoveOutStatusList = FXCollections.observableArrayList();
         refillMoveOutListView(moveOutListView, salesImputer.getMoveOutStatusList());
+
+        filterAllMenuItem.setOnAction(e -> {
+            filterMenuButton.setText("filter by All");
+            filterMode = FILTER_ALL;
+            refillMoveOutListView(moveOutListView, salesImputer.getMoveOutStatusList());
+        });
+        filterEmptyMenuItem.setOnAction(e ->{
+            filterMenuButton.setText("filter by Emptry");
+            filterMode = FILTER_EMPTY_SKU;
+            refillMoveOutListView(moveOutListView, salesImputer.getMoveOutStatusList());
+        });
 
         searchBar.textProperty().addListener((observable, oldValue, newValue) ->{
             ArrayList<MoveOutStatus> matchedMoveOutStatusList = new ArrayList<MoveOutStatus>();
@@ -172,6 +205,8 @@ public class SalesImputingController {
 
                 salesImputer.setMoveOutChanged(true);
             }
+
+            selectedMoveOutStatusList.clear();
 
             refillMoveOutListView(moveOutListView, salesImputer.getMoveOutStatusList());
         });

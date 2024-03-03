@@ -196,7 +196,12 @@ public class StockImputer {
         if(foundInfo != null){
             foundInfo.setQuantity(info.getQuantity());
             foundInfo.setParentSku(info.getParentSku());
-            foundInfo.setSku(info.getSku());
+            String sku = info.getSku();
+            if(sku != null && !sku.isEmpty() && sku.contains("-")){
+                foundInfo.setSku(sku);
+            } else {
+                foundInfo.setParentSku(sku);
+            }
             foundInfo.setPrice(info.getPrice());
         }
     }

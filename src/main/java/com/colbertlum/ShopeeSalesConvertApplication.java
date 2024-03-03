@@ -375,25 +375,30 @@ public class ShopeeSalesConvertApplication extends Application {
         }
 
         // filtering by start and end date.
-        if(startDate == null || endDate == null){
-            new Alert(AlertType.ERROR, "please choose valid date.", ButtonType.OK).showAndWait();
-            throw new IllegalArgumentException("not valid start or end date");
-        } 
-        if(startDate.isAfter(endDate)){
-            new Alert(AlertType.ERROR, "start date could not greater than end date", ButtonType.OK).showAndWait();
-            throw new IllegalArgumentException("not valid start or end date");
-        } 
         if(getProperty(DATA_SOURCE_TYPE).equals(SHOPEE_ORDER)) {
+
+            if(startDate == null || endDate == null){
+                new Alert(AlertType.ERROR, "please choose valid date.", ButtonType.OK).showAndWait();
+                throw new IllegalArgumentException("not valid start or end date");
+            } 
+
+            if(startDate.isAfter(endDate)){
+                new Alert(AlertType.ERROR, "start date could not greater than end date", ButtonType.OK).showAndWait();
+                throw new IllegalArgumentException("not valid start or end date");
+            } 
 
             ArrayList<MoveOut> newMoveOuts = new ArrayList<MoveOut>();
 
             for(MoveOut moveOut : moveOuts){
 
                 String status = moveOut.getOrder().getStatus();
-                if(Order.STATUS_CANCEL.equals(status) || Order.STATUS_UNPAID.equals(status) || Order.STATUS_TO_SHIP.equals(status)){
+                if(Order.STATUS_UNPAID.equals(status) || Order.STATUS_TO_SHIP.equals(status)){
                     continue;
                 }
                 LocalDate shipOutDate = moveOut.getOrder().getShipOutDate();
+                if(shipOutDate == null){
+                    continue;
+                }
 
                 if(shipOutDate.isBefore(startDate) || shipOutDate.isAfter(endDate)){
                     continue;
@@ -569,9 +574,14 @@ public class ShopeeSalesConvertApplication extends Application {
 
             if(moveOut.getQuantity() == 0) continue; 
 
+            String productName = moveOut.getProductName() + " - " + moveOut.getVariationName();
+
+            String characterFilter = "[^\\p{L}\\p{M}\\p{N}\\p{P}\\p{Z}\\p{Cf}\\p{Cs}\\s]";
+            productName = productName.replaceAll(characterFilter,"");
+
             XSSFRow row = sheet.createRow(rowCount++);
             row.createCell(0).setCellValue(moveOut.getId());
-            row.createCell(1).setCellValue(moveOut.getProductName());
+            row.createCell(1).setCellValue(productName);
             row.createCell(2).setCellValue(moveOut.getQuantity());
             row.createCell(3).setCellValue("");
             row.createCell(4).setCellValue(moveOut.getProductSubTotal() / moveOut.getQuantity());

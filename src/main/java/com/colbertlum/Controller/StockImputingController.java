@@ -87,7 +87,13 @@ public class StockImputingController {
         Button applyMeasButton = new Button("apply To");
         applyMeasButton.setOnAction(a ->{
             for(OnlineSalesInfoStatus status : selectOnlineSalesList) {
-                status.getOnlineSalesInfo().setSku(measImputingController.getSelectedMeasSku());
+                String selectedMeasSku = measImputingController.getSelectedMeasSku();
+                if(selectedMeasSku != null && !selectedMeasSku.isEmpty() && selectedMeasSku.contains("-")){
+                    status.getOnlineSalesInfo().setSku(selectedMeasSku);
+                } else {
+                    status.getOnlineSalesInfo().setParentSku(selectedMeasSku);
+                }
+                
                 selectOnlineSalesList.clear(); // TODO check this works.
                 refillOnlineListView(new ArrayList<OnlineSalesInfoStatus>(observableOnlineInfoList));
             }

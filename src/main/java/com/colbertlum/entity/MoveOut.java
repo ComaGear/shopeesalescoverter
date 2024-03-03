@@ -6,7 +6,15 @@ public class MoveOut {
     private String variationName;
     private double quantity;
     private double price;
+    private String parentSku;
 
+    public String getParentSku() {
+        return parentSku;
+    }
+
+    public void setParentSku(String parentSku) {
+        this.parentSku = parentSku;
+    }
     private Order order;
     private int foundRow;
     private String id;
