@@ -16,7 +16,30 @@ public class Order {
     private double shopeeVoucher;
     private LocalDate shipOutDate;
     private String status;
+    private double serviceFee;
+    private double commissionFee;
+    private double shippingRebateEstimate; 
+    
+    public double getShippingRebateEstimate() {
+        return shippingRebateEstimate;
+    }
+    public void setShippingRebateEstimate(double shippingRebateEstimate) {
+        this.shippingRebateEstimate = shippingRebateEstimate;
+    }
+    public double getServiceFee() {
+        return serviceFee;
+    }
+    public void setServiceFee(double serviceFee) {
+        this.serviceFee = serviceFee;
+    }
 
+
+    public double getCommissionFee() {
+        return commissionFee;
+    }
+    public void setCommissionFee(double commissionFee) {
+        this.commissionFee = commissionFee;
+    }
     public String getStatus() {
         return status;
     }

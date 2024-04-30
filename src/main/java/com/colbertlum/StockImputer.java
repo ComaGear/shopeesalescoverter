@@ -3,8 +3,10 @@ package com.colbertlum;
 import java.io.BufferedReader;
 import java.io.File;
 import java.io.FileInputStream;
+import java.io.FileNotFoundException;
 import java.io.FileOutputStream;
 import java.io.IOException;
+import java.io.InputStream;
 import java.io.InputStreamReader;
 import java.util.ArrayList;
 import java.util.Comparator;
@@ -259,7 +261,14 @@ public class StockImputer {
         if(this.updateRuleMap == null) updateRuleMap = new HashMap<String, Double>();
 
         // URL resource = getClass().getResource("classpath:/resource/updateRule.csv");
-        try(BufferedReader bufferedReader = new BufferedReader(new InputStreamReader(ClassLoader.getSystemResourceAsStream("updateRule.csv")))){
+        InputStream inputStream = null;
+        try {
+            inputStream = new FileInputStream("./ShopeeSalesConvertApplication.properties");
+        } catch (FileNotFoundException e){
+            inputStream = ClassLoader.getSystemResourceAsStream("ShopeeSalesConvertApplication.properties");
+        }
+        try{
+            BufferedReader bufferedReader = new BufferedReader(new InputStreamReader(inputStream));
             String line;
             while((line = bufferedReader.readLine()) != null){
                 String[] values = line.split(COMMA_DELIMITER);

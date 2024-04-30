@@ -1,10 +1,22 @@
 package com.colbertlum.entity;
 
+import java.util.Comparator;
+import java.util.List;
+
 public class UOM {
     private String productId;
     private String uom;
     private double rate;
     private String description;
+    private double costPrice;
+
+    public double getCostPrice() {
+        return costPrice;
+    }
+
+    public void setCostPrice(double costPrice) {
+        this.costPrice = costPrice;
+    }
 
     public String getDescription() {
         return description;
@@ -44,5 +56,20 @@ public class UOM {
     }
 
     
+    public static UOM binarySearch(String id, List<UOM> uoms){
+        
+        int lo = 0;
+        int hi = uoms.size()-1;
+
+        while(lo <= hi) {
+            int mid = lo + (hi-lo) / 2;
+            if(uoms.get(mid).getProductId().toLowerCase().compareTo(id.toLowerCase()) > 0) hi = mid-1; 
+            else if(uoms.get(mid).getProductId().toLowerCase().compareTo(id.toLowerCase()) < 0) lo = mid+1;
+            else{
+                return uoms.get(mid);
+            }
+        }
+        return null;
+    }
 
 }

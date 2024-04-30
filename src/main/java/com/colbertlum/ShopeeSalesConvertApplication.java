@@ -8,6 +8,7 @@ import java.io.IOException;
 import java.io.InputStream;
 import java.time.LocalDate;
 import java.util.ArrayList;
+import java.util.Comparator;
 import java.util.Iterator;
 import java.util.List;
 import java.util.Properties;
@@ -39,6 +40,7 @@ import com.colbertlum.entity.Meas;
 import com.colbertlum.entity.MoveOut;
 import com.colbertlum.entity.OnlineSalesInfo;
 import com.colbertlum.entity.Order;
+import com.colbertlum.entity.SummaryOrder;
 import com.colbertlum.entity.UOM;
 
 import javafx.application.Application;
@@ -73,10 +75,13 @@ public class ShopeeSalesConvertApplication extends Application {
     public static final String DATA_SOURCE_TYPE = "data-source-type";
     private static final String OUTPUT_PATH = "output-path";
     public static final String MEAS = "meas";
-    private static final String UOM = "uom";
+    private static final String UOM_STRING = "uom";
     public static final String REPORT = "report";
     public static final String ONLINE_SALES_PATH = "onlineSales-path";
     public static final String STOCK_REPORT_PATH = "stock-report-path";
+
+    private static List<UOM> uoms = getIrsUoms();
+
     private String reportPath = "";
     private Stack<Scene> sceneStack;
     private Stage priStage;
@@ -152,7 +157,7 @@ public class ShopeeSalesConvertApplication extends Application {
         processButton.setOnAction(e ->{
             List<MoveOut> processedMoveOuts = processSales();
             String outputFilePath = getProperty(OUTPUT_PATH) + "\\"+ outputFileNameTextField.getText() + ".xlsx";
-            saveOutputToFile(processedMoveOuts, outputFilePath);
+            saveOutputToFile(processedMoveOuts, getIrsUoms(), outputFilePath);
         });
 
         HBox processBarBox = new HBox(processButton, outputPathText, outputFileNameTextField);
@@ -317,10 +322,12 @@ public class ShopeeSalesConvertApplication extends Application {
 
     public static List<UOM> getIrsUoms() {
 
+        if(uoms != null) return uoms;
+
         ArrayList<UOM> uoms = new ArrayList<UOM>();
 
         try {
-            String pathStr = getProperty(UOM);
+            String pathStr = getProperty(UOM_STRING);
             File file = new File(pathStr);
             XSSFReader xssfReader = new XSSFReader(OPCPackage.open(file));
             uomContentHandler contentHandler = new uomContentHandler(xssfReader.getSharedStringsTable(), xssfReader.getStylesTable(),
@@ -482,7 +489,7 @@ public class ShopeeSalesConvertApplication extends Application {
         int buttonWidth = 300;
 
         Font font = new Font("monospace", 16);
-        Text uomPathText = new Text(getProperty(UOM));
+        Text uomPathText = new Text(getProperty(UOM_STRING));
         uomPathText.setFont(font);
         Text measPathText = new Text(getProperty(MEAS));
         measPathText.setFont(font);
@@ -502,7 +509,7 @@ public class ShopeeSalesConvertApplication extends Application {
         selectUomButton.setOnAction(e -> {
             File report = xlsxFileChooser.showOpenDialog(priStage);
             uomPathText.setText(report.getPath());
-            saveProperty(UOM, report.getPath());
+            saveProperty(UOM_STRING, report.getPath());
         });
 
         Button selectMeasButton = new Button("select Online Meas File");
@@ -557,13 +564,13 @@ public class ShopeeSalesConvertApplication extends Application {
         return new Scene(vBox, 600, 400);
     }
 
-    private void saveOutputToFile(List<MoveOut> moveOuts, String outputFilePath){
+    private void saveOutputToFile(List<MoveOut> moveOuts, List<UOM> uoms, String outputFilePath){
         XSSFWorkbook workbook = new XSSFWorkbook();
-        XSSFSheet sheet = workbook.createSheet("sheet1");
+        XSSFSheet biztorySheet = workbook.createSheet("biztory");
         
 
         int rowCount = 0;
-        XSSFRow headerRow = sheet.createRow(rowCount++);
+        XSSFRow headerRow = biztorySheet.createRow(rowCount++);
         headerRow.createCell(0).setCellValue("Code");
         headerRow.createCell(1).setCellValue("Description");
         headerRow.createCell(2).setCellValue("Qty");
@@ -579,13 +586,20 @@ public class ShopeeSalesConvertApplication extends Application {
             String characterFilter = "[^\\p{L}\\p{M}\\p{N}\\p{P}\\p{Z}\\p{Cf}\\p{Cs}\\s]";
             productName = productName.replaceAll(characterFilter,"");
 
-            XSSFRow row = sheet.createRow(rowCount++);
+            XSSFRow row = biztorySheet.createRow(rowCount++);
             row.createCell(0).setCellValue(moveOut.getId());
             row.createCell(1).setCellValue(productName);
             row.createCell(2).setCellValue(moveOut.getQuantity());
             row.createCell(3).setCellValue("");
             row.createCell(4).setCellValue(moveOut.getProductSubTotal() / moveOut.getQuantity());
         }
+
+
+        XSSFSheet orderDetailSheet = workbook.createSheet("order profit");
+        writeOrderSummarySheet(orderDetailSheet, moveOuts);
+
+        XSSFSheet movementDetailSheet = workbook.createSheet("movement detail");
+        writeProductProfitSummarySheet(movementDetailSheet, moveOuts);
 
         try{
             
@@ -598,6 +612,142 @@ public class ShopeeSalesConvertApplication extends Application {
         }catch(IOException exception){
             exception.printStackTrace();
             System.out.println(exception.toString());
+        }
+    }
+
+    private void writeProductProfitSummarySheet(XSSFSheet movementDetailSheet, List<MoveOut> moveOuts) {
+        XSSFRow orderDetailHeaderRow = movementDetailSheet.createRow(0);
+        orderDetailHeaderRow.createCell(0).setCellValue("Order ID");
+        orderDetailHeaderRow.createCell(1).setCellValue("Order Shipout Date");
+        orderDetailHeaderRow.createCell(2).setCellValue("Product ID");
+        orderDetailHeaderRow.createCell(3).setCellValue("Product Name");
+        orderDetailHeaderRow.createCell(4).setCellValue("Qauntity");
+        orderDetailHeaderRow.createCell(5).setCellValue("Cost");
+        orderDetailHeaderRow.createCell(6).setCellValue("SubTotal");
+        orderDetailHeaderRow.createCell(7).setCellValue("SubCost");
+        orderDetailHeaderRow.createCell(8).setCellValue("Profit");
+        orderDetailHeaderRow.createCell(9).setCellValue("Profit Rate");
+        orderDetailHeaderRow.createCell(10).setCellValue("transaction Fee");
+        orderDetailHeaderRow.createCell(11).setCellValue("Service Fee");
+        orderDetailHeaderRow.createCell(12).setCellValue("Commission Fee");
+        orderDetailHeaderRow.createCell(13).setCellValue("Management Fee");
+        orderDetailHeaderRow.createCell(14).setCellValue("Grand Total");
+        orderDetailHeaderRow.createCell(15).setCellValue("Order Shipping Fee");
+
+
+        moveOuts.sort(new Comparator<MoveOut>() {
+
+            @Override
+            public int compare(MoveOut o1, MoveOut o2) {
+                return o1.getOrder().getId().compareTo(o2.getOrder().getId());
+            }
+            
+        });
+
+        uoms.removeIf(uom -> (uom.getRate() != 1));
+        int index = 1;
+        for(MoveOut moveOut : moveOuts){
+
+            UOM uom = null;
+            if(moveOut.getId() != null) {
+                uom = UOM.binarySearch(moveOut.getId(), uoms);
+            } else {
+                uom = new UOM();
+                uom.setProductId("");
+                uom.setCostPrice(moveOut.getProductSubTotal() / moveOut.getQuantity());
+            }
+
+            XSSFRow row = movementDetailSheet.createRow(index);
+            row.createCell(0).setCellValue(moveOut.getOrder().getId());
+            row.createCell(1).setCellValue(moveOut.getOrder().getShipOutDate());
+            row.createCell(2).setCellValue(moveOut.getId());
+            row.createCell(3).setCellValue(moveOut.getProductName() + "-" + moveOut.getVariationName());
+            row.createCell(4).setCellValue(moveOut.getQuantity());
+            row.createCell(5).setCellValue(uom.getCostPrice());
+            row.createCell(6).setCellValue(moveOut.getProductSubTotal());
+            row.createCell(7).setCellValue(uom.getCostPrice() * moveOut.getQuantity());
+            row.createCell(8).setCellValue(moveOut.getProductSubTotal() - (uom.getCostPrice() * moveOut.getQuantity()));
+            row.createCell(9).setCellValue(1 - ((uom.getCostPrice() * moveOut.getQuantity()) / moveOut.getProductSubTotal()));
+            row.createCell(10).setCellValue(moveOut.getOrder().getTransactionFee());
+            row.createCell(11).setCellValue(moveOut.getOrder().getCommissionFee());
+            row.createCell(12).setCellValue(moveOut.getOrder().getServiceFee());
+            row.createCell(13).setCellValue(moveOut.getOrder().getManagementFee());
+            row.createCell(14).setCellValue(moveOut.getOrder().getOrderTotalAmount());
+            row.createCell(15).setCellValue(moveOut.getOrder().getShippingFee());
+
+            index++;
+        }
+    }
+
+    private void writeOrderSummarySheet(XSSFSheet orderDetailSheet, List<MoveOut> moveOuts) {
+        XSSFRow orderDetailHeaderRow = orderDetailSheet.createRow(0);
+        orderDetailHeaderRow.createCell(0).setCellValue("Order ID");
+        orderDetailHeaderRow.createCell(1).setCellValue("Order Shipout Date");
+        orderDetailHeaderRow.createCell(2).setCellValue("Total Amount");
+        orderDetailHeaderRow.createCell(3).setCellValue("Profit");
+        orderDetailHeaderRow.createCell(4).setCellValue("Profit Rate");
+
+        moveOuts.sort(new Comparator<MoveOut>() {
+
+            @Override
+            public int compare(MoveOut o1, MoveOut o2) {
+                return o1.getOrder().getId().compareTo(o2.getOrder().getId());
+            }
+            
+        });
+
+
+        uoms.removeIf(uom -> (uom.getRate() != 1));
+        ArrayList<SummaryOrder> summaryOrders = new ArrayList<SummaryOrder>();
+        uoms.sort(new Comparator<UOM>() {
+
+            @Override
+            public int compare(UOM o1, UOM o2) {
+                return o1.getProductId().toLowerCase().compareTo(o2.getProductId().toLowerCase());
+            }
+            
+        });
+
+        for(MoveOut moveOut : moveOuts){
+            SummaryOrder lastOrder = null;
+            if(!summaryOrders.isEmpty()) {
+                lastOrder = summaryOrders.get(summaryOrders.size()-1);
+            } else {
+                lastOrder = new SummaryOrder();
+            }
+            
+            UOM uom = null;
+            if(moveOut.getId() != null) {
+                uom = UOM.binarySearch(moveOut.getId(), uoms);
+            } else {
+                uom = new UOM();
+                uom.setProductId("");
+                uom.setCostPrice(moveOut.getProductSubTotal() / moveOut.getQuantity());
+            }
+            double moveOutProfit = moveOut.getProductSubTotal() - (uom.getCostPrice() * moveOut.getQuantity());
+            if(lastOrder.getId() != null && lastOrder.getId().equals(moveOut.getOrder().getId())) {
+               lastOrder.setProfit(lastOrder.getProfit() + moveOutProfit);
+               lastOrder.setTotalAmount(lastOrder.getTotalAmount() + moveOut.getProductSubTotal());
+            } else {
+                lastOrder = new SummaryOrder();
+                lastOrder.setId(moveOut.getOrder().getId());
+                lastOrder.setProfit(moveOutProfit);
+                lastOrder.setShipOutDate(moveOut.getOrder().getShipOutDate());
+                lastOrder.setTotalAmount(moveOut.getProductSubTotal());
+                summaryOrders.add(lastOrder);
+            }
+            
+        }
+
+        int index = 1;
+        for(SummaryOrder order : summaryOrders){
+            XSSFRow row = orderDetailSheet.createRow(index);
+            row.createCell(0).setCellValue(order.getId());
+            row.createCell(1).setCellValue(order.getShipOutDate());
+            row.createCell(2).setCellValue(order.getTotalAmount());
+            row.createCell(3).setCellValue(order.getProfit());
+            row.createCell(4).setCellValue(order.getProfit() / order.getTotalAmount());
+            index++;
         }
     }
 

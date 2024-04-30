@@ -24,6 +24,7 @@ public class uomContentHandler extends DefaultHandler{
     private static final String UOM = "IU_UOM";
     private static final String RATE = "IU_RATE";
     private static final String DESCIPTION = "IM_DESCRIPTION";
+    private static final String COST_PRICE = "IM_UNITCOST";
 
     private ArrayList<UOM> UOMs;
     private StylesTable stylesTable;
@@ -88,6 +89,10 @@ public class uomContentHandler extends DefaultHandler{
                         break;
                     case DESCIPTION:
                         headerPosition.put(columString, 3);
+                        break;
+                    case COST_PRICE:
+                        headerPosition.put(columString, 4);
+                        break;
                 }
                 return;
             }
@@ -107,6 +112,10 @@ public class uomContentHandler extends DefaultHandler{
                     break;
                 case 3:
                     uom.setDescription(string);
+                    break;
+                case 4:
+                    uom.setCostPrice(Double.parseDouble(string));
+                    break;
                 default:
                     break;
             }

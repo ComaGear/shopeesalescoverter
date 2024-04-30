@@ -40,6 +40,7 @@ public class ShopeeOrderReportContentHandler extends DefaultHandler {
     private static final String COMMISSION_FEE = "Commission Fee";
     private static final String TRANSACTION_FEE = "Transaction Fee";
     private static final String SHIPPING_FEE = "Estimated Shipping Fee";
+    private static final String SHIPPING_REBATE_ESTIMATE = "Shipping Rebate Estimate";
 
     private static final String SKU = "SKU Reference No.";
     private static final String PARENT_SKU = "Parent SKU Reference No.";
@@ -149,7 +150,9 @@ public class ShopeeOrderReportContentHandler extends DefaultHandler {
                     case ORDER_STATUS:
                         headerPosition.put(columnString, ORDER_STATUS);
                         break;
-                        
+                    case SHIPPING_REBATE_ESTIMATE:
+                        headerPosition.put(columnString, SHIPPING_REBATE_ESTIMATE);
+                        break;
 
                 }
                 return;
@@ -181,10 +184,10 @@ public class ShopeeOrderReportContentHandler extends DefaultHandler {
                     order.setOrderTotalAmount(Double.parseDouble(string));
                     break;
                 case SERVICE_FEE:
-                    order.setManagementFee(order.getManagementFee() + Double.parseDouble(string));
+                    order.setServiceFee(Double.parseDouble(string));
                     break;
                 case COMMISSION_FEE:
-                    order.setManagementFee(order.getManagementFee() + Double.parseDouble(string));
+                    order.setCommissionFee(Double.parseDouble(string));
                     break;
                 case TRANSACTION_FEE:
                     order.setTransactionFee(Double.parseDouble(string));
@@ -216,6 +219,9 @@ public class ShopeeOrderReportContentHandler extends DefaultHandler {
                     break;
                 case ORDER_STATUS:
                     order.setStatus(string);
+                    break;
+                case SHIPPING_REBATE_ESTIMATE:
+                    order.setShippingRebateEstimate(Double.parseDouble(string));
                     break;
                 default:
                     break;
