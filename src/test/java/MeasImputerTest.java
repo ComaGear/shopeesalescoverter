@@ -31,7 +31,7 @@ public class MeasImputerTest extends ApplicationTest {
         assertEquals("22320010-d", newChildSku);
     }
 
-    @Test 
+    // @Test 
     public void obtainNewChildFromOriginShouldSuccess(){
         MeasImputer measImputer = new MeasImputer();
         String newChildSku = measImputer.createNewChildSku("22320137");

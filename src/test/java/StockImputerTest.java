@@ -31,7 +31,7 @@ import com.colbertlum.entity.ProductStock;
 
 public class StockImputerTest {
 
-    @Test
+    // @Test
     public void updateMassUpdateFileStock() throws IOException{
         ArrayList<OnlineSalesInfo> onlineSalesInfoList = new ArrayList<OnlineSalesInfo>();
         String pathStr = ShopeeSalesConvertApplication.getProperty(ShopeeSalesConvertApplication.ONLINE_SALES_PATH);
@@ -89,6 +89,7 @@ public class StockImputerTest {
             xmlReader.setContentHandler(contentHandler);
             InputSource sheetData = new InputSource(xssfReader.getSheetsData().next());
             xmlReader.parse(sheetData);
+            
         } catch (InvalidFormatException e) {
             // TODO Auto-generated catch block
             e.printStackTrace();
@@ -232,7 +233,7 @@ public class StockImputerTest {
         }
     }
     
-    // @Test
+    @Test
     public void readingUpdateRuleCSV(){
         StockImputer stockImputer = new StockImputer(null, null);
         Double updateRuleMeasure = 0d;

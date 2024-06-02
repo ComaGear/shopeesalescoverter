@@ -15,7 +15,9 @@ import javafx.collections.FXCollections;
 import javafx.collections.ObservableList;
 import javafx.event.EventHandler;
 import javafx.scene.Scene;
+import javafx.scene.control.Alert;
 import javafx.scene.control.Button;
+import javafx.scene.control.ButtonType;
 import javafx.scene.control.Label;
 import javafx.scene.control.ListView;
 import javafx.scene.control.MenuButton;
@@ -23,6 +25,7 @@ import javafx.scene.control.MenuItem;
 import javafx.scene.control.SelectionMode;
 import javafx.scene.control.TextField;
 import javafx.scene.control.Tooltip;
+import javafx.scene.control.Alert.AlertType;
 import javafx.scene.layout.HBox;
 import javafx.scene.layout.VBox;
 import javafx.scene.text.Text;
@@ -219,7 +222,7 @@ public class MeasImputingController {
 
         measListView = new ListView<Meas>();
         this.selectedMeasList = new ArrayList<Meas>();
-        measListView.setCellFactory(new MeasCellFactory(selectedMeasList));
+        measListView.setCellFactory(new MeasCellFactory(selectedMeasList, measImputer));
         observableMeasList = FXCollections.observableArrayList(measImputer.getMeasList());
         refillMeasListView(measListView, measImputer.getMeasList());
 
@@ -429,6 +432,7 @@ public class MeasImputingController {
 
     public void close() {
         if(measImputer != null && measImputer.isMeasChanged()) measImputer.saveChange();
+        new Alert(AlertType.INFORMATION, "Measurement Mapping is saved", ButtonType.OK).show();
     }
 
     public Stage initDialog(Stage stage) {

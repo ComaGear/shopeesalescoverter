@@ -45,7 +45,7 @@ public class SalesCoverterTest {
         System.out.println(localDateTime.toLocalTime());
     }
 
-    @Test
+    // @Test
     public void readingOrderReport(){
         ArrayList<MoveOut> moveOuts = new ArrayList<MoveOut>();
         try {

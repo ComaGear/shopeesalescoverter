@@ -1,9 +1,11 @@
 package com.colbertlum;
 
+import java.io.BufferedWriter;
 import java.io.File;
 import java.io.FileInputStream;
 import java.io.FileNotFoundException;
 import java.io.FileOutputStream;
+import java.io.FileWriter;
 import java.io.IOException;
 import java.io.InputStream;
 import java.time.LocalDate;
@@ -91,6 +93,7 @@ public class ShopeeSalesConvertApplication extends Application {
     private LocalDate startDate;
     private LocalDate endDate;
     public static void main(String[] args) {
+        generateResourcesFile();
         Application.launch(args);
     }
 
@@ -796,5 +799,43 @@ public class ShopeeSalesConvertApplication extends Application {
         properties.store(fileOutputStream, null);
 
         fileOutputStream.close();
+    }
+
+    public static void generateResourcesFile(){
+    
+        File shopeeSalesConverterPropertiesFile = new File("./ShopeeSalesConvertApplication.properties");
+        File updateRuleFile = new File("./updateRule.csv");
+
+        if(shopeeSalesConverterPropertiesFile.exists() && updateRuleFile.exists()) {
+            return;
+        }
+
+        try {
+            shopeeSalesConverterPropertiesFile.createNewFile();
+            updateRuleFile.createNewFile();
+
+            saveProperty("meas", "C:\\Users");
+            saveProperty("uom", "C:\\Users");
+            saveProperty("report", "C:\\Users");
+            saveProperty("output-path", "C:\\Users");
+            saveProperty("onlineSales-path", "C:\\Users");
+            saveProperty("stock-report-path", "C:\\Users");
+            saveProperty("data-source-type", "Shopee Order");
+
+            FileWriter fileWriter = new FileWriter(updateRuleFile);
+            fileWriter.append("1t, 1.0\n");
+            fileWriter.append("2t, 0.7\n");
+            fileWriter.append("3t, 0.5\n");
+            fileWriter.append("4t, 0.4\n");
+            fileWriter.append("disc, 0.0\n");
+            fileWriter.append("default, 0.4\n");
+            fileWriter.append("5t, 0.3\n");
+            fileWriter.flush();
+            fileWriter.close();
+        } catch (IOException e) {
+            // TODO Auto-generated catch block
+            e.printStackTrace();
+        }
+
     }
 }

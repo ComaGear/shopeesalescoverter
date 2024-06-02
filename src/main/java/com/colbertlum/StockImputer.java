@@ -263,9 +263,9 @@ public class StockImputer {
         // URL resource = getClass().getResource("classpath:/resource/updateRule.csv");
         InputStream inputStream = null;
         try {
-            inputStream = new FileInputStream("./ShopeeSalesConvertApplication.properties");
+            inputStream = new FileInputStream("./updateRule.csv");
         } catch (FileNotFoundException e){
-            inputStream = ClassLoader.getSystemResourceAsStream("ShopeeSalesConvertApplication.properties");
+            inputStream = ClassLoader.getSystemResourceAsStream("updateRule.csv");
         }
         try{
             BufferedReader bufferedReader = new BufferedReader(new InputStreamReader(inputStream));
