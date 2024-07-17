@@ -1,4 +1,4 @@
-package com.colbertlum;
+package com.colbertlum.Imputer;
 
 import java.io.File;
 import java.io.FileInputStream;
@@ -14,9 +14,10 @@ import org.apache.poi.ss.usermodel.Row;
 import org.apache.poi.ss.usermodel.Sheet;
 import org.apache.poi.xssf.usermodel.XSSFWorkbook;
 
+import com.colbertlum.ShopeeSalesConvertApplication;
 import com.colbertlum.Controller.MeasImputingController;
 import com.colbertlum.entity.MoveOut;
-import com.colbertlum.entity.MoveOutStatus;
+import com.colbertlum.entity.MoveOutReason;
 
 import javafx.scene.control.Alert;
 import javafx.scene.control.ButtonType;
@@ -29,8 +30,8 @@ public class SalesImputer {
     public static final String SKU = "SKU";
 
 
-    private ArrayList<MoveOutStatus> moveOutStatusList;
-    public ArrayList<MoveOutStatus> getMoveOutStatusList() {
+    private ArrayList<MoveOutReason> moveOutStatusList;
+    public ArrayList<MoveOutReason> getMoveOutStatusList() {
         return moveOutStatusList;
     }
 
@@ -46,16 +47,16 @@ public class SalesImputer {
 
         if(emptySkuMoveOuts == null && notExistSkuMoveOuts == null) throw new NullPointerException();
         
-        moveOutStatusList = new ArrayList<MoveOutStatus>();
+        moveOutStatusList = new ArrayList<MoveOutReason>();
         if(emptySkuMoveOuts != null){
             for(MoveOut moveOut: emptySkuMoveOuts){
-                moveOutStatusList.add(new MoveOutStatus(MoveOutStatus.EMPTY, moveOut));
+                moveOutStatusList.add(new MoveOutReason(MoveOutReason.EMPTY, moveOut));
             }
         }
         
         if(notExistSkuMoveOuts != null){
             for(MoveOut moveOut: notExistSkuMoveOuts){
-                moveOutStatusList.add(new MoveOutStatus(MoveOutStatus.NOT_EXIST_SKU, moveOut));
+                moveOutStatusList.add(new MoveOutReason(MoveOutReason.NOT_EXIST_SKU, moveOut));
             }
         }
 
@@ -76,7 +77,7 @@ public class SalesImputer {
     // }
 
     public void saveChange(){
-        List<MoveOutStatus> resolveMoveOutStatus = moveOutStatusList;
+        List<MoveOutReason> resolveMoveOutStatus = moveOutStatusList;
 
         String sourcePath = ShopeeSalesConvertApplication.getProperty(ShopeeSalesConvertApplication.REPORT);
         
@@ -113,7 +114,7 @@ public class SalesImputer {
                 new Alert(AlertType.ERROR, "choose valid data source type", ButtonType.OK).showAndWait();
             }
 
-            for(MoveOutStatus moveOutStatus : resolveMoveOutStatus){
+            for(MoveOutReason moveOutStatus : resolveMoveOutStatus){
                 int foundRow = moveOutStatus.getMoveOut().getFoundRow();
                 Row row = sheet.getRow(foundRow);
                 Cell skuCell = row.getCell(skuPosition);

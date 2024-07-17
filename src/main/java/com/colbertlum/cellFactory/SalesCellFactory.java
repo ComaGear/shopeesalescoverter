@@ -2,7 +2,7 @@ package com.colbertlum.cellFactory;
 
 import java.util.List;
 
-import com.colbertlum.entity.MoveOutStatus;
+import com.colbertlum.entity.MoveOutReason;
 
 import javafx.scene.control.CheckBox;
 import javafx.scene.control.ListCell;
@@ -11,16 +11,16 @@ import javafx.scene.layout.HBox;
 import javafx.scene.text.Text;
 import javafx.util.Callback;
 
-public class SalesCellFactory implements Callback<ListView<MoveOutStatus>, ListCell<MoveOutStatus>>{
+public class SalesCellFactory implements Callback<ListView<MoveOutReason>, ListCell<MoveOutReason>>{
 
-    private List<MoveOutStatus> selectedMoveOutStatusList;
+    private List<MoveOutReason> selectedMoveOutStatusList;
 
     @Override
-    public ListCell<MoveOutStatus> call(ListView<MoveOutStatus> param) {
+    public ListCell<MoveOutReason> call(ListView<MoveOutReason> param) {
         return new ListCell<>() {
             
             @Override
-            public void updateItem(MoveOutStatus moveOutStatus, boolean empty){
+            public void updateItem(MoveOutReason moveOutStatus, boolean empty){
                 super.updateItem(moveOutStatus, empty);
 
                 if(moveOutStatus == null || empty) {
@@ -56,7 +56,7 @@ public class SalesCellFactory implements Callback<ListView<MoveOutStatus>, ListC
         };
     }
 
-    public SalesCellFactory(List<MoveOutStatus> selectedMoveOutStatusList){
+    public SalesCellFactory(List<MoveOutReason> selectedMoveOutStatusList){
         this.selectedMoveOutStatusList = selectedMoveOutStatusList;
     }
     

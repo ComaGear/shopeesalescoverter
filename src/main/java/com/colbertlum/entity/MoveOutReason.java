@@ -1,6 +1,6 @@
 package com.colbertlum.entity;
 
-public class MoveOutStatus {
+public class MoveOutReason {
 
     public static final String EMPTY = "Empty sku";
     public static final String NOT_EXIST_SKU = "SKU not found at meas";
@@ -24,7 +24,7 @@ public class MoveOutStatus {
         this.moveOut = moveOut;
     }
 
-    public MoveOutStatus(String status, MoveOut moveOut){
+    public MoveOutReason(String status, MoveOut moveOut){
         this.status = status;
         this.moveOut = moveOut;
     }

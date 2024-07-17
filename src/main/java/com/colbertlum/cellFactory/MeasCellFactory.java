@@ -2,9 +2,9 @@ package com.colbertlum.cellFactory;
 
 import java.util.List;
 
-import com.colbertlum.MeasImputer;
+import com.colbertlum.Imputer.MeasImputer;
 import com.colbertlum.entity.Meas;
-import com.colbertlum.entity.OnlineSalesInfoStatus;
+import com.colbertlum.entity.OnlineSalesInfoReason;
 
 import javafx.scene.control.Button;
 import javafx.scene.control.CheckBox;
@@ -89,6 +89,8 @@ public class MeasCellFactory implements Callback<ListView<Meas>, ListCell<Meas>>
                 MenuItem t4MenuItem = new MenuItem("4t");
                 MenuItem t5MenuItem = new MenuItem("5t");
                 MenuItem discMenuItem = new MenuItem("disc");
+                MenuItem selfMenuItem = new MenuItem("self");
+                MenuItem defaultMenuItem = new MenuItem("default");
                 t1MenuItem.setOnAction(e -> {
                     menu.setText("1t");
                     getItem().setUpdateRule("1t");
@@ -117,6 +119,16 @@ public class MeasCellFactory implements Callback<ListView<Meas>, ListCell<Meas>>
                 discMenuItem.setOnAction(e -> {
                     menu.setText("disc");
                     getItem().setUpdateRule("disc");
+                    imputer.setMeasChange(true);
+                });
+                selfMenuItem.setOnAction(e -> {
+                    menu.setText("self");
+                    getItem().setUpdateRule("self");
+                    imputer.setMeasChange(true);
+                });
+                defaultMenuItem.setOnAction(e -> {
+                    menu.setText("");
+                    getItem().setUpdateRule("");
                     imputer.setMeasChange(true);
                 });
 

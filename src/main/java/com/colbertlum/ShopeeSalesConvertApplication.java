@@ -33,6 +33,8 @@ import com.colbertlum.Controller.MeasImputingController;
 import com.colbertlum.Controller.SalesImputingController;
 import com.colbertlum.Controller.StockImputingController;
 import com.colbertlum.Exception.OnlineSalesInfoException;
+import com.colbertlum.Imputer.MeasImputer;
+import com.colbertlum.Imputer.StockImputer;
 import com.colbertlum.contentHandler.BigSellerReportContentHandler;
 import com.colbertlum.contentHandler.MeasContentHandler;
 import com.colbertlum.contentHandler.ShopeeOrderReportContentHandler;
@@ -82,7 +84,7 @@ public class ShopeeSalesConvertApplication extends Application {
     public static final String ONLINE_SALES_PATH = "onlineSales-path";
     public static final String STOCK_REPORT_PATH = "stock-report-path";
 
-    private static List<UOM> uoms = getIrsUoms();
+    private List<UOM> uoms;
 
     private String reportPath = "";
     private Stack<Scene> sceneStack;
@@ -92,14 +94,14 @@ public class ShopeeSalesConvertApplication extends Application {
     private StockImputingController stockImputingController;
     private LocalDate startDate;
     private LocalDate endDate;
-    public static void main(String[] args) {
-        generateResourcesFile();
+    public static void main(String[] args){
         Application.launch(args);
     }
 
     @Override
     public void start(Stage primaryStage) throws Exception {
 
+        this.generateResourcesFile();
         this.priStage = primaryStage;
 
         primaryStage.setTitle("Shopee Sales Converter");
@@ -160,7 +162,8 @@ public class ShopeeSalesConvertApplication extends Application {
         processButton.setOnAction(e ->{
             List<MoveOut> processedMoveOuts = processSales();
             String outputFilePath = getProperty(OUTPUT_PATH) + "\\"+ outputFileNameTextField.getText() + ".xlsx";
-            saveOutputToFile(processedMoveOuts, getIrsUoms(), outputFilePath);
+            if(this.uoms == null) uoms = getIrsUoms();
+            saveOutputToFile(processedMoveOuts, uoms, outputFilePath);
         });
 
         HBox processBarBox = new HBox(processButton, outputPathText, outputFileNameTextField);
@@ -324,8 +327,6 @@ public class ShopeeSalesConvertApplication extends Application {
     }
 
     public static List<UOM> getIrsUoms() {
-
-        if(uoms != null) return uoms;
 
         ArrayList<UOM> uoms = new ArrayList<UOM>();
 
@@ -619,6 +620,9 @@ public class ShopeeSalesConvertApplication extends Application {
     }
 
     private void writeProductProfitSummarySheet(XSSFSheet movementDetailSheet, List<MoveOut> moveOuts) {
+
+        if(this.uoms == null) this.uoms = getIrsUoms();
+
         XSSFRow orderDetailHeaderRow = movementDetailSheet.createRow(0);
         orderDetailHeaderRow.createCell(0).setCellValue("Order ID");
         orderDetailHeaderRow.createCell(1).setCellValue("Order Shipout Date");
@@ -683,6 +687,9 @@ public class ShopeeSalesConvertApplication extends Application {
     }
 
     private void writeOrderSummarySheet(XSSFSheet orderDetailSheet, List<MoveOut> moveOuts) {
+
+        if(this.uoms == null) this.uoms = getIrsUoms();
+
         XSSFRow orderDetailHeaderRow = orderDetailSheet.createRow(0);
         orderDetailHeaderRow.createCell(0).setCellValue("Order ID");
         orderDetailHeaderRow.createCell(1).setCellValue("Order Shipout Date");
@@ -801,18 +808,22 @@ public class ShopeeSalesConvertApplication extends Application {
         fileOutputStream.close();
     }
 
-    public static void generateResourcesFile(){
-    
-        File shopeeSalesConverterPropertiesFile = new File("./ShopeeSalesConvertApplication.properties");
-        File updateRuleFile = new File("./updateRule.csv");
+    public void generateResourcesFile(){
+        generateResourcesOfUpdateRule();
+        generateResourcesOfProperties();
 
-        if(shopeeSalesConverterPropertiesFile.exists() && updateRuleFile.exists()) {
+    }
+
+    public void generateResourcesOfProperties(){
+            
+        File shopeeSalesConverterPropertiesFile = new File("./ShopeeSalesConvertApplication.properties");
+
+        if(shopeeSalesConverterPropertiesFile.exists()) {
             return;
         }
 
         try {
             shopeeSalesConverterPropertiesFile.createNewFile();
-            updateRuleFile.createNewFile();
 
             saveProperty("meas", "C:\\Users");
             saveProperty("uom", "C:\\Users");
@@ -821,6 +832,22 @@ public class ShopeeSalesConvertApplication extends Application {
             saveProperty("onlineSales-path", "C:\\Users");
             saveProperty("stock-report-path", "C:\\Users");
             saveProperty("data-source-type", "Shopee Order");
+
+        } catch (IOException e) {
+            // TODO Auto-generated catch block
+            e.printStackTrace();
+        }
+    }
+
+    public void generateResourcesOfUpdateRule(){
+        File updateRuleFile = new File("./updateRule.csv");
+
+        if(updateRuleFile.exists()) {
+            return;
+        }
+
+        try {
+            updateRuleFile.createNewFile();
 
             FileWriter fileWriter = new FileWriter(updateRuleFile);
             fileWriter.append("1t, 1.0\n");
@@ -836,6 +863,5 @@ public class ShopeeSalesConvertApplication extends Application {
             // TODO Auto-generated catch block
             e.printStackTrace();
         }
-
     }
 }

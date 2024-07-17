@@ -5,11 +5,11 @@ import java.util.List;
 
 import org.apache.poi.hpsf.Array;
 
-import com.colbertlum.MeasImputer;
-import com.colbertlum.SalesImputer;
+import com.colbertlum.Imputer.MeasImputer;
+import com.colbertlum.Imputer.SalesImputer;
 import com.colbertlum.cellFactory.SalesCellFactory;
 import com.colbertlum.entity.MoveOut;
-import com.colbertlum.entity.MoveOutStatus;
+import com.colbertlum.entity.MoveOutReason;
 
 import javafx.collections.FXCollections;
 import javafx.collections.ObservableList;
@@ -35,8 +35,8 @@ public class SalesImputingController {
     private String moveOutSearchMode;
     private SalesImputer salesImputer;
     private MeasImputingController measImputingController;
-    private ArrayList<MoveOutStatus> selectedMoveOutStatusList;
-    private ObservableList<MoveOutStatus> observableMoveOutStatusList;
+    private ArrayList<MoveOutReason> selectedMoveOutStatusList;
+    private ObservableList<MoveOutReason> observableMoveOutStatusList;
     private String filterMode;
 
     public void initDialog(Stage stage){    
@@ -74,14 +74,14 @@ public class SalesImputingController {
         return this.stage;
     }
 
-    private void refillMoveOutListView(ListView<MoveOutStatus> listView, List<MoveOutStatus> moveOutStatusList){
+    private void refillMoveOutListView(ListView<MoveOutReason> listView, List<MoveOutReason> moveOutStatusList){
         this.observableMoveOutStatusList.clear();
 
-        ArrayList<MoveOutStatus> arrayList = new ArrayList<MoveOutStatus>();
+        ArrayList<MoveOutReason> arrayList = new ArrayList<MoveOutReason>();
         if(filterMode == FILTER_ALL){
             arrayList.addAll(moveOutStatusList);
         } else if(filterMode == FILTER_EMPTY_SKU){
-            for(MoveOutStatus moveOutStatus : moveOutStatusList){
+            for(MoveOutReason moveOutStatus : moveOutStatusList){
                 if(moveOutStatus.getMoveOut().getSku().isEmpty()) {
                     arrayList.add(moveOutStatus);
                 }
@@ -136,7 +136,7 @@ public class SalesImputingController {
 
         HBox headerHBox = new HBox(skuHeaderText, nameHeaderText, variationHeaderText, foundRowHeader, statusHeader);
 
-        ListView<MoveOutStatus> moveOutListView = new ListView<MoveOutStatus>();
+        ListView<MoveOutReason> moveOutListView = new ListView<MoveOutReason>();
         SalesCellFactory salesCellFactory = new SalesCellFactory(this.selectedMoveOutStatusList);
         moveOutListView.setCellFactory(salesCellFactory);
         this.observableMoveOutStatusList = FXCollections.observableArrayList();
@@ -154,10 +154,10 @@ public class SalesImputingController {
         });
 
         searchBar.textProperty().addListener((observable, oldValue, newValue) ->{
-            ArrayList<MoveOutStatus> matchedMoveOutStatusList = new ArrayList<MoveOutStatus>();
+            ArrayList<MoveOutReason> matchedMoveOutStatusList = new ArrayList<MoveOutReason>();
             String[] splitStr = searchBar.getText().split("\\s+");
             
-            for(MoveOutStatus moveOutStatus : salesImputer.getMoveOutStatusList()){
+            for(MoveOutReason moveOutStatus : salesImputer.getMoveOutStatusList()){
                 MoveOut moveOut = moveOutStatus.getMoveOut();
                 String matchStr = null;
                 switch(this.moveOutSearchMode){
@@ -197,7 +197,7 @@ public class SalesImputingController {
         
         applyButton.setOnAction(event ->{
             if(selectedMoveOutStatusList == null || selectedMoveOutStatusList.isEmpty()) return;
-            for(MoveOutStatus moveOutStatus : selectedMoveOutStatusList){
+            for(MoveOutReason moveOutStatus : selectedMoveOutStatusList){
                 // MoveOutStatus moveOutStatus = salesImputer.getMoveOutFromStatusListByFoundRow(foundRow);
                 String selectedMeasSku = measImputingController.getSelectedMeasSku();
                 if(selectedMeasSku == null) moveOutStatus.getMoveOut().setSku("");
@@ -229,6 +229,6 @@ public class SalesImputingController {
     public SalesImputingController(List<MoveOut> emptySkuMoveOuts, List<MoveOut> notExistSkuMoveOuts){
         this.salesImputer = new SalesImputer(emptySkuMoveOuts, notExistSkuMoveOuts);
         this.measImputingController = new MeasImputingController();
-        this.selectedMoveOutStatusList = new ArrayList<MoveOutStatus>();
+        this.selectedMoveOutStatusList = new ArrayList<MoveOutReason>();
     }
 }

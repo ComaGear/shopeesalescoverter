@@ -3,7 +3,7 @@ package com.colbertlum.cellFactory;
 import java.text.DecimalFormat;
 import java.util.List;
 
-import com.colbertlum.entity.OnlineSalesInfoStatus;
+import com.colbertlum.entity.OnlineSalesInfoReason;
 
 import javafx.scene.control.CheckBox;
 import javafx.scene.control.ListCell;
@@ -13,19 +13,19 @@ import javafx.scene.layout.HBox;
 import javafx.scene.text.Text;
 import javafx.util.Callback;
 
-public class OnlineSalesInfoStatusCellFactory implements Callback<ListView<OnlineSalesInfoStatus>, ListCell<OnlineSalesInfoStatus>>{
+public class OnlineSalesInfoStatusCellFactory implements Callback<ListView<OnlineSalesInfoReason>, ListCell<OnlineSalesInfoReason>>{
 
 
 
-    private List<OnlineSalesInfoStatus> selectOnlineSalesList;
+    private List<OnlineSalesInfoReason> selectOnlineSalesList;
 
     @Override
-    public ListCell<OnlineSalesInfoStatus> call(ListView<OnlineSalesInfoStatus> param) {
+    public ListCell<OnlineSalesInfoReason> call(ListView<OnlineSalesInfoReason> param) {
         return new ListCell<>(){
             private DecimalFormat decimalFormat = new DecimalFormat("##.00");
 
             @Override
-            public void updateItem(OnlineSalesInfoStatus infoStatus, boolean empty){
+            public void updateItem(OnlineSalesInfoReason infoStatus, boolean empty){
                 super.updateItem(infoStatus, empty);
                 if(infoStatus == null || empty){
                     setText("");
@@ -88,7 +88,7 @@ public class OnlineSalesInfoStatusCellFactory implements Callback<ListView<Onlin
         };
     }
 
-    public OnlineSalesInfoStatusCellFactory(List<OnlineSalesInfoStatus> selectOnlineSalesList){
+    public OnlineSalesInfoStatusCellFactory(List<OnlineSalesInfoReason> selectOnlineSalesList){
         this.selectOnlineSalesList = selectOnlineSalesList;
     }
     

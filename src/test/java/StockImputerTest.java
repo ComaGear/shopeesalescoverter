@@ -20,13 +20,13 @@ import org.xml.sax.SAXException;
 import org.xml.sax.XMLReader;
 
 import com.colbertlum.ShopeeSalesConvertApplication;
-import com.colbertlum.StockImputer;
 import com.colbertlum.Exception.OnlineSalesInfoException;
+import com.colbertlum.Imputer.StockImputer;
 import com.colbertlum.contentHandler.OnlineSalesInfoContentHandler;
 import com.colbertlum.contentHandler.StockReportContentReader;
 import com.colbertlum.entity.Meas;
 import com.colbertlum.entity.OnlineSalesInfo;
-import com.colbertlum.entity.OnlineSalesInfoStatus;
+import com.colbertlum.entity.OnlineSalesInfoReason;
 import com.colbertlum.entity.ProductStock;
 
 public class StockImputerTest {
@@ -64,8 +64,8 @@ public class StockImputerTest {
         try {
             stockImputer.figureStock(onlineSalesInfoList);
         } catch (OnlineSalesInfoException e) {
-            List<OnlineSalesInfoStatus> onlineSalesInfoStatusList = e.getOnlineSalesInfoStatusList();
-            for(OnlineSalesInfoStatus status : onlineSalesInfoStatusList){
+            List<OnlineSalesInfoReason> onlineSalesInfoStatusList = e.getOnlineSalesInfoStatusList();
+            for(OnlineSalesInfoReason status : onlineSalesInfoStatusList){
                 OnlineSalesInfo onlineSalesInfo = status.getOnlineSalesInfo();
                 // onlineSalesInfo.setQuantity(0);
                 stockImputer.updateOnlineSalesInfo(onlineSalesInfo, onlineSalesInfoList);
@@ -162,8 +162,8 @@ public class StockImputerTest {
         try {
             stockImputer.figureStock(onlineSalesInfoList);
         } catch (OnlineSalesInfoException e) {
-            List<OnlineSalesInfoStatus> onlineSalesInfoStatusList = e.getOnlineSalesInfoStatusList();
-            for(OnlineSalesInfoStatus status : onlineSalesInfoStatusList){
+            List<OnlineSalesInfoReason> onlineSalesInfoStatusList = e.getOnlineSalesInfoStatusList();
+            for(OnlineSalesInfoReason status : onlineSalesInfoStatusList){
                 assertNotNull(status.getStatus());
                 assertNotNull(status.getOnlineSalesInfo());
             }

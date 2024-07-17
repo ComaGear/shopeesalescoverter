@@ -1,4 +1,4 @@
-package com.colbertlum;
+package com.colbertlum.Imputer;
 
 import java.io.BufferedReader;
 import java.io.File;
@@ -35,7 +35,7 @@ import com.colbertlum.Exception.OnlineSalesInfoException;
 import com.colbertlum.contentHandler.OnlineSalesInfoContentHandler;
 import com.colbertlum.entity.Meas;
 import com.colbertlum.entity.OnlineSalesInfo;
-import com.colbertlum.entity.OnlineSalesInfoStatus;
+import com.colbertlum.entity.OnlineSalesInfoReason;
 import com.colbertlum.entity.ProductStock;
 
 public class StockImputer {
@@ -53,7 +53,7 @@ public class StockImputer {
     private Map<String, Double> updateRuleMap;
     private List<ProductStock> productStocks;
     private List<Meas> measList;
-    private List<OnlineSalesInfoStatus> infoStatusList;
+    private List<OnlineSalesInfoReason> infoStatusList;
 
     // public List<OnlineSalesInfoStatus> filterNotValidAndRemove(List<OnlineSalesInfo> onlineSalesInfos){
     //     if(infoStatusList == null) infoStatusList = new ArrayList<OnlineSalesInfoStatus>();
@@ -88,33 +88,33 @@ public class StockImputer {
 
     public List<OnlineSalesInfo> figureStock(List<OnlineSalesInfo> onlineStocks) throws OnlineSalesInfoException{
         
-        if(infoStatusList == null) infoStatusList = new ArrayList<OnlineSalesInfoStatus>();
+        if(infoStatusList == null) infoStatusList = new ArrayList<OnlineSalesInfoReason>();
         
         for(OnlineSalesInfo info : onlineStocks){
 
             String sku = info.getSku();
             if(sku == null) sku = info.getParentSku();
             if(sku == null || sku.isEmpty()){
-                infoStatusList.add(new OnlineSalesInfoStatus().setOnlineSalesInfo(info).setStatus(EMPTY_SKU));
+                infoStatusList.add(new OnlineSalesInfoReason().setOnlineSalesInfo(info).setStatus(EMPTY_SKU));
                 continue;
                 // may be just ignoring it.
             }
 
             Meas meas = getMeas(sku);
             if(meas == null){
-                infoStatusList.add(new OnlineSalesInfoStatus().setOnlineSalesInfo(info).setStatus(NOT_EXIST_SKU_STATUS));
+                infoStatusList.add(new OnlineSalesInfoReason().setOnlineSalesInfo(info).setStatus(NOT_EXIST_SKU_STATUS));
                 continue;
             }
 
             ProductStock productStock = getProductStock(meas.getId());
             if(productStock == null && meas.getUpdateRule() != "disc"){
-                infoStatusList.add(new OnlineSalesInfoStatus().setOnlineSalesInfo(info).setStatus(NOT_EXIST_PRODUCT_ID_STATUS));
+                infoStatusList.add(new OnlineSalesInfoReason().setOnlineSalesInfo(info).setStatus(NOT_EXIST_PRODUCT_ID_STATUS));
                 continue;
             }
             
             double updateRuleDouble = 1d;
             if(meas.getUpdateRule() != null && meas.getUpdateRule().equals(SELF_MANUAL_INPUT)){
-                infoStatusList.add(new OnlineSalesInfoStatus().setOnlineSalesInfo(info).setStatus(MANUAL_SET_STOCK_STATUS));
+                infoStatusList.add(new OnlineSalesInfoReason().setOnlineSalesInfo(info).setStatus(MANUAL_SET_STOCK_STATUS));
                 continue;
             }
             try {
