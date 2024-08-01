@@ -119,28 +119,10 @@ public class OrderService {
         // save to repository
         orderRepository.addInReturnMoveOut(returningMoveOuts);
         orderRepository.removeCompletedOrders(newReturnAfterCompletedOrder);
+        orderRepository.removeShippingOrders(newReturnAfterCompletedOrder);
         orderRepository.addReturnAfterCompletedOrder(newReturnAfterCompletedOrder);
         
-
-        getNewMoveOut(orderRepository);
-
-        orderRepository.saveMovement(ShippingMoveOuts);
-        
-    }
-    
-
-    private void getNewMoveOut(OrderRepository orderRepository) {
-        List<MoveOut> allMoveOuts = orderRepository.getAllMoveOuts();
-        ArrayList<MoveOut> beingMoveOut = new ArrayList<MoveOut>();
-
-        new Comparator<MoveOut>() {
-
-            @Override
-            public int compare(MoveOut o1, MoveOut o2) {
-                return o1.getOrder().getId() 
-            }
-            
-        };
+        orderRepository.submitTransaction();
     }
 
 
