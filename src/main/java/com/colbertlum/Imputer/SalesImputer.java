@@ -43,7 +43,7 @@ public class SalesImputer {
 
     private MeasImputingController measImputingController;
 
-    public SalesImputer(List<MoveOut> emptySkuMoveOuts, List<MoveOut> notExistSkuMoveOuts) {
+    public SalesImputer(List<MoveOut> emptySkuMoveOuts, List<MoveOut> notExistSkuMoveOuts, List<MoveOut> advanceFillMoveOuts) {
 
         if(emptySkuMoveOuts == null && notExistSkuMoveOuts == null) throw new NullPointerException();
         
@@ -57,6 +57,12 @@ public class SalesImputer {
         if(notExistSkuMoveOuts != null){
             for(MoveOut moveOut: notExistSkuMoveOuts){
                 moveOutStatusList.add(new MoveOutReason(MoveOutReason.NOT_EXIST_SKU, moveOut));
+            }
+        }
+
+        if(advanceFillMoveOuts != null){
+            for(MoveOut moveOut : advanceFillMoveOuts){
+                moveOutStatusList.add(new MoveOutReason(MoveOutReason.ADVANCE_FILL, moveOut));
             }
         }
 

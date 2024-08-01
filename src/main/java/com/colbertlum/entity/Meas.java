@@ -7,8 +7,21 @@ public class Meas {
     private double measurement;
     private String updateRule;
     private String name;
+    private String onlineProductName;
+    private String onlineVariationName;
     
-    
+    public String getOnlineProductName() {
+        return onlineProductName;
+    }
+    public void setOnlineProductName(String onlineProductName) {
+        this.onlineProductName = onlineProductName;
+    }
+    public String getOnlineVariationName() {
+        return onlineVariationName;
+    }
+    public void setOnlineVariationName(String onlineVariationName) {
+        this.onlineVariationName = onlineVariationName;
+    }
     public String getName() {
         return name;
     }

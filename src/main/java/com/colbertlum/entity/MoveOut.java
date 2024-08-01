@@ -8,13 +8,6 @@ public class MoveOut {
     private double price;
     private String parentSku;
 
-    public String getParentSku() {
-        return parentSku;
-    }
-
-    public void setParentSku(String parentSku) {
-        this.parentSku = parentSku;
-    }
     private Order order;
     private int foundRow;
     private String id;
@@ -22,6 +15,13 @@ public class MoveOut {
 
     public String getId() {
         return id;
+    }
+    public String getParentSku() {
+        return parentSku;
+    }
+
+    public void setParentSku(String parentSku) {
+        this.parentSku = parentSku;
     }
 
     public MoveOut setId(String id) {

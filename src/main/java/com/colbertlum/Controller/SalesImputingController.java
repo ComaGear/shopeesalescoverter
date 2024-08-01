@@ -1,6 +1,7 @@
 package com.colbertlum.Controller;
 
 import java.util.ArrayList;
+import java.util.Comparator;
 import java.util.List;
 
 import org.apache.poi.hpsf.Array;
@@ -31,6 +32,8 @@ public class SalesImputingController {
 
     private static final String FILTER_EMPTY_SKU = "EMPTY_SKU";
     private static final String FILTER_ALL = "All";
+    private static final String FILTER_ADVANCE_FILL = "ADVANCE_FILL";
+    private static final String EXCEPT_ADVANCE_FILL = "EXPECT_ADVANCE_FILL";
     private Stage stage;
     private String moveOutSearchMode;
     private SalesImputer salesImputer;
@@ -78,16 +81,35 @@ public class SalesImputingController {
         this.observableMoveOutStatusList.clear();
 
         ArrayList<MoveOutReason> arrayList = new ArrayList<MoveOutReason>();
-        if(filterMode == FILTER_ALL){
-            arrayList.addAll(moveOutStatusList);
-        } else if(filterMode == FILTER_EMPTY_SKU){
-            for(MoveOutReason moveOutStatus : moveOutStatusList){
-                if(moveOutStatus.getMoveOut().getSku().isEmpty()) {
-                    arrayList.add(moveOutStatus);
+        switch (filterMode) {
+            case FILTER_ALL:
+                arrayList.addAll(moveOutStatusList);
+                break;
+            case FILTER_EMPTY_SKU:
+                for(MoveOutReason moveOutStatus : moveOutStatusList){
+                    if(moveOutStatus.getMoveOut().getSku().isEmpty()) {
+                        arrayList.add(moveOutStatus);
+                    }
+                }  
+                break;
+            case FILTER_ADVANCE_FILL:
+                for(MoveOutReason moveOutReason : moveOutStatusList){
+                    if(moveOutReason.getStatus() == MoveOutReason.ADVANCE_FILL){
+                        arrayList.add(moveOutReason);
+                    }
                 }
-            }
+                break;
+            case EXCEPT_ADVANCE_FILL:
+                for(MoveOutReason moveOutReason : moveOutStatusList){
+                    if(moveOutReason.getStatus() != MoveOutReason.ADVANCE_FILL){
+                        arrayList.add(moveOutReason);
+                    }
+                }
+                break;
+
+            default:
+                break;
         }
-        
 
         this.observableMoveOutStatusList.addAll(arrayList);
         listView.setItems(observableMoveOutStatusList);
@@ -116,7 +138,10 @@ public class SalesImputingController {
 
         MenuItem filterEmptyMenuItem = new MenuItem("empty sku");
         MenuItem filterAllMenuItem = new MenuItem(FILTER_ALL);
-        MenuButton filterMenuButton = new MenuButton("filter by All", null, filterEmptyMenuItem, filterAllMenuItem);
+        MenuItem exceptAdvanceMenuItem = new MenuItem("expect advance fill");
+        MenuItem filterAdvanceMenuItem = new MenuItem("filter by advance fill");
+        MenuButton filterMenuButton = new MenuButton("filter by All", null, filterEmptyMenuItem, filterAllMenuItem
+            , exceptAdvanceMenuItem, filterAdvanceMenuItem);
         this.filterMode = FILTER_ALL;
         filterMenuButton.setPrefWidth(120);
 
@@ -148,10 +173,21 @@ public class SalesImputingController {
             refillMoveOutListView(moveOutListView, salesImputer.getMoveOutStatusList());
         });
         filterEmptyMenuItem.setOnAction(e ->{
-            filterMenuButton.setText("filter by Emptry");
+            filterMenuButton.setText("filter by Empty");
             filterMode = FILTER_EMPTY_SKU;
             refillMoveOutListView(moveOutListView, salesImputer.getMoveOutStatusList());
         });
+        exceptAdvanceMenuItem.setOnAction(e -> {
+            filterMenuButton.setText("expect advance fill");
+            filterMode = EXCEPT_ADVANCE_FILL;
+            refillMoveOutListView(moveOutListView, salesImputer.getMoveOutStatusList());
+        });
+        filterAdvanceMenuItem.setOnAction(e -> {
+            filterMenuButton.setText("filter by advance fill");
+            filterMode = FILTER_ADVANCE_FILL;
+            refillMoveOutListView(moveOutListView, salesImputer.getMoveOutStatusList());
+        });
+
 
         searchBar.textProperty().addListener((observable, oldValue, newValue) ->{
             ArrayList<MoveOutReason> matchedMoveOutStatusList = new ArrayList<MoveOutReason>();
@@ -200,8 +236,13 @@ public class SalesImputingController {
             for(MoveOutReason moveOutStatus : selectedMoveOutStatusList){
                 // MoveOutStatus moveOutStatus = salesImputer.getMoveOutFromStatusListByFoundRow(foundRow);
                 String selectedMeasSku = measImputingController.getSelectedMeasSku();
-                if(selectedMeasSku == null) moveOutStatus.getMoveOut().setSku("");
-                else moveOutStatus.getMoveOut().setSku(selectedMeasSku);
+                if(selectedMeasSku == null) {
+                    moveOutStatus.getMoveOut().setSku("");
+                } else {
+                    moveOutStatus.getMoveOut().setSku(selectedMeasSku);
+                    applySkuToSimilarlyMoveOut(observableMoveOutStatusList, moveOutStatus.getMoveOut().getProductName()
+                        , moveOutStatus.getMoveOut().getVariationName(), selectedMeasSku);
+                }
 
                 salesImputer.setMoveOutChanged(true);
             }
@@ -212,6 +253,38 @@ public class SalesImputingController {
         });
 
         return new VBox(moveOutsSearchHBox, headerHBox, moveOutListView);
+    }
+
+    private void applySkuToSimilarlyMoveOut(List<MoveOutReason> reasons, String productName, String variationName, String sku){
+
+        ArrayList<MoveOutReason> list = new ArrayList<MoveOutReason>(reasons);
+
+        list.sort(new Comparator<MoveOutReason>() {
+
+            @Override
+            public int compare(MoveOutReason o1, MoveOutReason o2) {
+                if(o1.getMoveOut().getProductName().compareTo(o2.getMoveOut().getProductName()) == 0){
+                    return o1.getMoveOut().getVariationName().compareTo(o2.getMoveOut().getVariationName());
+                } else {
+                    return o1.getMoveOut().getProductName().compareTo(o2.getMoveOut().getProductName());
+                }
+            }
+             
+        });
+
+        System.out.println(list.get(0).getMoveOut().getProductName());
+
+        for(MoveOutReason reason : list){
+            String reasonProductName = reason.getMoveOut().getProductName();
+            String reasonVariationName = reason.getMoveOut().getVariationName();
+            boolean pass = false;
+            if(variationName == null && reasonVariationName == null){
+                pass = true;
+            }
+            if(reasonProductName.equals(productName) && (pass || reasonVariationName.equals(variationName))){
+                reason.getMoveOut().setSku(sku);
+            }
+        }
     }
 
     public Scene getScene(){
@@ -226,8 +299,8 @@ public class SalesImputingController {
         return new Scene(hBox);
     }
 
-    public SalesImputingController(List<MoveOut> emptySkuMoveOuts, List<MoveOut> notExistSkuMoveOuts){
-        this.salesImputer = new SalesImputer(emptySkuMoveOuts, notExistSkuMoveOuts);
+    public SalesImputingController(List<MoveOut> emptySkuMoveOuts, List<MoveOut> notExistSkuMoveOuts, List<MoveOut> advanceFillMoveOuts){
+        this.salesImputer = new SalesImputer(emptySkuMoveOuts, notExistSkuMoveOuts, advanceFillMoveOuts);
         this.measImputingController = new MeasImputingController();
         this.selectedMoveOutStatusList = new ArrayList<MoveOutReason>();
     }

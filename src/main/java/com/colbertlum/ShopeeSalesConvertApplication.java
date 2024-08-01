@@ -13,6 +13,7 @@ import java.util.ArrayList;
 import java.util.Comparator;
 import java.util.Iterator;
 import java.util.List;
+import java.util.Map;
 import java.util.Properties;
 import java.util.Stack;
 
@@ -83,6 +84,8 @@ public class ShopeeSalesConvertApplication extends Application {
     public static final String REPORT = "report";
     public static final String ONLINE_SALES_PATH = "onlineSales-path";
     public static final String STOCK_REPORT_PATH = "stock-report-path";
+    public static final String TEMP_MOVEMENT_PATH = "temp_movement_path";
+    public static final String COMPLETE_ORDER_PATH = "completed_movement_path";
 
     private List<UOM> uoms;
 
@@ -160,10 +163,10 @@ public class ShopeeSalesConvertApplication extends Application {
         processButton.setPrefWidth(100);
         
         processButton.setOnAction(e ->{
-            List<MoveOut> processedMoveOuts = processSales();
-            String outputFilePath = getProperty(OUTPUT_PATH) + "\\"+ outputFileNameTextField.getText() + ".xlsx";
-            if(this.uoms == null) uoms = getIrsUoms();
-            saveOutputToFile(processedMoveOuts, uoms, outputFilePath);
+            processSales();
+            // String outputFilePath = getProperty(OUTPUT_PATH) + "\\"+ outputFileNameTextField.getText() + ".xlsx";
+            // if(this.uoms == null) uoms = getIrsUoms();
+            // saveOutputToFile(processedMoveOuts, uoms, outputFilePath);
         });
 
         HBox processBarBox = new HBox(processButton, outputPathText, outputFileNameTextField);
@@ -272,7 +275,7 @@ public class ShopeeSalesConvertApplication extends Application {
         };
     }
 
-    private List<MoveOut> processSales() {
+    private void processSales() {
         List<MoveOut> moveOuts = getMoveOuts();
 
         if(this.measImputer == null) this.measImputer = new MeasImputer(); 
@@ -280,7 +283,9 @@ public class ShopeeSalesConvertApplication extends Application {
         salesConverter.process();
         
         if(salesConverter.hasEmptySkuMoveOut() || salesConverter.hasNotExistSkuMoveOut()){
-            SalesImputingController salesImputingController = new SalesImputingController(salesConverter.getEmptySkuMoveOuts(), salesConverter.getNotExistSkuMoveOuts());
+            SalesImputingController salesImputingController = 
+                new SalesImputingController(salesConverter.getEmptySkuMoveOuts(), salesConverter.getNotExistSkuMoveOuts()
+                    , salesConverter.getAdvanceFillMoveOuts());
             dialogStage = new Stage();
             dialogStage.setX(priStage.getX() + 10);
             dialogStage.setY(priStage.getY() + 10);
@@ -295,7 +300,10 @@ public class ShopeeSalesConvertApplication extends Application {
         Alert alert = new Alert(AlertType.INFORMATION);
         alert.setContentText("output file to : " + getProperty(OUTPUT_PATH));
         alert.show();
-        return moveOuts;
+        // return moveOuts;
+
+        OrderService orderService = new OrderService();
+        orderService.process(moveOuts);
     }
 
     public static ArrayList<Meas> getMeasList() {

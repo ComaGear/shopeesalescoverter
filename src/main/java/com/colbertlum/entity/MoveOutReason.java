@@ -4,6 +4,7 @@ public class MoveOutReason {
 
     public static final String EMPTY = "Empty sku";
     public static final String NOT_EXIST_SKU = "SKU not found at meas";
+    public static final String ADVANCE_FILL = "SKU advance filled";
     
     private MoveOut moveOut;
     private String status;

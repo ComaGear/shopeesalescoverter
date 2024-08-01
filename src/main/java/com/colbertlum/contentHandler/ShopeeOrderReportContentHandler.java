@@ -1,11 +1,8 @@
 package com.colbertlum.contentHandler;
 
-import java.sql.Date;
-import java.text.SimpleDateFormat;
-import java.time.LocalDate;
+import java.lang.ref.SoftReference;
 import java.time.LocalDateTime;
 import java.time.format.DateTimeFormatter;
-import java.time.format.DateTimeFormatterBuilder;
 import java.util.ArrayList;
 import java.util.HashMap;
 import java.util.List;
@@ -237,6 +234,7 @@ public class ShopeeOrderReportContentHandler extends DefaultHandler {
                     }
 
                     moveOut.setOrder(orderMap.get(order.getId()));
+                    orderMap.get(order.getId()).getMoveOutList().add(new SoftReference<MoveOut>(moveOut));
                     moveOut.setFoundRow(readingRow);
                     if(moveOut.getParentSku() != null && !moveOut.getParentSku().isEmpty()
                          && (moveOut.getSku() == null || moveOut.getSku().isEmpty())) moveOut.setSku(moveOut.getParentSku());
@@ -298,6 +296,7 @@ public class ShopeeOrderReportContentHandler extends DefaultHandler {
                 return;
             this.moveOut = new MoveOut();
             this.order = new Order();
+            this.order.setMoveOutList(new ArrayList<SoftReference<MoveOut>>());
         }
     }
 

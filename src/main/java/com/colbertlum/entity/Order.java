@@ -1,12 +1,16 @@
 package com.colbertlum.entity;
 
+import java.lang.ref.SoftReference;
 import java.time.LocalDate;
+import java.util.List;
 
 public class Order {
 
     public static final String STATUS_CANCEL = "Cancelled";
     public static final String STATUS_UNPAID = "Unpaid";
     public static final String STATUS_TO_SHIP = "To ship";
+
+    public static String CANCEL_REASON_FAILED_DELIVERY = "Cancelled automatically by Shopee's system. Reason: Failed delivery";
 
     private String id;
     private double managementFee;
@@ -19,7 +23,43 @@ public class Order {
     private double serviceFee;
     private double commissionFee;
     private double shippingRebateEstimate; 
+
+    private List<SoftReference<MoveOut>> MoveOutList;
+    private LocalDate orderCreationDate;
+    private LocalDate orderCompleteDate;
+    private String trackingNumber;
+    private boolean requestApproved;
     
+    public List<SoftReference<MoveOut>> getMoveOutList() {
+        return MoveOutList;
+    }
+    public void setMoveOutList(List<SoftReference<MoveOut>> moveOutList) {
+        MoveOutList = moveOutList;
+    }
+    public LocalDate getOrderCreationDate() {
+        return orderCreationDate;
+    }
+    public void setOrderCreationDate(LocalDate orderCreationDate) {
+        this.orderCreationDate = orderCreationDate;
+    }
+    public LocalDate getOrderCompleteDate() {
+        return orderCompleteDate;
+    }
+    public void setOrderCompleteDate(LocalDate orderCompleteDate) {
+        this.orderCompleteDate = orderCompleteDate;
+    }
+    public String getTrackingNumber() {
+        return trackingNumber;
+    }
+    public void setTrackingNumber(String trackingNumber) {
+        this.trackingNumber = trackingNumber;
+    }
+    public boolean isRequestApproved() {
+        return requestApproved;
+    }
+    public void setRequestApproved(boolean requestApproved) {
+        this.requestApproved = requestApproved;
+    }
     public double getShippingRebateEstimate() {
         return shippingRebateEstimate;
     }

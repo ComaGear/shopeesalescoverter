@@ -43,7 +43,7 @@ public class MeasImputerTest extends ApplicationTest {
 
     @Override
     public void start(Stage stage) throws Exception {
-        SalesImputingController salesImputingController = new SalesImputingController(null, null);
+        SalesImputingController salesImputingController = new SalesImputingController(null, null, null);
         stage.setScene(salesImputingController.getScene());
         stage.show();
     }

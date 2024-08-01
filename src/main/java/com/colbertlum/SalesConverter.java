@@ -14,6 +14,11 @@ public class SalesConverter {
     private ArrayList<Meas> measList;
     private List<MoveOut> EmptySkuMoveOuts;
     private List<MoveOut> notExistSkuMoveOuts;
+    private List<MoveOut> advanceFillMoveOuts;
+
+    public List<MoveOut> getAdvanceFillMoveOuts() {
+        return advanceFillMoveOuts;
+    }
 
     public List<MoveOut> getNotExistSkuMoveOuts() {
         return notExistSkuMoveOuts;
@@ -33,6 +38,11 @@ public class SalesConverter {
         return !EmptySkuMoveOuts.isEmpty();
     }
 
+    public boolean hasAdvanceFillMoveOut(){
+        if(advanceFillMoveOuts == null) return false;
+        return !advanceFillMoveOuts.isEmpty();
+    }
+
     public SalesConverter(List<MoveOut> moveOuts, ArrayList<Meas> measList){
         this.moveOuts = moveOuts;
         this.measList = measList;
@@ -40,10 +50,39 @@ public class SalesConverter {
 
     public List<MoveOut> process(){
 
+        this.advanceFillMoveOuts = advanceFillEmptySku(moveOuts);
         this.EmptySkuMoveOuts = this.cleanEmptySku(this.moveOuts); // getting out emptry sku moveOut
         this.calculateActualPrice(this.moveOuts);
         this.convertMeas();
         return this.moveOuts;
+    }
+
+    private List<MoveOut> advanceFillEmptySku(List<MoveOut> moveOuts) {
+
+        ArrayList<MoveOut> advanceFill = new ArrayList<MoveOut>();
+
+        measList.sort(new Comparator<Meas>() {
+
+            @Override
+            public int compare(Meas o1, Meas o2) {
+                if(o1.getOnlineProductName().compareTo(o2.getOnlineProductName()) == 0){
+                    return o1.getOnlineVariationName().compareTo(o2.getOnlineVariationName());
+                } else {
+                    return o1.getOnlineProductName().compareTo(o2.getOnlineProductName());
+                }
+            }
+            
+        });
+        
+        for(MoveOut moveOut : moveOuts){
+            if(moveOut.getSku() == null || moveOut.getSku().isEmpty()){
+                Meas meas = search(moveOut.getProductName(), moveOut.getVariationName(), measList);
+                moveOut.setSku(meas.getRelativeId());
+                advanceFill.add(moveOut);
+            }
+        }
+
+        return advanceFill;
     }
 
     private void calculateActualPrice(List<MoveOut> moveOuts) {
@@ -90,7 +129,27 @@ public class SalesConverter {
             moveOut.setId(meas.getId());
             moveOut.setQuantity(meas.getMeasurement() * moveOut.getQuantity());
             moveOut.setPrice(moveOut.getPrice() / meas.getMeasurement());
+
+            meas.setOnlineProductName(moveOut.getProductName());
+            meas.setOnlineVariationName(moveOut.getVariationName());
         }
+    }
+
+    private Meas search(String productName, String variationName, List<Meas> measList){
+        int lo = 0;
+        int hi = measList.size()-1;
+
+        while(lo <= hi) {
+            int mid = lo + (hi-lo) / 2;
+            if(measList.get(mid).getOnlineProductName().compareTo(productName) > 0) hi = mid-1; 
+            else if(measList.get(mid).getOnlineProductName().compareTo(productName) < 0) lo = mid+1;
+            else{
+                if(measList.get(mid).getOnlineVariationName().compareTo(variationName) > 0) hi = mid-1; 
+                else if(measList.get(mid).getOnlineVariationName().compareTo(variationName) < 0) lo = mid+1;
+                else return measList.get(mid);
+            }
+        }
+        return null;
     }
     
     private Meas binarySearch(MoveOut moveOut, List<Meas> measList){
