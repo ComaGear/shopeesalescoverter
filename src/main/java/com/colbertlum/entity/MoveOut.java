@@ -10,11 +10,12 @@ public class MoveOut {
 
     private Order order;
     private int foundRow;
-    private String id;
+    private String orderId;
     
 
-    public String getId() {
-        return id;
+    public String getOrderId() {
+        if(orderId == null && order != null) return order.getId();
+        return orderId;
     }
     public String getParentSku() {
         return parentSku;
@@ -24,8 +25,8 @@ public class MoveOut {
         this.parentSku = parentSku;
     }
 
-    public MoveOut setId(String id) {
-        this.id = id;
+    public MoveOut setOrderId(String id) {
+        this.orderId = id;
         return this;
     }
 

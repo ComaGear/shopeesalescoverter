@@ -11,7 +11,7 @@ import java.util.List;
 import com.colbertlum.Imputer.Utils.Lookup;
 import com.colbertlum.entity.MoveOut;
 import com.colbertlum.entity.Order;
-import com.colbertlum.entity.returnMoveOut;
+import com.colbertlum.entity.ReturnMoveOut;
 import com.colbertlum.reporting.CompletedMovementReporting;
 import com.colbertlum.reporting.TempMovementReporting;
 
@@ -95,11 +95,11 @@ public class OrderService {
 
         //figure out new return order after ship out.
         ArrayList<Order> newReturnAfterShippingOrders = figureOutNewInReturnOrder(orderRepository);
-        ArrayList<returnMoveOut> returningMoveOuts = new ArrayList<returnMoveOut>();
+        ArrayList<ReturnMoveOut> returningMoveOuts = new ArrayList<ReturnMoveOut>();
         for(Order order : newReturnAfterShippingOrders){
             for(SoftReference<MoveOut> softMoveOut : order.getMoveOutList()){
                 MoveOut moveOut = softMoveOut.get();
-                returningMoveOuts.add(new returnMoveOut(moveOut));
+                returningMoveOuts.add(new ReturnMoveOut(moveOut));
             }
         }
         // save to repository
@@ -109,11 +109,11 @@ public class OrderService {
 
         //figure out new return order after buyer received order and request return or refund.
         ArrayList<Order> newReturnAfterCompletedOrder = figureOutNewInReturnAfterCompletedOrder(orderRepository);
-        returningMoveOuts = new ArrayList<returnMoveOut>();
+        returningMoveOuts = new ArrayList<ReturnMoveOut>();
         for(Order order : newReturnAfterCompletedOrder){
             for(SoftReference<MoveOut> softMoveOut : order.getMoveOutList()){
                 MoveOut moveOut = softMoveOut.get();
-                returningMoveOuts.add(new returnMoveOut(moveOut));
+                returningMoveOuts.add(new ReturnMoveOut(moveOut));
             }
         }
         // save to repository
@@ -241,11 +241,11 @@ public class OrderService {
         HashMap<String, Double> pendingStockReducingMap = new HashMap<String, Double>();
 
         for(MoveOut moveOut : moveOuts) {
-            if(!pendingStockReducingMap.containsKey(moveOut.getId())) {
-                pendingStockReducingMap.put(moveOut.getId(), moveOut.getQuantity());
+            if(!pendingStockReducingMap.containsKey(moveOut.getOrderId())) {
+                pendingStockReducingMap.put(moveOut.getOrderId(), moveOut.getQuantity());
             } else {
-                Double lastReduce = pendingStockReducingMap.get(moveOut.getId());
-                pendingStockReducingMap.put(moveOut.getId(), lastReduce);
+                Double lastReduce = pendingStockReducingMap.get(moveOut.getOrderId());
+                pendingStockReducingMap.put(moveOut.getOrderId(), lastReduce);
             }
         }
 

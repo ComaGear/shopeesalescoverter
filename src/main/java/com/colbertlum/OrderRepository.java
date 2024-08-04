@@ -3,6 +3,7 @@ package com.colbertlum;
 import java.io.File;
 import java.io.IOException;
 import java.io.InputStream;
+import java.lang.ref.SoftReference;
 import java.util.ArrayList;
 import java.util.Iterator;
 import java.util.List;
@@ -20,11 +21,16 @@ import org.xml.sax.InputSource;
 import org.xml.sax.SAXException;
 import org.xml.sax.XMLReader;
 
+import com.colbertlum.Imputer.Utils.Lookup;
 import com.colbertlum.contentHandler.MeasContentHandler;
 import com.colbertlum.contentHandler.OrderTrackingContentHandler;
+import com.colbertlum.contentHandler.RepositoryItemMovementStatusContentHandler;
+import com.colbertlum.contentHandler.RepositoryOrderStatusContentHandler;
+import com.colbertlum.contentHandler.RepositoryReturnMovementContentHandler;
+import com.colbertlum.entity.ItemMovementStatus;
 import com.colbertlum.entity.MoveOut;
 import com.colbertlum.entity.Order;
-import com.colbertlum.entity.returnMoveOut;
+import com.colbertlum.entity.ReturnMoveOut;
 
 import javafx.scene.control.Alert;
 import javafx.scene.control.Alert.AlertType;
@@ -33,11 +39,17 @@ import javafx.stage.Stage;
 
 public class OrderRepository {
 
+    private static final String STATUS_CANCEL = "Cancelled";
+    private static final String STATUS_COMPLETE = "Completed";
+    private static final String STATUS_SHIPPING = "Shipping";
+
     List<Order> orders;
     List<Order> shippingOrders;
     List<Order> completedOrders;
     List<Order> returnAfterShippingOrders;
     List<Order> returnAfterCompletedOrders;
+    private List<MoveOut> moveOutList;
+    private List<ReturnMoveOut> returnMoveOuts;
 
     public List<Order> getReturnAfterShippingOrders() {
         return returnAfterShippingOrders;
@@ -65,14 +77,14 @@ public class OrderRepository {
     private void loadRepository(){
 
 
-        orders;
-        shippingOrders;
-        completedOrders;
-        returnAfterShippingOrders;
-        returnAfterCompletedOrders;
+        orders = new ArrayList<Order>();
+        shippingOrders = new ArrayList<Order>();;
+        completedOrders = new ArrayList<Order>();;
+        returnAfterShippingOrders = new ArrayList<Order>();;
+        returnAfterCompletedOrders = new ArrayList<Order>();;
 
-        ArrayList<MoveOut> MoveOutList = new ArrayList<MoveOut>();
-
+        moveOutList = new ArrayList<MoveOut>();
+        returnMoveOuts = new ArrayList<ReturnMoveOut>();
 
         try {
             File file = new File(pathStr);
@@ -89,13 +101,21 @@ public class OrderRepository {
                     String sheetName = sheetIterator.getSheetName();
                     if(sheetName.equals("Order Status")){
 
-                        OrderTrackingContentHandler contentHandler = new OrderTrackingContentHandler(xssfReader.getSharedStringsTable(), xssfReader.getStylesTable(), );
+                        RepositoryOrderStatusContentHandler contentHandler = new RepositoryOrderStatusContentHandler(xssfReader.getSharedStringsTable(), xssfReader.getStylesTable(), orders);
                         xmlReader.setContentHandler(contentHandler);
                         xmlReader.parse(new InputSource(inputStream));
 
                     } else if(sheetName.equals("Movement")) {
 
+                        RepositoryItemMovementStatusContentHandler contentHandler = new RepositoryItemMovementStatusContentHandler(xssfReader.getSharedStringsTable(), xssfReader.getStylesTable(), moveOutList);
+                        xmlReader.setContentHandler(contentHandler);
+                        xmlReader.parse(new InputSource(inputStream));
+
                     } else if(sheetName.equals("Return Movement")){
+
+                        RepositoryReturnMovementContentHandler contentHandler = new RepositoryReturnMovementContentHandler(xssfReader.getSharedStringsTable(), xssfReader.getStylesTable(), );
+                        xmlReader.setContentHandler(contentHandler);
+                        xmlReader.parse(new InputSource(inputStream));
                         
                     }
                 }
@@ -109,6 +129,23 @@ public class OrderRepository {
         } catch (ParserConfigurationException e) {
             // TODO Auto-generated catch block
             e.printStackTrace();
+        }
+
+        orders.sort((o1, o2) -> {
+            return o1.getId().compareTo(o2.getId());
+        });
+        for(MoveOut moveOut : moveOutList){
+            SoftReference<MoveOut> softMoveOut = new SoftReference<MoveOut>(moveOut);
+            Order lookupOrder = Lookup.lookupOrder(orders, moveOut.getOrderId());
+            if(lookupOrder != null && lookupOrder.getMoveOutList() != null){
+                lookupOrder.getMoveOutList().add(softMoveOut);
+            } else if(lookupOrder != null){
+                lookupOrder.setMoveOutList(new ArrayList<SoftReference<MoveOut>>());
+                lookupOrder.getMoveOutList().add(softMoveOut);
+            }
+        }
+        for(Order order : orders){
+            if(order.getStatus() == STATUS_SHIPPING)
         }
     }
 
@@ -127,7 +164,7 @@ public class OrderRepository {
         loadRepository();
     }
 
-    public void addInReturnMoveOut(ArrayList<returnMoveOut> returningMoveOuts) {
+    public void addInReturnMoveOut(ArrayList<ReturnMoveOut> returningMoveOuts) {
         // TODO Auto-generated method stub
         throw new UnsupportedOperationException("Unimplemented method 'addInReturnMoveOut'");
     }

@@ -1,6 +1,6 @@
 package com.colbertlum.entity;
 
-public class returnMoveOut {
+public class ReturnMoveOut {
     private String sku;
     private String productName;
     private String variationName;
@@ -44,7 +44,7 @@ public class returnMoveOut {
         this.orderId = orderId;
     }
 
-    public returnMoveOut(MoveOut moveOut){
+    public ReturnMoveOut(MoveOut moveOut){
         super();
 
         if(moveOut.getSku() != null){
@@ -59,7 +59,7 @@ public class returnMoveOut {
         setOrderId(moveOut.getOrder().getId());
     }
 
-    public returnMoveOut(){
+    public ReturnMoveOut(){
         super();
     }
 }

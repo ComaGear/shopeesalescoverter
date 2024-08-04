@@ -126,7 +126,7 @@ public class SalesConverter {
                 notExistSkuMoveOuts.add(moveOut);
                 continue;
             }
-            moveOut.setId(meas.getId());
+            moveOut.setOrderId(meas.getId());
             moveOut.setQuantity(meas.getMeasurement() * moveOut.getQuantity());
             moveOut.setPrice(moveOut.getPrice() / meas.getMeasurement());
 

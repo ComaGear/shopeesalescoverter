@@ -9,6 +9,7 @@ import org.apache.poi.xssf.model.SharedStrings;
 import org.apache.poi.xssf.model.StylesTable;
 
 import com.colbertlum.Imputer.OrderTrackingImputer;
+import com.colbertlum.entity.Order;
 import com.colbertlum.entity.OrderStatusTracking;
 
 public class RepositoryOrderStatusContentHandler extends ContentHandler {
@@ -21,10 +22,9 @@ public class RepositoryOrderStatusContentHandler extends ContentHandler {
     private static final String SHIPPING_TIME = "Shipping Time";
     private static final String COMPLETE_TIME = "Complete Time";
 
-    private Map<String, List<OrderStatusTracking>> trackingsMap;
+    private List<Order> orders;
 
-    private OrderStatusTracking statusTracking;
-
+    private Order order;
     @Override
     protected void onRow(int row) {
         if(statusTracking.getInternalStatus().equals(OrderTrackingImputer.STATUS_CANCELLED)){
@@ -41,7 +41,7 @@ public class RepositoryOrderStatusContentHandler extends ContentHandler {
 
         }
 
-        statusTracking = new OrderStatusTracking();
+        order = new Order();
     }
 
     @Override
@@ -67,10 +67,10 @@ public class RepositoryOrderStatusContentHandler extends ContentHandler {
         }
     }
 
-    public RepositoryOrderStatusContentHandler(SharedStrings sharedStrings, StylesTable stylesTable, Map<String, List<OrderStatusTracking>> trackings) {
+    public RepositoryOrderStatusContentHandler(SharedStrings sharedStrings, StylesTable stylesTable,  List<Order> orders) {
         super(sharedStrings, stylesTable);
-        this.statusTracking = new OrderStatusTracking();
-        this.trackingsMap = trackings;
+        this.order = new Order();
+        this.orders = orders;
     }
     
 }

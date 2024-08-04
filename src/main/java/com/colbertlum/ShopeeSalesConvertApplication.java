@@ -599,7 +599,7 @@ public class ShopeeSalesConvertApplication extends Application {
             productName = productName.replaceAll(characterFilter,"");
 
             XSSFRow row = biztorySheet.createRow(rowCount++);
-            row.createCell(0).setCellValue(moveOut.getId());
+            row.createCell(0).setCellValue(moveOut.getOrderId());
             row.createCell(1).setCellValue(productName);
             row.createCell(2).setCellValue(moveOut.getQuantity());
             row.createCell(3).setCellValue("");
@@ -664,8 +664,8 @@ public class ShopeeSalesConvertApplication extends Application {
         for(MoveOut moveOut : moveOuts){
 
             UOM uom = null;
-            if(moveOut.getId() != null) {
-                uom = UOM.binarySearch(moveOut.getId(), uoms);
+            if(moveOut.getOrderId() != null) {
+                uom = UOM.binarySearch(moveOut.getOrderId(), uoms);
             } else {
                 uom = new UOM();
                 uom.setProductId("");
@@ -675,7 +675,7 @@ public class ShopeeSalesConvertApplication extends Application {
             XSSFRow row = movementDetailSheet.createRow(index);
             row.createCell(0).setCellValue(moveOut.getOrder().getId());
             row.createCell(1).setCellValue(moveOut.getOrder().getShipOutDate());
-            row.createCell(2).setCellValue(moveOut.getId());
+            row.createCell(2).setCellValue(moveOut.getOrderId());
             row.createCell(3).setCellValue(moveOut.getProductName() + "-" + moveOut.getVariationName());
             row.createCell(4).setCellValue(moveOut.getQuantity());
             row.createCell(5).setCellValue(uom.getCostPrice());
@@ -735,8 +735,8 @@ public class ShopeeSalesConvertApplication extends Application {
             }
             
             UOM uom = null;
-            if(moveOut.getId() != null) {
-                uom = UOM.binarySearch(moveOut.getId(), uoms);
+            if(moveOut.getOrderId() != null) {
+                uom = UOM.binarySearch(moveOut.getOrderId(), uoms);
             } else {
                 uom = new UOM();
                 uom.setProductId("");
