@@ -17,11 +17,11 @@ import com.colbertlum.reporting.TempMovementReporting;
 
 public class OrderService {
 
-    private static final String STATUS_CANCEL = "Cancelled";
-    private static final String STATUS_COMPLETE = "Completed";
-    private static final String STATUS_TO_SHIP = "To ship";
-    private static final String STATUS_UNPAID = "Unpaid";
-    private static final String STATUS_SHIPPING = "Shipping";
+    public static final String STATUS_CANCEL = "Cancelled";
+    public static final String STATUS_COMPLETE = "Completed";
+    public static final String STATUS_TO_SHIP = "To ship";
+    public static final String STATUS_UNPAID = "Unpaid";
+    public static final String STATUS_SHIPPING = "Shipping";
 
 
     private List<Order> beingCompleteOrderList;

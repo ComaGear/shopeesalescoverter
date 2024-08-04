@@ -1,6 +1,7 @@
 package com.colbertlum;
 
 import java.io.File;
+import java.io.FileInputStream;
 import java.io.IOException;
 import java.io.InputStream;
 import java.lang.ref.SoftReference;
@@ -14,9 +15,11 @@ import javax.xml.parsers.ParserConfigurationException;
 
 import org.apache.poi.openxml4j.exceptions.OpenXML4JException;
 import org.apache.poi.openxml4j.opc.OPCPackage;
+import org.apache.poi.ss.usermodel.Sheet;
 import org.apache.poi.util.XMLHelper;
 import org.apache.poi.xssf.eventusermodel.XSSFReader;
 import org.apache.poi.xssf.eventusermodel.XSSFReader.SheetIterator;
+import org.apache.poi.xssf.usermodel.XSSFWorkbook;
 import org.xml.sax.InputSource;
 import org.xml.sax.SAXException;
 import org.xml.sax.XMLReader;
@@ -38,10 +41,6 @@ import javafx.scene.control.ButtonType;
 import javafx.stage.Stage;
 
 public class OrderRepository {
-
-    private static final String STATUS_CANCEL = "Cancelled";
-    private static final String STATUS_COMPLETE = "Completed";
-    private static final String STATUS_SHIPPING = "Shipping";
 
     List<Order> orders;
     List<Order> shippingOrders;
@@ -87,7 +86,7 @@ public class OrderRepository {
         returnMoveOuts = new ArrayList<ReturnMoveOut>();
 
         try {
-            File file = new File(pathStr);
+            File file = new File(ShopeeSalesConvertApplication.getProperty(ShopeeSalesConvertApplication.ORDER_REPOSITORY_PATH));
             XSSFReader xssfReader = new XSSFReader(OPCPackage.open(file));
             // MeasContentHandler contentHandler = new MeasContentHandler(xssfReader.getSharedStringsTable(), xssfReader.getStylesTable(),
             //     measList);
@@ -145,7 +144,15 @@ public class OrderRepository {
             }
         }
         for(Order order : orders){
-            if(order.getStatus() == STATUS_SHIPPING)
+            if(order.getStatus().equals(OrderService.STATUS_SHIPPING)){
+                shippingOrders.add(order);
+            } else if(order.getStatus().equals(OrderService.STATUS_COMPLETE) && order.isRequestApproved()){
+                returnAfterCompletedOrders.add(order);
+            } else if(order.getStatus().equals(OrderService.STATUS_CANCEL) && order.getShipOutDate() != null){
+                returnAfterShippingOrders.add(order);
+            } else if(order.getStatus().equals(OrderService.STATUS_COMPLETE)){
+                completedOrders.add(order);
+            }
         }
     }
 
@@ -157,6 +164,18 @@ public class OrderRepository {
         Optional<ButtonType> result = alert.showAndWait();
         if(!result.isPresent() && result.get() != ButtonType.OK){
             return;
+        }
+
+        try {
+            FileInputStream fileInputStream = new FileInputStream(
+                new File(ShopeeSalesConvertApplication.getProperty(ShopeeSalesConvertApplication.ORDER_REPOSITORY_PATH)));
+            XSSFWorkbook workbook = new XSSFWorkbook(fileInputStream);
+            Sheet orderSheet = workbook.getSheetAt(0);
+            Sheet movementSheet = workbook.getSheetAt(1);
+            Sheet returnMovementSheet = workbook.getSheetAt(2);
+
+            
+
         }
     }
 

@@ -86,6 +86,7 @@ public class ShopeeSalesConvertApplication extends Application {
     public static final String STOCK_REPORT_PATH = "stock-report-path";
     public static final String TEMP_MOVEMENT_PATH = "temp_movement_path";
     public static final String COMPLETE_ORDER_PATH = "completed_movement_path";
+    public static final String ORDER_REPOSITORY_PATH = "order_repository_path";
 
     private List<UOM> uoms;
 
