@@ -7,6 +7,21 @@ public class ReturnMoveOut {
     private double quantity;
     private double price;
     private String orderId;
+    private String returnStatus;
+    private double statusQuantity;
+
+    public String getReturnStatus() {
+        return returnStatus;
+    }
+    public void setReturnStatus(String returnStatus) {
+        this.returnStatus = returnStatus;
+    }
+    public double getStatusQuantity() {
+        return statusQuantity;
+    }
+    public void setStatusQuantity(double statusQuantity) {
+        this.statusQuantity = statusQuantity;
+    }
     public String getSku() {
         return sku;
     }

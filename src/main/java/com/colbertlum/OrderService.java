@@ -47,22 +47,24 @@ public class OrderService {
 
         // reporting being Shipping Move Out.
         ArrayList<MoveOut> ShippingMoveOuts = new ArrayList<MoveOut>();
-        ArrayList<Order> figureOutOrderInRepositoryOnlyOnShipping = figureOutOrderInRepositoryOnlyOnShipping(orderRepository);
-        for(Order order : beingShippingOrderList){
+        // ArrayList<Order> figureOutOrderInRepositoryOnlyOnShipping = figureOutOrderInRepositoryOnlyOnShipping(orderRepository);
+        List<Order> shippingOrders = orderRepository.getShippingOrders();
+        List<Order> newShippingOrders = figureOutNewShippingOrder(orderRepository);
+        for(Order order : newShippingOrders){
             for(SoftReference<MoveOut> moveOut : order.getMoveOutList()){
                 ShippingMoveOuts.add(moveOut.get());
             }
         }
-        for(Order order : figureOutOrderInRepositoryOnlyOnShipping){
+        for(Order order : shippingOrders){
             for(SoftReference<MoveOut> moveOut : order.getMoveOutList()){
                 ShippingMoveOuts.add(moveOut.get());
             }
         }
-        TempMovementReporting.reporting(new File(), new ArrayList<MoveOut>(ShippingMoveOuts));
+        File tempMovementFile = new File(ShopeeSalesConvertApplication.getProperty(ShopeeSalesConvertApplication.TEMP_MOVEMENT_PATH));
+        TempMovementReporting.reporting(tempMovementFile, new ArrayList<MoveOut>(ShippingMoveOuts));
         // save on shipping order to repository
-        ArrayList<Order> shipingOrders = new ArrayList<Order>(beingShippingOrderList);
-        shipingOrders.addAll(figureOutOrderInRepositoryOnlyOnShipping);
-        orderRepository.setShippingOrders(shipingOrders);
+        shippingOrders.addAll(newShippingOrders);
+        orderRepository.setShippingOrders(shippingOrders);
 
         // reporting completed order by date.
         ArrayList<Order> newCompletedOrder = figureOutNewCompletedOrder(orderRepository);
@@ -87,7 +89,7 @@ public class OrderService {
             }
         }
         for(String fileName : dateDifferentMoveOuts.keySet()){
-            String filePath = COMPLETED_ORDER_REPORT_PATH + fileName;
+            String filePath = ShopeeSalesConvertApplication.getProperty(ShopeeSalesConvertApplication.COMPLETE_ORDER_PATH) + fileName;
             CompletedMovementReporting.reporting(new File(filePath), dateDifferentMoveOuts.get(fileName));
         }
         // save on completed order to repository
@@ -122,11 +124,24 @@ public class OrderService {
         orderRepository.removeShippingOrders(newReturnAfterCompletedOrder);
         orderRepository.addReturnAfterCompletedOrder(newReturnAfterCompletedOrder);
         
+        orderRepository.addOrders(figureOutNewReportOrder(allOrders, orderRepository));
         orderRepository.submitTransaction();
     }
 
 
-    private ArrayList<Order> figureOutNewInReturnAfterCompletedOrder(OrderRepository orderRepository2) {
+    private List<Order> figureOutNewReportOrder(List<Order> allOrders, OrderRepository orderRepository) {
+        // TODO Auto-generated method stub
+        throw new UnsupportedOperationException("Unimplemented method 'figureOutNewReportOrder'");
+    }
+
+
+    private List<Order> figureOutNewShippingOrder(OrderRepository orderRepository) {
+        // TODO Auto-generated method stub
+        throw new UnsupportedOperationException("Unimplemented method 'figureOutNewShippingOrder'");
+    }
+
+
+    private ArrayList<Order> figureOutNewInReturnAfterCompletedOrder(OrderRepository orderRepository) {
         // TODO Auto-generated method stub
         throw new UnsupportedOperationException("Unimplemented method 'figureOutNewInReturnAfterCompletedOrder'");
     }
