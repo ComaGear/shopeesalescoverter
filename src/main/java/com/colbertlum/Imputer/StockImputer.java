@@ -22,8 +22,6 @@ import org.apache.poi.openxml4j.opc.OPCPackage;
 import org.apache.poi.ss.usermodel.Cell;
 import org.apache.poi.ss.usermodel.Row;
 import org.apache.poi.ss.usermodel.Sheet;
-import org.apache.poi.ss.usermodel.Workbook;
-import org.apache.poi.ss.usermodel.WorkbookFactory;
 import org.apache.poi.util.XMLHelper;
 import org.apache.poi.xssf.eventusermodel.XSSFReader;
 import org.apache.poi.xssf.usermodel.XSSFWorkbook;
@@ -210,42 +208,42 @@ public class StockImputer {
 
     public static void saveOutputToFile(List<OnlineSalesInfo> infoList, File file) throws IOException{
         FileInputStream fileInputStream = new FileInputStream(file);
-        XSSFWorkbook workbook = new XSSFWorkbook(fileInputStream);
-        // Workbook workbook = WorkbookFactory.create(fileInputStream);
-        Sheet sheet = workbook.getSheetAt(0);
-        for(OnlineSalesInfo info : infoList){
-            int foundRow = info.getFoundRow();
-            Row row = sheet.getRow(foundRow);
-            Cell cell = row.getCell(0);
-            if(cell == null || !cell.getStringCellValue().equals(info.getProductId())
-                || row.getCell(2) == null || !row.getCell(2).getStringCellValue().equals(info.getVariationId())){
-                return;
-            }
-            if(info.getParentSku() != null){
-                Cell parentSKuCell = row.getCell(4);
-                if(parentSKuCell == null) parentSKuCell = row.createCell(4);
-                parentSKuCell.setCellValue(info.getParentSku());
-            } 
-            if(info.getSku() != null){
-                Cell skuCell = row.getCell(5);
-                if(skuCell == null) skuCell = row.createCell(5);
-                skuCell.setCellValue(info.getSku());
-            }
-            Cell priceCell = row.getCell(6);
-            if(priceCell == null) priceCell = row.createCell(6);
-            priceCell.setCellValue(info.getPrice());
+        try (XSSFWorkbook workbook = new XSSFWorkbook(fileInputStream)) {
+            Sheet sheet = workbook.getSheetAt(0);
+            for(OnlineSalesInfo info : infoList){
+                int foundRow = info.getFoundRow();
+                Row row = sheet.getRow(foundRow);
+                Cell cell = row.getCell(0);
+                if(cell == null || !cell.getStringCellValue().equals(info.getProductId())
+                    || row.getCell(2) == null || !row.getCell(2).getStringCellValue().equals(info.getVariationId())){
+                    return;
+                }
+                if(info.getParentSku() != null){
+                    Cell parentSKuCell = row.getCell(4);
+                    if(parentSKuCell == null) parentSKuCell = row.createCell(4);
+                    parentSKuCell.setCellValue(info.getParentSku());
+                } 
+                if(info.getSku() != null){
+                    Cell skuCell = row.getCell(5);
+                    if(skuCell == null) skuCell = row.createCell(5);
+                    skuCell.setCellValue(info.getSku());
+                }
+                Cell priceCell = row.getCell(6);
+                if(priceCell == null) priceCell = row.createCell(6);
+                priceCell.setCellValue(info.getPrice());
 
-            Cell stockCell = row.getCell(7);
-            if(stockCell == null) stockCell = row.createCell(7);
-            stockCell.setCellValue(Double.valueOf(info.getQuantity()));
+                Cell stockCell = row.getCell(7);
+                if(stockCell == null) stockCell = row.createCell(7);
+                stockCell.setCellValue(Double.valueOf(info.getQuantity()));
+            }
+
+            fileInputStream.close();
+
+            FileOutputStream fileOutputStream = new FileOutputStream(file);
+            workbook.write(fileOutputStream);
+            workbook.close();
+            fileOutputStream.close();
         }
-
-        fileInputStream.close();
-
-        FileOutputStream fileOutputStream = new FileOutputStream(file);
-        workbook.write(fileOutputStream);
-        workbook.close();
-        fileOutputStream.close();
     }
 
     public Double getUpdateRuleMeasure(String updateRule) throws Throwable{

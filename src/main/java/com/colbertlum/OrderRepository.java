@@ -10,7 +10,6 @@ import java.time.format.DateTimeFormatter;
 import java.util.ArrayList;
 import java.util.Iterator;
 import java.util.List;
-import java.util.Map;
 import java.util.Optional;
 
 import javax.xml.parsers.ParserConfigurationException;
@@ -29,12 +28,9 @@ import org.xml.sax.SAXException;
 import org.xml.sax.XMLReader;
 
 import com.colbertlum.Imputer.Utils.Lookup;
-import com.colbertlum.contentHandler.MeasContentHandler;
-import com.colbertlum.contentHandler.OrderTrackingContentHandler;
 import com.colbertlum.contentHandler.RepositoryItemMovementStatusContentHandler;
 import com.colbertlum.contentHandler.RepositoryOrderStatusContentHandler;
 import com.colbertlum.contentHandler.RepositoryReturnMovementContentHandler;
-import com.colbertlum.entity.ItemMovementStatus;
 import com.colbertlum.entity.MoveOut;
 import com.colbertlum.entity.Order;
 import com.colbertlum.entity.ReturnMoveOut;
@@ -42,7 +38,6 @@ import com.colbertlum.entity.ReturnMoveOut;
 import javafx.scene.control.Alert;
 import javafx.scene.control.Alert.AlertType;
 import javafx.scene.control.ButtonType;
-import javafx.stage.Stage;
 
 public class OrderRepository {
 
@@ -461,34 +456,80 @@ public class OrderRepository {
         loadRepository();
     }
 
-    public void addInReturnMoveOut(ArrayList<ReturnMoveOut> returningMoveOuts) {
-        // TODO Auto-generated method stub
-        throw new UnsupportedOperationException("Unimplemented method 'addInReturnMoveOut'");
+    // public void addInReturnMoveOut(List<ReturnMoveOut> newReturningMoveOuts) {
+    //     returnMoveOuts.addAll(newReturningMoveOuts);
+    // }
+
+    public void removeCompletedOrders(ArrayList<Order> removeOrders) {
+
+        for(Order order : removeOrders){
+            Order lookupOrder = Lookup.lookupOrder(completedOrders, order.getId());
+            if(lookupOrder != null) {
+                completedOrders.remove(lookupOrder);
+                orders.remove(lookupOrder);
+            }
+            List<SoftReference<MoveOut>> softMoveOuts = lookupOrder.getMoveOutList();
+            ArrayList<MoveOut> removeMoveOuts = new ArrayList<MoveOut>();
+            for(SoftReference<MoveOut> softMoveOut : softMoveOuts){
+                removeMoveOuts.add(softMoveOut.get());
+            }
+            moveOutList.removeAll(removeMoveOuts);
+        }
     }
 
-    public void removeCompletedOrders(ArrayList<Order> newReturnAfterShippingOrders) {
-        // TODO Auto-generated method stub
-        throw new UnsupportedOperationException("Unimplemented method 'removeCompletedOrders'");
+    public void addReturnAfterShippingOrder(List<Order> newReturnAfterShippingOrders) {
+        orders.addAll(newReturnAfterShippingOrders);
+        returnAfterShippingOrders.addAll(newReturnAfterShippingOrders);
+
+        ArrayList<ReturnMoveOut> returningMoveOuts = new ArrayList<ReturnMoveOut>();
+        ArrayList<MoveOut> moveOuts = new ArrayList<MoveOut>();
+        for(Order order : newReturnAfterShippingOrders){
+            for(SoftReference<MoveOut> softMoveOut : order.getMoveOutList()){
+                MoveOut moveOut = softMoveOut.get();
+                returningMoveOuts.add(new ReturnMoveOut(moveOut));
+                moveOuts.add(moveOut);
+            }
+        }
+        returnMoveOuts.addAll(returningMoveOuts);
+        moveOuts.addAll(moveOuts);
     }
 
-    public void addReturnAfterShippingOrder(ArrayList<Order> newReturnAfterShippingOrders) {
-        // TODO Auto-generated method stub
-        throw new UnsupportedOperationException("Unimplemented method 'addReturnAfterShippingOrder'");
+    public void addReturnAfterCompletedOrder(List<Order> newReturnAfterCompletedOrder) {
+        orders.addAll(newReturnAfterCompletedOrder);
+        returnAfterCompletedOrders.addAll(newReturnAfterCompletedOrder);
+
+        ArrayList<ReturnMoveOut> returningMoveOuts = new ArrayList<ReturnMoveOut>();
+        ArrayList<MoveOut> moveOuts = new ArrayList<MoveOut>();
+        for(Order order : newReturnAfterCompletedOrder){
+            for(SoftReference<MoveOut> softMoveOut : order.getMoveOutList()){
+                MoveOut moveOut = softMoveOut.get();
+                returningMoveOuts.add(new ReturnMoveOut(moveOut));
+                moveOuts.add(moveOut);
+            }
+        }
+        returnMoveOuts.addAll(returningMoveOuts);
+        moveOuts.addAll(moveOuts);
     }
 
-    public void addReturnAfterCompletedOrder(ArrayList<Order> newReturnAfterCompletedOrder) {
-        // TODO Auto-generated method stub
-        throw new UnsupportedOperationException("Unimplemented method 'addReturnAfterCompletedOrder'");
+    public void removeShippingOrders(List<Order> removeOrders) {
+
+        for(Order order : removeOrders){
+            Order lookupOrder = Lookup.lookupOrder(shippingOrders, order.getId());
+            if(lookupOrder != null) {
+                shippingOrders.remove(lookupOrder);
+                orders.remove(lookupOrder);
+            }
+            List<SoftReference<MoveOut>> softMoveOuts = lookupOrder.getMoveOutList();
+            ArrayList<MoveOut> removeMoveOuts = new ArrayList<MoveOut>();
+            for(SoftReference<MoveOut> softMoveOut : softMoveOuts){
+                removeMoveOuts.add(softMoveOut.get());
+            }
+            moveOutList.removeAll(removeMoveOuts);
+        }
     }
 
-    public void removeShippingOrders(ArrayList<Order> newReturnAfterShippingOrders) {
-        // TODO Auto-generated method stub
-        throw new UnsupportedOperationException("Unimplemented method 'removeShippingOrders'");
-    }
-
-    public List<MoveOut> getAllMoveOuts() {
-        // TODO Auto-generated method stub
-        throw new UnsupportedOperationException("Unimplemented method 'getAllMoveOuts'");
+    public void addShippingOrders(List<Order> orders){
+        // TODO
     }
 
     public void submitTransaction() {

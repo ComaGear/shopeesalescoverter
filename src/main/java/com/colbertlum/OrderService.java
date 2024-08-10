@@ -63,12 +63,34 @@ public class OrderService {
         File tempMovementFile = new File(ShopeeSalesConvertApplication.getProperty(ShopeeSalesConvertApplication.TEMP_MOVEMENT_PATH));
         TempMovementReporting.reporting(tempMovementFile, new ArrayList<MoveOut>(ShippingMoveOuts));
         // save on shipping order to repository
-        shippingOrders.addAll(newShippingOrders);
-        orderRepository.setShippingOrders(shippingOrders);
+        orderRepository.addShippingOrders(newShippingOrders);
+
+        // record completed order
+        ArrayList<Order> newCompletedOrder = figureOutNewCompletedOrder(orderRepository);
+        // save on completed order to repository
+        orderRepository.addCompletedOrders(newCompletedOrder);
+
+        // figureOut toReport orders
+        ArrayList<Order> toReportOrders = new ArrayList<Order>();
+        toReportOrders.addAll(newCompletedOrder);
+        toReportOrders.addAll(lookupOrderNotYetOnShipping(figureOutNewInReturnOrder(orderRepository), orderRepository));
+        toReportOrders.addAll(lookupOrderNotYetOnShipping(figureOutNewInReturnAfterCompletedOrder(orderRepository), orderRepository));
+
+        //figure out new return order after ship out.
+        ArrayList<Order> newReturnAfterShippingOrders = figureOutNewInReturnOrder(orderRepository);
+        orderRepository.removeShippingOrders(newReturnAfterShippingOrders);
+        orderRepository.addReturnAfterShippingOrder(newReturnAfterShippingOrders);
+
+        //figure out new return order after buyer received order and request return or refund.
+        ArrayList<Order> newReturnAfterCompletedOrder = figureOutNewInReturnAfterCompletedOrder(orderRepository);
+        // save to repository
+        orderRepository.removeCompletedOrders(newReturnAfterCompletedOrder);
+        orderRepository.removeShippingOrders(newReturnAfterCompletedOrder);
+        orderRepository.addReturnAfterCompletedOrder(newReturnAfterCompletedOrder);
+        
 
         // reporting completed order by date.
-        ArrayList<Order> newCompletedOrder = figureOutNewCompletedOrder(orderRepository);
-        newCompletedOrder.sort(new Comparator<Order>() {
+        toReportOrders.sort(new Comparator<Order>() {
 
             @Override
             public int compare(Order o1, Order o2) {
@@ -77,7 +99,7 @@ public class OrderService {
             
         });
         HashMap<String, List<MoveOut>> dateDifferentMoveOuts = new HashMap<String, List<MoveOut>>();
-        for(Order order : orders){
+        for(Order order : toReportOrders){
             LocalDate orderCompleteDate = order.getOrderCompleteDate();
             String fileName = String.format("SalesCompleted$x.$x.$x", orderCompleteDate.getYear(), orderCompleteDate.getMonthValue(), orderCompleteDate.getDayOfMonth());
             if(!dateDifferentMoveOuts.containsKey(fileName)){
@@ -92,46 +114,28 @@ public class OrderService {
             String filePath = ShopeeSalesConvertApplication.getProperty(ShopeeSalesConvertApplication.COMPLETE_ORDER_PATH) + fileName;
             CompletedMovementReporting.reporting(new File(filePath), dateDifferentMoveOuts.get(fileName));
         }
-        // save on completed order to repository
-        orderRepository.addCompletedOrders(newCompletedOrder);
 
-        //figure out new return order after ship out.
-        ArrayList<Order> newReturnAfterShippingOrders = figureOutNewInReturnOrder(orderRepository);
-        ArrayList<ReturnMoveOut> returningMoveOuts = new ArrayList<ReturnMoveOut>();
-        for(Order order : newReturnAfterShippingOrders){
-            for(SoftReference<MoveOut> softMoveOut : order.getMoveOutList()){
-                MoveOut moveOut = softMoveOut.get();
-                returningMoveOuts.add(new ReturnMoveOut(moveOut));
-            }
-        }
-        // save to repository
-        orderRepository.addInReturnMoveOut(returningMoveOuts);
-        orderRepository.removeShippingOrders(newReturnAfterShippingOrders);
-        orderRepository.addReturnAfterShippingOrder(newReturnAfterShippingOrders);
-
-        //figure out new return order after buyer received order and request return or refund.
-        ArrayList<Order> newReturnAfterCompletedOrder = figureOutNewInReturnAfterCompletedOrder(orderRepository);
-        returningMoveOuts = new ArrayList<ReturnMoveOut>();
-        for(Order order : newReturnAfterCompletedOrder){
-            for(SoftReference<MoveOut> softMoveOut : order.getMoveOutList()){
-                MoveOut moveOut = softMoveOut.get();
-                returningMoveOuts.add(new ReturnMoveOut(moveOut));
-            }
-        }
-        // save to repository
-        orderRepository.addInReturnMoveOut(returningMoveOuts);
-        orderRepository.removeCompletedOrders(newReturnAfterCompletedOrder);
-        orderRepository.removeShippingOrders(newReturnAfterCompletedOrder);
-        orderRepository.addReturnAfterCompletedOrder(newReturnAfterCompletedOrder);
-        
-        orderRepository.addOrders(figureOutNewReportOrder(allOrders, orderRepository));
         orderRepository.submitTransaction();
     }
 
+    private List<Order> lookupOrderNotYetOnShipping(List<Order> orders, OrderRepository orderRepository){
 
-    private List<Order> figureOutNewReportOrder(List<Order> allOrders, OrderRepository orderRepository) {
-        // TODO Auto-generated method stub
-        throw new UnsupportedOperationException("Unimplemented method 'figureOutNewReportOrder'");
+        ArrayList<Order> previousNotYetOnShippingOrder = new ArrayList<Order>();
+
+        List<Order> shippingOrders = orderRepository.getShippingOrders();
+        shippingOrders.sort((o1, o2) ->{
+            return o1.getId().compareTo(o2.getId());
+        });
+        for(Order order : orders){
+            Order lookupOrder = Lookup.lookupOrder(shippingOrders, order.getId());
+            if(lookupOrder == null){
+                previousNotYetOnShippingOrder.add(lookupOrder);
+            } else if (STATUS_SHIPPING.equals(lookupOrder.getStatus())){
+                previousNotYetOnShippingOrder.add(lookupOrder);
+            }
+        }
+
+        return previousNotYetOnShippingOrder;
     }
 
 

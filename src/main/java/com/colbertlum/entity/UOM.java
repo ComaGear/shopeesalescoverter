@@ -1,6 +1,5 @@
 package com.colbertlum.entity;
 
-import java.util.Comparator;
 import java.util.List;
 
 public class UOM {
