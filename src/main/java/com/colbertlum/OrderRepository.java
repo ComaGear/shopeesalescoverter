@@ -528,8 +528,11 @@ public class OrderRepository {
         }
     }
 
-    public void addShippingOrders(List<Order> orders){
-        // TODO
+    public void addShippingOrders(List<Order> newShippingOrders){
+        orders.addAll(newShippingOrders);
+        for(Order order : newShippingOrders){
+            
+        }
     }
 
     public void submitTransaction() {

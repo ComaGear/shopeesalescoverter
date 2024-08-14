@@ -31,8 +31,6 @@ public class OrderService {
     private List<Order> beingPendingOrderList;
     private OrderRepository orderRepository;
 
-    private List<Order> allOrders;
-
     public void process(List<MoveOut> moveOuts){
         orderRepository = new OrderRepository();
 
@@ -140,8 +138,7 @@ public class OrderService {
 
 
     private List<Order> figureOutNewShippingOrder(OrderRepository orderRepository) {
-        // TODO Auto-generated method stub
-        throw new UnsupportedOperationException("Unimplemented method 'figureOutNewShippingOrder'");
+        
     }
 
 
@@ -202,38 +199,9 @@ public class OrderService {
         return newCompletedOrders;
     }
 
-
-    private ArrayList<Order> figureOutOrderInRepositoryOnlyOnShipping(OrderRepository LorderRepository) {
-        ArrayList<Order> tempList = new ArrayList<Order>(LorderRepository.getShippingOrders());
-
-        Comparator<Order> comparator = new Comparator<Order>() {
-
-            @Override
-            public int compare(Order o1, Order o2) {
-                return o1.getId().compareTo(o2.getId());
-            }
-            
-        };
-        tempList.sort(comparator);
-        allOrders.sort(comparator);
-        
-        int tempIndex = 0;
-        ArrayList<Order> toRemove = new ArrayList<Order>();
-        for(int i = 0; i < tempList.size(); i++){
-            Order lookupOrder = Lookup.lookupOrder(allOrders, tempList.get(i).getId());
-            if(lookupOrder == null){
-                toRemove.add(tempList.get(tempIndex));
-            }
-        }
-        tempList.removeAll(toRemove);
-        
-        return tempList;
-    }
-
-
     private void determineStatus(Order order){
         if(order.getStatus().equals(STATUS_COMPLETE) && order.isRequestApproved()){
-            beingCompleteOrderList.add(order);
+            // beingCompleteOrderList.add(order);
             beingReturningAfterCompleteOrderList.add(order);
             return;
         }
@@ -255,7 +223,7 @@ public class OrderService {
         }
     }
 
-    private HashMap<String, Double> beingShipping(List<MoveOut> moveOuts){
+    private HashMap<String, Double> calculatePendingOrderStockRequirement(List<MoveOut> moveOuts){
 
         HashMap<String, Double> pendingStockReducingMap = new HashMap<String, Double>();
 
@@ -274,35 +242,6 @@ public class OrderService {
         return pendingStockReducingMap;
     }
 
-    private List<MoveOut> beingCompleted(List<MoveOut> moveOuts){
-
-
-        List<Order> completedOrderList = orderRepository.getCompletedOrders();
-        
-        Order foundOrder = null;
-        for(MoveOut moveOut : moveOuts){
-            if(foundOrder != null && !moveOut.getOrder().getId().equals(foundOrder.getId())){
-                foundOrder = Lookup.lookupOrder(completedOrderList, moveOut.getOrder().getId());
-            }
-            
-            if(foundOrder != null){
-                moveOuts.remove(moveOut);
-            }
-        }
-
-        String path = ShopeeSalesConvertApplication.getProperty(ShopeeSalesConvertApplication.COMPLETE_ORDER_PATH);
-        CompletedMovementReporting.reporting(new File(path), moveOuts);
-
-
-    }
-    
-    private void beingReturningAfterShipping(List<MoveOut> moveOuts){
-
-    }
-
-    private void beingReturningAfterCompleted(List<Order> orders){
-
-    }
 
     public List<Order> getBeingCompleteOrderList() {
         return beingCompleteOrderList;
