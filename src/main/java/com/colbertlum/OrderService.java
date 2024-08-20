@@ -43,6 +43,31 @@ public class OrderService {
             determineStatus(order);
         }
 
+        // record completed order
+        ArrayList<Order> newCompletedOrder = figureOutNewCompletedOrder(orderRepository);
+        // save on completed order to repository
+        orderRepository.addCompletedOrders(newCompletedOrder);
+        orderRepository.removeShippingOrders(newCompletedOrder);
+
+        // figureOut toReport orders
+        ArrayList<Order> toReportOrders = new ArrayList<Order>();
+        toReportOrders.addAll(newCompletedOrder);
+        toReportOrders.addAll(lookupOrderNotYetOnCompleted(figureOutNewInReturnAfterCompletedOrder(orderRepository), orderRepository));
+        // toReportOrders.addAll(lookupOrderNotYetOnShipping(figureOutNewInReturnOrder(orderRepository), orderRepository));
+        // toReportOrders.addAll(lookupOrderNotYetOnShipping(figureOutNewInReturnAfterCompletedOrder(orderRepository), orderRepository));
+
+        //figure out new return order after ship out.
+        ArrayList<Order> newReturnAfterShippingOrders = figureOutNewInReturnOrder(orderRepository);
+        orderRepository.removeShippingOrders(newReturnAfterShippingOrders);
+        orderRepository.addReturnAfterShippingOrder(newReturnAfterShippingOrders);
+
+        //figure out new return order after buyer received order and request return or refund.
+        List<Order> newReturnAfterCompletedOrder = figureOutNewInReturnAfterCompletedOrder(orderRepository);
+        // save to repository
+        orderRepository.removeCompletedOrders(newReturnAfterCompletedOrder);
+        orderRepository.removeShippingOrders(newReturnAfterCompletedOrder);
+        orderRepository.addReturnAfterCompletedOrder(newReturnAfterCompletedOrder);
+
         // reporting being Shipping Move Out.
         ArrayList<MoveOut> ShippingMoveOuts = new ArrayList<MoveOut>();
         // ArrayList<Order> figureOutOrderInRepositoryOnlyOnShipping = figureOutOrderInRepositoryOnlyOnShipping(orderRepository);
@@ -62,29 +87,6 @@ public class OrderService {
         TempMovementReporting.reporting(tempMovementFile, new ArrayList<MoveOut>(ShippingMoveOuts));
         // save on shipping order to repository
         orderRepository.addShippingOrders(newShippingOrders);
-
-        // record completed order
-        ArrayList<Order> newCompletedOrder = figureOutNewCompletedOrder(orderRepository);
-        // save on completed order to repository
-        orderRepository.addCompletedOrders(newCompletedOrder);
-
-        // figureOut toReport orders
-        ArrayList<Order> toReportOrders = new ArrayList<Order>();
-        toReportOrders.addAll(newCompletedOrder);
-        toReportOrders.addAll(lookupOrderNotYetOnShipping(figureOutNewInReturnOrder(orderRepository), orderRepository));
-        toReportOrders.addAll(lookupOrderNotYetOnShipping(figureOutNewInReturnAfterCompletedOrder(orderRepository), orderRepository));
-
-        //figure out new return order after ship out.
-        ArrayList<Order> newReturnAfterShippingOrders = figureOutNewInReturnOrder(orderRepository);
-        orderRepository.removeShippingOrders(newReturnAfterShippingOrders);
-        orderRepository.addReturnAfterShippingOrder(newReturnAfterShippingOrders);
-
-        //figure out new return order after buyer received order and request return or refund.
-        ArrayList<Order> newReturnAfterCompletedOrder = figureOutNewInReturnAfterCompletedOrder(orderRepository);
-        // save to repository
-        orderRepository.removeCompletedOrders(newReturnAfterCompletedOrder);
-        orderRepository.removeShippingOrders(newReturnAfterCompletedOrder);
-        orderRepository.addReturnAfterCompletedOrder(newReturnAfterCompletedOrder);
         
 
         // reporting completed order by date.
@@ -116,6 +118,25 @@ public class OrderService {
         orderRepository.submitTransaction();
     }
 
+    private List<Order> lookupOrderNotYetOnCompleted(List<Order> orders, OrderRepository orderRepository){
+        ArrayList<Order> previousNotyetOnCompleted = new ArrayList<Order>();
+
+        List<Order> completedOrders = new ArrayList<Order>(orderRepository.getShippingOrders());
+        completedOrders.sort((o1, o2) ->{
+            return o1.getId().compareTo(o2.getId());
+        });
+        for(Order order : orders){
+            Order lookupOrder = Lookup.lookupOrder(completedOrders, order.getId());
+            if(lookupOrder == null){
+                previousNotyetOnCompleted.add(lookupOrder);
+            } else if (STATUS_SHIPPING.equals(lookupOrder.getStatus())){
+                previousNotyetOnCompleted.add(lookupOrder);
+            }
+        }
+
+        return previousNotyetOnCompleted;
+    }
+
     private List<Order> lookupOrderNotYetOnShipping(List<Order> orders, OrderRepository orderRepository){
 
         ArrayList<Order> previousNotYetOnShippingOrder = new ArrayList<Order>();
@@ -138,13 +159,53 @@ public class OrderService {
 
 
     private List<Order> figureOutNewShippingOrder(OrderRepository orderRepository) {
-        
+
+        ArrayList<Order> newShippingOrders = new ArrayList<Order>();
+
+        Comparator<Order> comparator = new Comparator<Order>() {
+
+            @Override
+            public int compare(Order o1, Order o2) {
+                return o1.getId().compareTo(o2.getId());
+            }
+            
+        };
+        List<Order> repositoryShippingOrders = new ArrayList<Order>(orderRepository.getShippingOrders());
+        repositoryShippingOrders.sort(comparator);
+        beingShippingOrderList.sort(comparator);
+        for(Order order : beingShippingOrderList){
+            Order lookupOrder = Lookup.lookupOrder(repositoryShippingOrders, order.getId());
+            if(lookupOrder == null) {
+                newShippingOrders.add(order);
+            }
+        }
+
+        return newShippingOrders;
     }
 
 
-    private ArrayList<Order> figureOutNewInReturnAfterCompletedOrder(OrderRepository orderRepository) {
-        // TODO Auto-generated method stub
-        throw new UnsupportedOperationException("Unimplemented method 'figureOutNewInReturnAfterCompletedOrder'");
+    private List<Order> figureOutNewInReturnAfterCompletedOrder(OrderRepository orderRepository) {
+        ArrayList<Order> newInReturnAfterCompletedOrder = new ArrayList<Order>();
+       
+        Comparator<Order> comparator = new Comparator<Order>(){
+
+            @Override
+            public int compare(Order o1, Order o2) {
+                return o1.getId().compareTo(o2.getId());
+            }
+
+        };
+        ArrayList<Order> repositoryReturnAfterCompletedOrders = new ArrayList<Order>(orderRepository.getReturnAfterCompletedOrders());
+        repositoryReturnAfterCompletedOrders.sort(comparator);
+        beingReturningAfterCompleteOrderList.sort(comparator);
+        for(Order order : beingReturningAfterCompleteOrderList){
+            Order lookupOrder = Lookup.lookupOrder(repositoryReturnAfterCompletedOrders, order.getId());
+            if(lookupOrder == null){
+                newInReturnAfterCompletedOrder.add(order);
+            }
+        }
+
+        return newInReturnAfterCompletedOrder;
     }
 
 
@@ -235,10 +296,7 @@ public class OrderService {
                 pendingStockReducingMap.put(moveOut.getOrderId(), lastReduce);
             }
         }
-
-        File file = new File(ShopeeSalesConvertApplication.getProperty(ShopeeSalesConvertApplication.TEMP_MOVEMENT_PATH));
-        TempMovementReporting.reporting(file, moveOuts);
-
+        
         return pendingStockReducingMap;
     }
 

@@ -58,9 +58,9 @@ public class OrderRepository {
         return returnAfterCompletedOrders;
     }
 
-    public void setShippingOrders(List<Order> shippingOrders) {
-        this.shippingOrders = shippingOrders;
-    }
+    // public void setShippingOrders(List<Order> shippingOrders) {
+    //     this.shippingOrders = shippingOrders;
+    // }
 
     public void addCompletedOrders(List<Order> newCompletedOrders){
         completedOrders.addAll(newCompletedOrders);
@@ -456,11 +456,7 @@ public class OrderRepository {
         loadRepository();
     }
 
-    // public void addInReturnMoveOut(List<ReturnMoveOut> newReturningMoveOuts) {
-    //     returnMoveOuts.addAll(newReturningMoveOuts);
-    // }
-
-    public void removeCompletedOrders(ArrayList<Order> removeOrders) {
+    public void removeCompletedOrders(List<Order> removeOrders) {
 
         for(Order order : removeOrders){
             Order lookupOrder = Lookup.lookupOrder(completedOrders, order.getId());
@@ -491,7 +487,7 @@ public class OrderRepository {
             }
         }
         returnMoveOuts.addAll(returningMoveOuts);
-        moveOuts.addAll(moveOuts);
+        this.moveOutList.addAll(moveOuts);
     }
 
     public void addReturnAfterCompletedOrder(List<Order> newReturnAfterCompletedOrder) {
@@ -508,7 +504,7 @@ public class OrderRepository {
             }
         }
         returnMoveOuts.addAll(returningMoveOuts);
-        moveOuts.addAll(moveOuts);
+        this.moveOutList.addAll(moveOuts);
     }
 
     public void removeShippingOrders(List<Order> removeOrders) {
@@ -531,17 +527,24 @@ public class OrderRepository {
     public void addShippingOrders(List<Order> newShippingOrders){
         orders.addAll(newShippingOrders);
         for(Order order : newShippingOrders){
-            
+            List<SoftReference<MoveOut>> moveOuts = order.getMoveOutList();
+            for(SoftReference<MoveOut> softMoveOut : moveOuts){
+                MoveOut moveOut = softMoveOut.get();
+                moveOutList.add(moveOut);
+            }
         }
     }
 
     public void submitTransaction() {
-        // TODO Auto-generated method stub
-        throw new UnsupportedOperationException("Unimplemented method 'submitTransaction'");
+        try {
+            saveToRepository(orders);
+        } catch (IOException e) {
+            // TODO Auto-generated catch block
+            e.printStackTrace();
+        }
     }
 
-    public void addOrders(Object figureOutNewReportOrder) {
-        // TODO Auto-generated method stub
-        throw new UnsupportedOperationException("Unimplemented method 'addOrders'");
+    public void addOrders(List<Order> newOrders) {
+        orders.addAll(newOrders);
     }
 }

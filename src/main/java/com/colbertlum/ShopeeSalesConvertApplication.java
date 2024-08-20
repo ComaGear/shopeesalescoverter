@@ -509,10 +509,19 @@ public class ShopeeSalesConvertApplication extends Application {
         outputPathText.setFont(font);
         Text dataSourceText = new Text("process sales from " + getProperty(DATA_SOURCE_TYPE));
         dataSourceText.setFont(font);
-
+        Text tempMovementPathText = new Text("save Temp Movement Report at : '" + getProperty(TEMP_MOVEMENT_PATH) + "'");
+        tempMovementPathText.setFont(font);
+        Text completeOrderMovementPathText = new Text("save completed order report at : '" + getProperty(COMPLETE_ORDER_PATH) + "'");
+        completeOrderMovementPathText.setFont(font);
+        Text orderRepositoryPathText = new Text("Order Record Repository at : '" + getProperty(ORDER_REPOSITORY_PATH) + "'");
+        orderRepositoryPathText.setFont(font);
+        
         FileChooser xlsxFileChooser = new FileChooser();
         xlsxFileChooser.getExtensionFilters().add(new FileChooser.ExtensionFilter("excel File", "*.xlsx"));
         // fileChooser.setInitialDirectory(new File(pathname));
+        FileChooser csvFileChooser = new FileChooser();
+        csvFileChooser.getExtensionFilters().add(new FileChooser.ExtensionFilter("csv File", "*.csv"));
+        DirectoryChooser folderChooser = new DirectoryChooser();
 
         Button selectUomButton = new Button("select UOM File (Irs System Export data)");
         selectUomButton.setPrefWidth(buttonWidth);
@@ -530,8 +539,6 @@ public class ShopeeSalesConvertApplication extends Application {
             saveProperty(MEAS, uomFile.getPath());
         });
 
-        FileChooser csvFileChooser = new FileChooser();
-        csvFileChooser.getExtensionFilters().add(new FileChooser.ExtensionFilter("csv File", "*.csv"));
         Button selectStockReportButton = new Button("select stock report from Biztory");
         selectStockReportButton.setPrefWidth(buttonWidth);
         selectStockReportButton.setOnAction(e ->{
@@ -541,7 +548,6 @@ public class ShopeeSalesConvertApplication extends Application {
             saveProperty(STOCK_REPORT_PATH, stockReportFile.getPath());
         });
 
-        DirectoryChooser folderChooser = new DirectoryChooser();
         Button selectOutputPathButton = new Button("select output generate path");
         selectOutputPathButton.setPrefWidth(buttonWidth);
         selectOutputPathButton.setOnAction(e ->{
@@ -565,6 +571,16 @@ public class ShopeeSalesConvertApplication extends Application {
         reportSourceMenuButton.getItems().add(bigSellerReportSourceItem);
         reportSourceMenuButton.getItems().add(shopeeReportSourceItem);
         
+
+        Button selectTempMovementReportPathButton = new Button("select temporary movement report location");
+        selectTempMovementReportPathButton.setPrefWidth(buttonWidth);
+        selectTempMovementReportPathButton.setOnAction(e -> {
+            
+            File folder = folderChooser.showDialog(priStage);
+            if(folder == null) return;
+            saveProperty(TEMP_MOVEMENT_PATH, folder.getPath());
+            tempMovementPathText.setText("save Temp Movement Report at : '" + folder.getPath() + "'");
+        });
 
         VBox vBox = new VBox(backButton, measPathText, selectMeasButton, uomPathText, selectUomButton, 
             stockReportPathText, selectStockReportButton, outputPathText, selectOutputPathButton,
