@@ -9,6 +9,7 @@ public class Order {
     public static final String STATUS_CANCEL = "Cancelled";
     public static final String STATUS_UNPAID = "Unpaid";
     public static final String STATUS_TO_SHIP = "To ship";
+    public static final String STATUS_COMPLETED = "Completed";
 
     public static String CANCEL_REASON_FAILED_DELIVERY = "Cancelled automatically by Shopee's system. Reason: Failed delivery";
 

@@ -18,18 +18,6 @@ import com.colbertlum.ShopeeSalesConvertApplication;
 import com.colbertlum.entity.Meas;
 import com.colbertlum.entity.UOM;
 
-import javafx.scene.control.Button;
-import javafx.scene.control.Label;
-import javafx.scene.control.ListView;
-import javafx.scene.control.MenuButton;
-import javafx.scene.control.MenuItem;
-import javafx.scene.control.SelectionMode;
-import javafx.scene.control.TextField;
-import javafx.scene.control.Tooltip;
-import javafx.scene.layout.HBox;
-import javafx.scene.layout.VBox;
-import javafx.scene.text.Text;
-
 public class MeasImputer {
   // TODO : separate uoms with observableList, also meas
 

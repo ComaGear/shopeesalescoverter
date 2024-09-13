@@ -2,8 +2,6 @@ package com.colbertlum.cellFactory;
 
 import java.text.DecimalFormat;
 import java.text.NumberFormat;
-import java.util.List;
-
 import com.colbertlum.entity.ReturnMoveOut;
 
 import javafx.scene.control.ListCell;
@@ -15,8 +13,7 @@ import javafx.util.Callback;
 
 public class ReturnMoveOutCellFactory implements Callback<ListView<ReturnMoveOut>, ListCell<ReturnMoveOut>> {
 
-    List<ReturnMoveOut> selectReturnMoveOuts;
-    List<ListCell<ReturnMoveOut>> selectedListCell;
+    private int selectedIndex;
 
 
     NumberFormat formater = new DecimalFormat("#0.00");
@@ -25,13 +22,13 @@ public class ReturnMoveOutCellFactory implements Callback<ListView<ReturnMoveOut
     public ListCell<ReturnMoveOut> call(ListView<ReturnMoveOut> param) {
         return new ListCell<>() {
 
-            private TextField orderIdText = new TextField("");
+            private TextField orderIdText = new TextField();
 
-            Text productDescriptionText = new Text(returnMoveOut.getProductName() + " : " + returnMoveOut.getVariationName());
-            Text quantityText = new Text(formater.format(returnMoveOut.getQuantity()));
-            Text returnStatus = new Text(returnMoveOut.getReturnStatus());
-            TextField returnQuantityTextFileField = new TextField(formater.format(returnMoveOut.getStatusQuantity()));
-            
+            private Text productDescriptionText = new Text();
+            private Text quantityText = new Text();
+            private Text returnStatus = new Text();
+            private TextField returnQuantityTextFileField = new TextField();
+
             {
                 orderIdText.setEditable(false);
                 orderIdText.getStyleClass().add("copiable-text");
@@ -39,20 +36,22 @@ public class ReturnMoveOutCellFactory implements Callback<ListView<ReturnMoveOut
 
             @Override
             public void updateItem(ReturnMoveOut returnMoveOut, boolean empty){
-
                 
-
                 if(returnMoveOut == null) return;
                 
                 orderIdText.setText(returnMoveOut.getOrderId());
+                productDescriptionText.setText(returnMoveOut.getProductName() + " : " + returnMoveOut.getVariationName());
+                quantityText.setText(formater.format(returnMoveOut.getQuantity()));
+                returnStatus.setText(returnMoveOut.getReturnStatus());
+                returnQuantityTextFileField.setText(formater.format(returnMoveOut.getStatusQuantity()));
 
                 setGraphic(new HBox(orderIdText, productDescriptionText, quantityText, returnStatus, returnQuantityTextFileField));
             }
         };
     }
 
-    public updateSelectedListView(ReturnMoveOut returnMoveOut){
-        
+    public int getSelectedItemIndex() {
+        return selectedIndex;
     }
     
 }

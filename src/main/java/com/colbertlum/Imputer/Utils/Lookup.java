@@ -3,6 +3,7 @@ package com.colbertlum.Imputer.Utils;
 import java.util.List;
 
 import com.colbertlum.entity.Order;
+import com.colbertlum.entity.ReturnOrder;
 
 public class Lookup {
 
@@ -14,6 +15,36 @@ public class Lookup {
             mid = lo + (hi-lo) / 2;
             if(list.get(mid).getId().compareTo(orderId) > 0) hi = mid-1;
             else if(list.get(mid).getId().compareTo(orderId) < 0) lo = mid+1;
+            else {
+                return list.get(mid);
+            }
+        }
+        return null;
+    }
+
+    public static ReturnOrder lookupReturnOrder(List<ReturnOrder> list, String orderId){
+        int mid = 0;
+        int lo = 0;
+        int hi = list.size()-1;
+        while(lo <= hi){
+            mid = lo + (hi-lo) / 2;
+            if(list.get(mid).getId().compareTo(orderId) > 0) hi = mid-1;
+            else if(list.get(mid).getId().compareTo(orderId) < 0) lo = mid+1;
+            else {
+                return list.get(mid);
+            }
+        }
+        return null;
+    }
+
+    public static ReturnOrder lookupReturnOrderByTrackingNumber(List<ReturnOrder> list, String trackingNumber){
+        int mid = 0;
+        int lo = 0;
+        int hi = list.size()-1;
+        while(lo <= hi){
+            mid = lo + (hi-lo) / 2;
+            if(list.get(mid).getTrackingNumber().compareTo(trackingNumber) > 0) hi = mid-1;
+            else if(list.get(mid).getTrackingNumber().compareTo(trackingNumber) < 0) lo = mid+1;
             else {
                 return list.get(mid);
             }
