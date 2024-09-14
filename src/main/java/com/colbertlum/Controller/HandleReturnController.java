@@ -32,6 +32,8 @@ import javafx.stage.WindowEvent;
 
 public class HandleReturnController {
     
+    private static final String FILTED_BY_ALL = "All";
+    private static final String FILTED_BY_RETURN_REFUND = "Return/Refund";
     private Stage stage;
     private Scene mainScene;
     private Scene subScene;
@@ -41,17 +43,32 @@ public class HandleReturnController {
     private HandleReturnImputer imputer;
     private ObservableList<ReturnOrder> observableArrayList;
     private ListView<ReturnOrder> returnOrderListView;
+    private String filterMode;
 
     private Scene generatePanel(){
 
+        TextField scaningSearchBar = new TextField();
 
         MenuButton filterOrderMenuButton = new MenuButton("filter by All");
-        MenuItem filterByAllItem = new MenuItem("All");
+        filterOrderMenuButton.setPrefWidth(100);
+        MenuItem filterByAllItem = new MenuItem(FILTED_BY_ALL);
         MenuItem filteringRequestReturnRefundMenuItem = new MenuItem("Request Return/Refund");
         filterOrderMenuButton.getItems().addAll(filterByAllItem);
+        filterOrderMenuButton.getItems().addAll(filteringRequestReturnRefundMenuItem);
+        filterByAllItem.setOnAction((e) -> {
+            filterOrderMenuButton.setText("filter by All");
+            filterMode = FILTED_BY_ALL;
+            scaningSearchBar.setText("");
+            refillOrderListView(imputer.getReturnOrderList());
+        });
+        filteringRequestReturnRefundMenuItem.setOnAction((e) -> {
+            filterOrderMenuButton.setText("filter by Request Return/Refund");
+            filterMode = FILTED_BY_RETURN_REFUND;
+            scaningSearchBar.setText("");
+            refillOrderListView(imputer.getReturnOrderList());
+        });
 
 
-        TextField scaningSearchBar = new TextField();
         // scan tracking number or Order id, if order is exist will open return movement page directly,
         // if order not is exist or not found, select all text let user can replace old text with new text.
         // scaningSearchBar.textProperty().addListener((observe, oldText, newText) ->{
@@ -96,13 +113,29 @@ public class HandleReturnController {
         return mainScene;
     }
 
-    private void refillOrderListView(List<ReturnOrder> ReturnOrders){
+    private void refillOrderListView(List<ReturnOrder> returnOrders){
         if(observableArrayList == null) {
             observableArrayList = FXCollections.observableArrayList();
             returnOrderListView.setItems(observableArrayList);
         }
-        observableArrayList.clear();
-        observableArrayList.addAll(ReturnOrders);
+
+        switch(filterMode){
+            case FILTED_BY_ALL:
+                observableArrayList.clear();
+                observableArrayList.addAll(returnOrders);
+                break;
+            case FILTED_BY_RETURN_REFUND:
+                ArrayList<ReturnOrder> filtedOrders = new ArrayList<ReturnOrder>();
+                for(ReturnOrder order : returnOrders){
+                    if(order.getReturnType().equals(FILTED_BY_RETURN_REFUND)){
+                        filtedOrders.add(order);
+                    }
+                }
+
+                observableArrayList.clear();
+                observableArrayList.addAll(returnOrders);
+                break;
+        }
     }
 
 
@@ -114,7 +147,7 @@ public class HandleReturnController {
         returnMovementListView.setCellFactory(returnMovemCellFactory);
         // ReturnMoveOut returnMoveOut = listView.getItems().get(cellFactory.getSelectedItemIndex());
 
-        subScene = new Scene();
+        subScene = new Scene(new VBox());
         subScene.getStylesheets().add(getClass().getResource("copiable-text.css").toExternalForm());
         pushScene(subScene);
     }
@@ -139,7 +172,7 @@ public class HandleReturnController {
             public void handle(WindowEvent event) {
 
                 imputer.saveTransaction();
-                
+            }
             
         });
         
