@@ -20,7 +20,7 @@ public class OrderServiceTest {
         orders.add(order);
         order.setMoveOutList(new ArrayList<SoftReference<MoveOut>>());
 
-        new MoveOut()
+        new MoveOut();
     }
 
     // test newShipping order will represent correcly at repository's shipping orders

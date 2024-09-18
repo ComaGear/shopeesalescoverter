@@ -6,6 +6,7 @@ import com.colbertlum.entity.ReturnMoveOut;
 
 import javafx.scene.control.ListCell;
 import javafx.scene.control.ListView;
+import javafx.scene.control.MenuButton;
 import javafx.scene.control.TextField;
 import javafx.scene.layout.HBox;
 import javafx.scene.text.Text;
@@ -22,16 +23,14 @@ public class ReturnMoveOutCellFactory implements Callback<ListView<ReturnMoveOut
     public ListCell<ReturnMoveOut> call(ListView<ReturnMoveOut> param) {
         return new ListCell<>() {
 
-            private TextField orderIdText = new TextField();
-
             private Text productDescriptionText = new Text();
+            private Text skuText = new Text();
             private Text quantityText = new Text();
-            private Text returnStatus = new Text();
+            private MenuButton returnStatus = new MenuButton();
             private TextField returnQuantityTextFileField = new TextField();
 
             {
-                orderIdText.setEditable(false);
-                orderIdText.getStyleClass().add("copiable-text");
+
             }
 
             @Override
@@ -39,13 +38,16 @@ public class ReturnMoveOutCellFactory implements Callback<ListView<ReturnMoveOut
                 
                 if(returnMoveOut == null) return;
                 
-                orderIdText.setText(returnMoveOut.getOrderId());
                 productDescriptionText.setText(returnMoveOut.getProductName() + " : " + returnMoveOut.getVariationName());
+                skuText.setText(returnMoveOut.getSku());
                 quantityText.setText(formater.format(returnMoveOut.getQuantity()));
                 returnStatus.setText(returnMoveOut.getReturnStatus());
                 returnQuantityTextFileField.setText(formater.format(returnMoveOut.getStatusQuantity()));
+                returnQuantityTextFileField.textProperty().addListener((observable, oldValue, newValue) -> {
 
-                setGraphic(new HBox(orderIdText, productDescriptionText, quantityText, returnStatus, returnQuantityTextFileField));
+                });
+
+                setGraphic(new HBox(productDescriptionText, quantityText, returnStatus, returnQuantityTextFileField));
             }
         };
     }

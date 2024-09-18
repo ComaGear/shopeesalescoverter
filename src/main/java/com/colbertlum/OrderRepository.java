@@ -8,6 +8,7 @@ import java.io.InputStream;
 import java.lang.ref.SoftReference;
 import java.time.format.DateTimeFormatter;
 import java.util.ArrayList;
+import java.util.HashMap;
 import java.util.Iterator;
 import java.util.List;
 import java.util.Optional;
@@ -34,6 +35,7 @@ import com.colbertlum.contentHandler.RepositoryReturnMovementContentHandler;
 import com.colbertlum.entity.MoveOut;
 import com.colbertlum.entity.Order;
 import com.colbertlum.entity.ReturnMoveOut;
+import com.colbertlum.entity.ReturnOrder;
 
 import javafx.scene.control.Alert;
 import javafx.scene.control.Alert.AlertType;
@@ -42,13 +44,22 @@ import javafx.scene.control.ButtonType;
 public class OrderRepository {
 
     private static final String DATE_PATTERN = "yyyy-MM-dd HH:mm";
-    List<Order> orders;
-    List<Order> shippingOrders;
-    List<Order> completedOrders;
-    List<Order> returnAfterShippingOrders;
-    List<Order> returnAfterCompletedOrders;
+    private List<Order> orders;
+    private List<Order> shippingOrders;
+    private List<Order> completedOrders;
+    private List<Order> returnAfterShippingOrders;
+    private List<Order> returnAfterCompletedOrders;
     private List<MoveOut> moveOutList;
+    private List<ReturnOrder> returnOrders;
     private List<ReturnMoveOut> returnMoveOuts;
+
+    public List<ReturnMoveOut> getReturnMoveOuts() {
+        return returnMoveOuts;
+    }
+
+    public List<ReturnOrder> getReturnOrders() {
+        return returnOrders;
+    }
 
     public List<Order> getReturnAfterShippingOrders() {
         return returnAfterShippingOrders;
@@ -77,13 +88,14 @@ public class OrderRepository {
 
 
         orders = new ArrayList<Order>();
-        shippingOrders = new ArrayList<Order>();;
-        completedOrders = new ArrayList<Order>();;
-        returnAfterShippingOrders = new ArrayList<Order>();;
-        returnAfterCompletedOrders = new ArrayList<Order>();;
+        shippingOrders = new ArrayList<Order>();
+        completedOrders = new ArrayList<Order>();
+        returnAfterShippingOrders = new ArrayList<Order>();
+        returnAfterCompletedOrders = new ArrayList<Order>();
 
         moveOutList = new ArrayList<MoveOut>();
         returnMoveOuts = new ArrayList<ReturnMoveOut>();
+        returnOrders = new ArrayList<ReturnOrder>();
 
         try {
             File file = new File(ShopeeSalesConvertApplication.getProperty(ShopeeSalesConvertApplication.ORDER_REPOSITORY_PATH));
@@ -154,6 +166,30 @@ public class OrderRepository {
                 completedOrders.add(order);
             }
         }
+
+        HashMap<String, List<SoftReference<ReturnMoveOut>>> returnOrderIdMap = new HashMap<String, List<SoftReference<ReturnMoveOut>>>();
+        for(ReturnMoveOut returnMoveOut : returnMoveOuts){
+            if(returnOrderIdMap.containsKey(returnMoveOut.getOrderId())){
+                returnOrderIdMap.get(returnMoveOut.getOrderId()).add(new SoftReference<ReturnMoveOut>(returnMoveOut));
+            } else {
+                List<SoftReference<ReturnMoveOut>> list = new ArrayList<SoftReference<ReturnMoveOut>>();
+                list.add(new SoftReference<ReturnMoveOut>(returnMoveOut));
+                returnOrderIdMap.put(returnMoveOut.getOrderId(), list);
+            }
+        }
+        for(Order order : returnAfterCompletedOrders){
+            ReturnOrder returnOrder = new ReturnOrder(order);
+            returnOrder.setReturnType(ReturnOrder.REQUEST_RETURN_REFUND);
+            returnOrder.setReturnMoveOutList(returnOrderIdMap.get(returnOrder.getId()));
+            returnOrders.add(returnOrder);
+        }
+        for(Order order : returnAfterShippingOrders){
+            ReturnOrder returnOrder = new ReturnOrder(order);
+            returnOrder.setReturnType(ReturnOrder.REQUEST_RETURN_REFUND);
+            returnOrder.setReturnMoveOutList(returnOrderIdMap.get(returnOrder.getId()));
+            returnOrders.add(returnOrder);
+        }
+        
     }
 
     public void saveToRepository(List<Order> orders) throws IOException{

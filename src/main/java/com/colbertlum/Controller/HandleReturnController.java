@@ -1,31 +1,31 @@
 package com.colbertlum.Controller;
 
+import java.lang.ref.SoftReference;
 import java.util.ArrayList;
 import java.util.List;
 import java.util.Stack;
 
 import com.colbertlum.CustomListener;
 import com.colbertlum.Imputer.HandleReturnImputer;
-import com.colbertlum.Imputer.Utils.Lookup;
 import com.colbertlum.cellFactory.ReturnMoveOutCellFactory;
 import com.colbertlum.cellFactory.ReturnOrderCellFactory;
-import com.colbertlum.entity.Order;
 import com.colbertlum.entity.ReturnMoveOut;
 import com.colbertlum.entity.ReturnOrder;
 
 import javafx.application.Platform;
 import javafx.collections.FXCollections;
 import javafx.collections.ObservableList;
-import javafx.event.ActionEvent;
 import javafx.event.EventHandler;
 import javafx.scene.Scene;
+import javafx.scene.control.Button;
 import javafx.scene.control.ListView;
 import javafx.scene.control.MenuButton;
 import javafx.scene.control.MenuItem;
 import javafx.scene.control.TextField;
 import javafx.scene.input.KeyCode;
-import javafx.scene.input.KeyEvent;
 import javafx.scene.layout.HBox;
+import javafx.scene.layout.Pane;
+import javafx.scene.layout.Priority;
 import javafx.scene.layout.VBox;
 import javafx.stage.Stage;
 import javafx.stage.WindowEvent;
@@ -34,16 +34,15 @@ public class HandleReturnController {
     
     private static final String FILTED_BY_ALL = "All";
     private static final String FILTED_BY_RETURN_REFUND = "Return/Refund";
+    private static final String INCOMPLETED_RETURN = "Incompleted Return";
     private Stage stage;
-    private Scene mainScene;
-    private Scene subScene;
     private Stack<Scene> sceneStack; 
 
-
     private HandleReturnImputer imputer;
-    private ObservableList<ReturnOrder> observableArrayList;
+    private ObservableList<ReturnOrder> observableReturnOrderList;
     private ListView<ReturnOrder> returnOrderListView;
     private String filterMode;
+    private ListView<ReturnMoveOut> returnMovementListView;
 
     private Scene generatePanel(){
 
@@ -52,9 +51,11 @@ public class HandleReturnController {
         MenuButton filterOrderMenuButton = new MenuButton("filter by All");
         filterOrderMenuButton.setPrefWidth(100);
         MenuItem filterByAllItem = new MenuItem(FILTED_BY_ALL);
-        MenuItem filteringRequestReturnRefundMenuItem = new MenuItem("Request Return/Refund");
-        filterOrderMenuButton.getItems().addAll(filterByAllItem);
-        filterOrderMenuButton.getItems().addAll(filteringRequestReturnRefundMenuItem);
+        MenuItem filteringRequestReturnRefundMenuItem = new MenuItem(FILTED_BY_RETURN_REFUND);
+        MenuItem filteringByIncompletedMenuItem = new MenuItem(INCOMPLETED_RETURN);
+        filterOrderMenuButton.getItems().add(filterByAllItem);
+        filterOrderMenuButton.getItems().add(filteringRequestReturnRefundMenuItem);
+        filterOrderMenuButton.getItems().add(filteringByIncompletedMenuItem);
         filterByAllItem.setOnAction((e) -> {
             filterOrderMenuButton.setText("filter by All");
             filterMode = FILTED_BY_ALL;
@@ -64,6 +65,12 @@ public class HandleReturnController {
         filteringRequestReturnRefundMenuItem.setOnAction((e) -> {
             filterOrderMenuButton.setText("filter by Request Return/Refund");
             filterMode = FILTED_BY_RETURN_REFUND;
+            scaningSearchBar.setText("");
+            refillOrderListView(imputer.getReturnOrderList());
+        });
+        filteringByIncompletedMenuItem.setOnAction((e) ->{
+            filterOrderMenuButton.setText("filter by Incompleted Return");
+            filterMode = INCOMPLETED_RETURN;
             scaningSearchBar.setText("");
             refillOrderListView(imputer.getReturnOrderList());
         });
@@ -108,55 +115,106 @@ public class HandleReturnController {
         returnOrderListView.setCellFactory(returnOrderCellFactory);
         refillOrderListView(imputer.getReturnOrderList());
 
-        mainScene = new Scene(new VBox(headerPanel, returnOrderListView));
+        Scene mainScene = new Scene(new VBox(headerPanel, returnOrderListView));
 
         return mainScene;
     }
 
     private void refillOrderListView(List<ReturnOrder> returnOrders){
-        if(observableArrayList == null) {
-            observableArrayList = FXCollections.observableArrayList();
-            returnOrderListView.setItems(observableArrayList);
+        if(observableReturnOrderList == null) {
+            observableReturnOrderList = FXCollections.observableArrayList();
+            returnOrderListView.setItems(observableReturnOrderList);
         }
 
+        ArrayList<ReturnOrder> filtedOrders = new ArrayList<ReturnOrder>();
+        
         switch(filterMode){
             case FILTED_BY_ALL:
-                observableArrayList.clear();
-                observableArrayList.addAll(returnOrders);
+                filtedOrders.addAll(returnOrders);
                 break;
             case FILTED_BY_RETURN_REFUND:
-                ArrayList<ReturnOrder> filtedOrders = new ArrayList<ReturnOrder>();
                 for(ReturnOrder order : returnOrders){
                     if(order.getReturnType().equals(FILTED_BY_RETURN_REFUND)){
                         filtedOrders.add(order);
                     }
                 }
-
-                observableArrayList.clear();
-                observableArrayList.addAll(returnOrders);
+                break;
+            case INCOMPLETED_RETURN:
+                for(ReturnOrder order : returnOrders){
+                    if(!order.getReturnMoveOutList().get(0).get().getReturnStatus().equals(ReturnMoveOut.RETURNING)){
+                        filtedOrders.add(order);
+                    }
+                }
                 break;
         }
+
+        observableReturnOrderList.clear();
+        observableReturnOrderList.addAll(filtedOrders);
     }
 
 
-    private void openReturnMovementHandleScene(ReturnOrder order){
+    private void openReturnMovementHandleScene(ReturnOrder returnOrder){
+
+        
+        TextField orderIdText = new TextField();
+        orderIdText.setEditable(false);
+        orderIdText.getStyleClass().add("copiable-text");
+        orderIdText.setText(returnOrder.getId());
+
+        TextField scaningSearchBar = new TextField();
+
+        scaningSearchBar.setOnKeyPressed((keyEvent) ->{
+            if(keyEvent.getCode().equals(KeyCode.ENTER)) {
+                ReturnMoveOut returnMoveOut = imputer.getReturnMoveOuInOrder(returnOrder, scaningSearchBar.getText());
+                if(returnMoveOut == null) scaningSearchBar.selectAll();
+            }
+        });
+        scaningSearchBar.textProperty().addListener((observe, oldValue, newValue) -> {
+            ArrayList<ReturnMoveOut> newReturnMoveOutList = new ArrayList<ReturnMoveOut>();
+
+            List<SoftReference<ReturnMoveOut>> returnMoveOutList = returnOrder.getReturnMoveOutList();
+            for(SoftReference<ReturnMoveOut> softReturnMoveOut : returnMoveOutList){
+                if(softReturnMoveOut.get().getProductName().contains(newValue)) {
+                    newReturnMoveOutList.add(softReturnMoveOut.get());
+                } else if(softReturnMoveOut.get().getVariationName().contains(newValue)){
+                    newReturnMoveOutList.add(softReturnMoveOut.get()); 
+                }
+            }
+            refillMovementListView(newReturnMoveOutList);
+        });
+        scaningSearchBar.focusedProperty().addListener((observe, oldValue, newValue) ->{
+            Platform.runLater(() ->{
+                if(scaningSearchBar.isFocused() && !scaningSearchBar.getText().isEmpty()) scaningSearchBar.selectAll();
+            });
+        });
+
+        Button backButton = new Button("back to Orders");
+        backButton.setOnAction((e) -> {
+            popScene();
+            refillMovementListView(new ArrayList<>());
+        });
+
+        Pane spacer = new Pane();
+        spacer.setMinSize(10, 1);
+        HBox.setHgrow(spacer, Priority.ALWAYS);
+
+        HBox headerPanel = new HBox(orderIdText, scaningSearchBar, spacer, backButton);
 
 
-        ListView<ReturnMoveOut> returnMovementListView = new ListView<ReturnMoveOut>();
+        returnMovementListView = new ListView<ReturnMoveOut>();
         ReturnMoveOutCellFactory returnMovemCellFactory = new ReturnMoveOutCellFactory();
         returnMovementListView.setCellFactory(returnMovemCellFactory);
         // ReturnMoveOut returnMoveOut = listView.getItems().get(cellFactory.getSelectedItemIndex());
 
-        subScene = new Scene(new VBox());
+        Scene subScene = new Scene(new VBox(headerPanel, returnMovementListView));
         subScene.getStylesheets().add(getClass().getResource("copiable-text.css").toExternalForm());
         pushScene(subScene);
     }
 
-    private ListView<ReturnMoveOut> refillMovementListView(ListView<ReturnMoveOut> listView, List<ReturnMoveOut> returnMoveOuts){
-        listView.getItems().clear();
+    private void refillMovementListView(List<ReturnMoveOut> returnMoveOuts){
+        returnMovementListView.getItems().clear();
 
-        listView.getItems().addAll(returnMoveOuts);
-        return listView;
+        returnMovementListView.getItems().addAll(returnMoveOuts);
     }
 
     public void initDialog(Stage stage){
@@ -170,11 +228,11 @@ public class HandleReturnController {
 
             @Override
             public void handle(WindowEvent event) {
-
                 imputer.saveTransaction();
             }
-            
         });
+
+        stage.setScene(generatePanel());
         
     }
 
@@ -197,5 +255,6 @@ public class HandleReturnController {
 
     public HandleReturnController(){
         this.imputer = new HandleReturnImputer();
+
     }
 }

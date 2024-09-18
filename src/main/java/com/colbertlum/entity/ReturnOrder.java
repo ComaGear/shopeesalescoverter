@@ -6,7 +6,9 @@ import java.util.List;
 
 public class ReturnOrder {
 
-    
+    public static final String FAILED_DELIVERY_TYPE = "Failed Delivery or Return After Ship Out";
+    public static final String REQUEST_RETURN_REFUND = "Request Return/Refund or Return After Completed";
+
     private String id;
     private double managementFee;
     private double transactionFee;
@@ -25,6 +27,7 @@ public class ReturnOrder {
     private String trackingNumber;
     private boolean requestApproved;
     
+
     private String returnType;
     
     public String getId() {
@@ -162,6 +165,27 @@ public class ReturnOrder {
 
     public void setReturnType(String returnType) {
         this.returnType = returnType;
+    }
+
+    public ReturnOrder(Order order) {
+        this.id = order.getId();
+        this.managementFee = order.getManagementFee();
+        this.transactionFee = order.getTransactionFee();
+        this.orderTotalAmount = order.getOrderTotalAmount();
+        this.shippingFee = order.getShippingFee();
+        this.shopeeVoucher = order.getShopeeVoucher();
+        this.shipOutDate = order.getShipOutDate();
+        this.status = order.getStatus();
+        this.serviceFee = order.getServiceFee();
+        this.commissionFee = order.getCommissionFee();
+        this.shippingRebateEstimate = order.getShippingRebateEstimate();
+        this.orderCreationDate = order.getOrderCreationDate();
+        this.orderCompleteDate = order.getOrderCompleteDate();
+        this.trackingNumber = order.getTrackingNumber();
+        this.requestApproved = order.isRequestApproved();
+}
+
+    public ReturnOrder(){
     }
     
 }

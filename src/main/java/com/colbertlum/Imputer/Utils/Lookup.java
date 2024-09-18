@@ -2,6 +2,7 @@ package com.colbertlum.Imputer.Utils;
 
 import java.util.List;
 
+import com.colbertlum.entity.Meas;
 import com.colbertlum.entity.Order;
 import com.colbertlum.entity.ReturnOrder;
 
@@ -45,6 +46,21 @@ public class Lookup {
             mid = lo + (hi-lo) / 2;
             if(list.get(mid).getTrackingNumber().compareTo(trackingNumber) > 0) hi = mid-1;
             else if(list.get(mid).getTrackingNumber().compareTo(trackingNumber) < 0) lo = mid+1;
+            else {
+                return list.get(mid);
+            }
+        }
+        return null;
+    }
+
+    public static Meas lookupMeasBySku(List<Meas> list, String sku){
+        int mid = 0;
+        int lo = 0;
+        int hi = list.size()-1;
+        while(lo <= hi){
+            mid = lo + (hi-lo) / 2;
+            if(list.get(mid).getRelativeId().compareTo(sku) > 0) hi = mid-1;
+            else if(list.get(mid).getRelativeId().compareTo(sku) < 0) lo = mid+1;
             else {
                 return list.get(mid);
             }
