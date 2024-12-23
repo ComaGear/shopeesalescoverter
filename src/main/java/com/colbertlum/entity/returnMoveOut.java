@@ -93,4 +93,20 @@ public class ReturnMoveOut {
     public ReturnMoveOut(){
         super();
     }
+
+    public ReturnMoveOut clone(){
+        ReturnMoveOut clone = new ReturnMoveOut();
+
+        clone.setSku(getSku());
+        clone.setProductName(getProductName());
+        clone.setVariationName(getVariationName());
+        clone.setQuantity(getQuantity());
+        clone.setOrderId(getOrderId());
+        clone.setPrice(getPrice());
+        clone.setOrderId(getOrderId());
+        clone.setReturnStatus(getReturnStatus());
+        clone.setStatusQuantity(getStatusQuantity());
+
+        return clone;
+    }
 }

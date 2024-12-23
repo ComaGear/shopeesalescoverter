@@ -65,7 +65,11 @@ public class SalesConverter {
 
             @Override
             public int compare(Meas o1, Meas o2) {
+                if(o1.getOnlineProductName() == null) return -1;
+                if(o2.getOnlineProductName() == null) return 1;
                 if(o1.getOnlineProductName().compareTo(o2.getOnlineProductName()) == 0){
+                    if(o1.getOnlineVariationName() == null) return -1;
+                    if(o2.getOnlineVariationName() == null) return 1;
                     return o1.getOnlineVariationName().compareTo(o2.getOnlineVariationName());
                 } else {
                     return o1.getOnlineProductName().compareTo(o2.getOnlineProductName());
@@ -126,7 +130,7 @@ public class SalesConverter {
                 notExistSkuMoveOuts.add(moveOut);
                 continue;
             }
-            moveOut.setOrderId(meas.getId());
+            moveOut.setId(meas.getId());
             moveOut.setQuantity(meas.getMeasurement() * moveOut.getQuantity());
             moveOut.setPrice(moveOut.getPrice() / meas.getMeasurement());
 

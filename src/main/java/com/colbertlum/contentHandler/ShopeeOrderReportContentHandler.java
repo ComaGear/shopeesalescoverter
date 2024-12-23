@@ -48,6 +48,10 @@ public class ShopeeOrderReportContentHandler extends DefaultHandler {
 
     private static final String ORDER_STATUS = "Order Status";
     private static final String SHIP_TIME = "Ship Time";
+    private static final String ORDER_CREATION_TIME = "Order Creation Date";
+    private static final String ORDER_COMPLETED_TIME = "Order Complete Time";
+    private static final String TRACKING_NUMBER = "Tracking Number*";
+    private static final String RETURN_REFUND_REQUEST = "Return / Refund Status";
 
 
     private StylesTable stylesTable;
@@ -220,6 +224,17 @@ public class ShopeeOrderReportContentHandler extends DefaultHandler {
                 case SHIPPING_REBATE_ESTIMATE:
                     order.setShippingRebateEstimate(Double.parseDouble(string));
                     break;
+                case ORDER_CREATION_TIME:
+                    order.setOrderCreationDate(LocalDateTime.parse(string, DateTimeFormatter.ofPattern(DATE_PATTERN)).toLocalDate());
+                    break;
+                case ORDER_COMPLETED_TIME:
+                    order.setOrderCompleteDate(LocalDateTime.parse(string, DateTimeFormatter.ofPattern(DATE_PATTERN)).toLocalDate());
+                    break;
+                case TRACKING_NUMBER:
+                    order.setTrackingNumber(string);
+                    break;
+                case RETURN_REFUND_REQUEST:
+                    order.setRequestApproved(string.equals(string));
                 default:
                     break;
             }

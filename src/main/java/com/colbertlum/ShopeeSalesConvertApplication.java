@@ -27,6 +27,7 @@ import org.xml.sax.InputSource;
 import org.xml.sax.SAXException;
 import org.xml.sax.XMLReader;
 
+import com.colbertlum.Controller.HandleReturnController;
 import com.colbertlum.Controller.MeasImputingController;
 import com.colbertlum.Controller.SalesImputingController;
 import com.colbertlum.Controller.StockImputingController;
@@ -48,24 +49,27 @@ import com.colbertlum.entity.UOM;
 import javafx.application.Application;
 import javafx.event.ActionEvent;
 import javafx.event.EventHandler;
+import javafx.geometry.Rectangle2D;
 import javafx.scene.Scene;
 import javafx.scene.control.Alert;
+import javafx.scene.control.Alert.AlertType;
 import javafx.scene.control.Button;
 import javafx.scene.control.ButtonType;
 import javafx.scene.control.DatePicker;
+import javafx.scene.control.ListView;
 import javafx.scene.control.Menu;
 import javafx.scene.control.MenuBar;
 import javafx.scene.control.MenuButton;
 import javafx.scene.control.MenuItem;
 import javafx.scene.control.Separator;
 import javafx.scene.control.TextField;
-import javafx.scene.control.Alert.AlertType;
 import javafx.scene.layout.HBox;
 import javafx.scene.layout.VBox;
 import javafx.scene.text.Font;
 import javafx.scene.text.Text;
 import javafx.stage.DirectoryChooser;
 import javafx.stage.FileChooser;
+import javafx.stage.Screen;
 import javafx.stage.Stage;
 import javafx.stage.WindowEvent;
 
@@ -81,8 +85,9 @@ public class ShopeeSalesConvertApplication extends Application {
     public static final String REPORT = "report";
     public static final String ONLINE_SALES_PATH = "onlineSales-path";
     public static final String STOCK_REPORT_PATH = "stock-report-path";
-    public static final String TEMP_MOVEMENT_PATH = "temp_movement_path";
+    public static final String TEMP_MOVEMENT_FILE_PATH = "temp_movement_path";
     public static final String COMPLETE_ORDER_PATH = "completed_movement_path";
+    public static final String CREDIT_NOTE_PATH = "credit-note-path";
     public static final String ORDER_REPOSITORY_PATH = "order_repository_path";
 
     private List<UOM> uoms;
@@ -461,6 +466,20 @@ public class ShopeeSalesConvertApplication extends Application {
             });
         });
 
+        MenuItem handleReturnMenuItem = new MenuItem("handle returning");
+        helpMenu.getItems().add(handleReturnMenuItem);
+        handleReturnMenuItem.setOnAction((e) -> {
+            HandleReturnController handleReturnController = new HandleReturnController();
+            Stage stage = new Stage();
+            handleReturnController.initDialog(stage);
+            // Rectangle2D primScreenBounds = Screen.getPrimary().getVisualBounds();
+            // stage.setX((primScreenBounds.getWidth() - stage.getWidth()) / 2);
+            // stage.setY((primScreenBounds.getHeight() - stage.getHeight()) / 2);
+            stage.showAndWait();
+            
+        });
+        
+
         return menuBar;
     }
 
@@ -509,10 +528,12 @@ public class ShopeeSalesConvertApplication extends Application {
         outputPathText.setFont(font);
         Text dataSourceText = new Text("process sales from " + getProperty(DATA_SOURCE_TYPE));
         dataSourceText.setFont(font);
-        Text tempMovementPathText = new Text("save Temp Movement Report at : '" + getProperty(TEMP_MOVEMENT_PATH) + "'");
+        Text tempMovementPathText = new Text("save Temp Movement Report at : '" + getProperty(TEMP_MOVEMENT_FILE_PATH) + "'");
         tempMovementPathText.setFont(font);
         Text completeOrderMovementPathText = new Text("save completed order report at : '" + getProperty(COMPLETE_ORDER_PATH) + "'");
         completeOrderMovementPathText.setFont(font);
+        Text creditNotePathText = new Text("credit note report at : '" + getProperty(CREDIT_NOTE_PATH) + "'");
+        creditNotePathText.setFont(font);
         Text orderRepositoryPathText = new Text("Order Record Repository at : '" + getProperty(ORDER_REPOSITORY_PATH) + "'");
         orderRepositoryPathText.setFont(font);
         
@@ -572,20 +593,45 @@ public class ShopeeSalesConvertApplication extends Application {
         reportSourceMenuButton.getItems().add(shopeeReportSourceItem);
         
 
-        Button selectTempMovementReportPathButton = new Button("select temporary movement report location");
+        Button selectTempMovementReportPathButton = new Button("select temporary movement report file");
         selectTempMovementReportPathButton.setPrefWidth(buttonWidth);
         selectTempMovementReportPathButton.setOnAction(e -> {
             
-            File folder = folderChooser.showDialog(priStage);
-            if(folder == null) return;
-            saveProperty(TEMP_MOVEMENT_PATH, folder.getPath());
-            tempMovementPathText.setText("save Temp Movement Report at : '" + folder.getPath() + "'");
+            File file = xlsxFileChooser.showOpenDialog(priStage);
+            if(file == null) return;
+            saveProperty(TEMP_MOVEMENT_FILE_PATH, file.getPath());
+            tempMovementPathText.setText("save Temp Movement Report at : '" + file.getPath() + "'");
         });
 
-        VBox vBox = new VBox(backButton, measPathText, selectMeasButton, uomPathText, selectUomButton, 
-            stockReportPathText, selectStockReportButton, outputPathText, selectOutputPathButton,
-            dataSourceText, reportSourceMenuButton);
+        Button selectCompletedOrderReportFolderPathButton = new Button("select completed order movement report location");
+        selectCompletedOrderReportFolderPathButton.setPrefWidth(buttonWidth);
+        selectCompletedOrderReportFolderPathButton.setOnAction(e -> {
+            
+            File folder = folderChooser.showDialog(priStage);
+            if(folder == null) return;
+            saveProperty(COMPLETE_ORDER_PATH, folder.getPath());
+            completeOrderMovementPathText.setText("save Completed Order Movement Report at : '" + folder.getPath() + "'");
+        });
 
+        Button selectCreditNoteReportFolderPathButton = new Button("select credit note report location");
+        selectCreditNoteReportFolderPathButton.setPrefWidth(buttonWidth);
+        selectCreditNoteReportFolderPathButton.setOnAction(e -> {
+            
+            File folder = folderChooser.showDialog(priStage);
+            if(folder == null) return;
+            saveProperty(CREDIT_NOTE_PATH, folder.getPath());
+            completeOrderMovementPathText.setText("save Credit Note Report at : '" + folder.getPath() + "'");
+        });
+
+        VBox vBox = new VBox(backButton, 
+            measPathText, selectMeasButton,
+            uomPathText, selectUomButton, 
+            stockReportPathText, selectStockReportButton,
+            outputPathText, selectOutputPathButton,
+            dataSourceText, reportSourceMenuButton,
+            tempMovementPathText, selectTempMovementReportPathButton,
+            completeOrderMovementPathText, selectCompletedOrderReportFolderPathButton,
+            creditNotePathText, selectCreditNoteReportFolderPathButton);
 
         return new Scene(vBox, 600, 400);
     }
@@ -613,7 +659,7 @@ public class ShopeeSalesConvertApplication extends Application {
             productName = productName.replaceAll(characterFilter,"");
 
             XSSFRow row = biztorySheet.createRow(rowCount++);
-            row.createCell(0).setCellValue(moveOut.getOrderId());
+            row.createCell(0).setCellValue(moveOut.getId());
             row.createCell(1).setCellValue(productName);
             row.createCell(2).setCellValue(moveOut.getQuantity());
             row.createCell(3).setCellValue("");
@@ -678,8 +724,9 @@ public class ShopeeSalesConvertApplication extends Application {
         for(MoveOut moveOut : moveOuts){
 
             UOM uom = null;
-            if(moveOut.getOrderId() != null) {
-                uom = UOM.binarySearch(moveOut.getOrderId(), uoms);
+            if(moveOut.getId() != null) {
+                // TODO Why this moveOut using orderID? it should be Meas's id.
+                uom = UOM.binarySearch(moveOut.getId(), uoms); 
             } else {
                 uom = new UOM();
                 uom.setProductId("");
@@ -689,7 +736,7 @@ public class ShopeeSalesConvertApplication extends Application {
             XSSFRow row = movementDetailSheet.createRow(index);
             row.createCell(0).setCellValue(moveOut.getOrder().getId());
             row.createCell(1).setCellValue(moveOut.getOrder().getShipOutDate());
-            row.createCell(2).setCellValue(moveOut.getOrderId());
+            row.createCell(2).setCellValue(moveOut.getId());
             row.createCell(3).setCellValue(moveOut.getProductName() + "-" + moveOut.getVariationName());
             row.createCell(4).setCellValue(moveOut.getQuantity());
             row.createCell(5).setCellValue(uom.getCostPrice());
@@ -749,8 +796,8 @@ public class ShopeeSalesConvertApplication extends Application {
             }
             
             UOM uom = null;
-            if(moveOut.getOrderId() != null) {
-                uom = UOM.binarySearch(moveOut.getOrderId(), uoms);
+            if(moveOut.getId() != null) {
+                uom = UOM.binarySearch(moveOut.getId(), uoms);
             } else {
                 uom = new UOM();
                 uom.setProductId("");

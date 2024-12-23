@@ -49,10 +49,10 @@ public class OrderService {
         orderRepository.addCompletedOrders(newCompletedOrder);
         orderRepository.removeShippingOrders(newCompletedOrder);
 
-        // figureOut toReport orders
+        // figureOut toReport orders from newCompleted and newInReturnAfterCompleted order with not record in repository.
         ArrayList<Order> toReportOrders = new ArrayList<Order>();
         toReportOrders.addAll(newCompletedOrder);
-        toReportOrders.addAll(lookupOrderNotYetOnCompleted(figureOutNewInReturnAfterCompletedOrder(orderRepository), orderRepository));
+        toReportOrders.addAll(lookupOrderNotYetOnCompletedInRepository(figureOutNewInReturnAfterCompletedOrder(orderRepository), orderRepository));
         // toReportOrders.addAll(lookupOrderNotYetOnShipping(figureOutNewInReturnOrder(orderRepository), orderRepository));
         // toReportOrders.addAll(lookupOrderNotYetOnShipping(figureOutNewInReturnAfterCompletedOrder(orderRepository), orderRepository));
 
@@ -83,7 +83,7 @@ public class OrderService {
                 ShippingMoveOuts.add(moveOut.get());
             }
         }
-        File tempMovementFile = new File(ShopeeSalesConvertApplication.getProperty(ShopeeSalesConvertApplication.TEMP_MOVEMENT_PATH));
+        File tempMovementFile = new File(ShopeeSalesConvertApplication.getProperty(ShopeeSalesConvertApplication.TEMP_MOVEMENT_FILE_PATH));
         TempMovementReporting.reporting(tempMovementFile, new ArrayList<MoveOut>(ShippingMoveOuts));
         // save on shipping order to repository
         orderRepository.addShippingOrders(newShippingOrders);
@@ -111,14 +111,14 @@ public class OrderService {
             }
         }
         for(String fileName : dateDifferentMoveOuts.keySet()){
-            String filePath = ShopeeSalesConvertApplication.getProperty(ShopeeSalesConvertApplication.COMPLETE_ORDER_PATH) + fileName;
+            String filePath = ShopeeSalesConvertApplication.getProperty(ShopeeSalesConvertApplication.COMPLETE_ORDER_PATH) + File.pathSeparator + fileName;
             CompletedMovementReporting.reporting(new File(filePath), dateDifferentMoveOuts.get(fileName));
         }
 
         orderRepository.submitTransaction();
     }
 
-    private List<Order> lookupOrderNotYetOnCompleted(List<Order> orders, OrderRepository orderRepository){
+    private List<Order> lookupOrderNotYetOnCompletedInRepository(List<Order> orders, OrderRepository orderRepository){
         ArrayList<Order> previousNotyetOnCompleted = new ArrayList<Order>();
 
         List<Order> completedOrders = new ArrayList<Order>(orderRepository.getShippingOrders());
@@ -289,11 +289,11 @@ public class OrderService {
         HashMap<String, Double> pendingStockReducingMap = new HashMap<String, Double>();
 
         for(MoveOut moveOut : moveOuts) {
-            if(!pendingStockReducingMap.containsKey(moveOut.getOrderId())) {
-                pendingStockReducingMap.put(moveOut.getOrderId(), moveOut.getQuantity());
+            if(!pendingStockReducingMap.containsKey(moveOut.getId())) {
+                pendingStockReducingMap.put(moveOut.getId(), moveOut.getQuantity());
             } else {
-                Double lastReduce = pendingStockReducingMap.get(moveOut.getOrderId());
-                pendingStockReducingMap.put(moveOut.getOrderId(), lastReduce);
+                Double lastReduce = pendingStockReducingMap.get(moveOut.getId());
+                pendingStockReducingMap.put(moveOut.getId(), lastReduce);
             }
         }
         

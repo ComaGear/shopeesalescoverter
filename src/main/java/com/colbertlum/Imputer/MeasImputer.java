@@ -19,7 +19,6 @@ import com.colbertlum.entity.Meas;
 import com.colbertlum.entity.UOM;
 
 public class MeasImputer {
-  // TODO : separate uoms with observableList, also meas
 
     public static final String CREATE = "CREATE";
     public static final String UPDATE = "UPDATE";
@@ -86,6 +85,21 @@ public class MeasImputer {
             else if(uoms.get(mid).getProductId().toLowerCase().compareTo(meas.getId().toLowerCase()) < 0) lo = mid+1;
             else{
                 return uoms.get(mid);
+            }
+        }
+        return null;
+    }
+
+    public Meas getMeas(String sku, List<Meas> measList){
+        int lo = 0;
+        int hi = measList.size()-1;
+
+        while(lo <= hi) {
+            int mid = lo + (hi-lo) / 2;
+            if(measList.get(mid).getRelativeId().toLowerCase().compareTo(sku.toLowerCase()) > 0) hi = mid-1; 
+            else if(measList.get(mid).getRelativeId().toLowerCase().compareTo(sku.toLowerCase()) < 0) lo = mid+1;
+            else{
+                return measList.get(mid);
             }
         }
         return null;

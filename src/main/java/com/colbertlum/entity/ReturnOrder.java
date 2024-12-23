@@ -2,6 +2,8 @@ package com.colbertlum.entity;
 
 import java.lang.ref.SoftReference;
 import java.time.LocalDate;
+import java.util.ArrayList;
+import java.util.Comparator;
 import java.util.List;
 
 public class ReturnOrder {
@@ -183,9 +185,104 @@ public class ReturnOrder {
         this.orderCompleteDate = order.getOrderCompleteDate();
         this.trackingNumber = order.getTrackingNumber();
         this.requestApproved = order.isRequestApproved();
-}
+    }
 
     public ReturnOrder(){
     }
+
+    public ReturnOrder clone(ArrayList<ReturnMoveOut> returnMoveOuts) {
+        
+        ReturnOrder clone = new ReturnOrder();
+        clone.setId(getId());
+        clone.setManagementFee(getManagementFee());
+        clone.setOrderTotalAmount(getOrderTotalAmount());
+        clone.setShippingFee(getShippingFee());
+        clone.setShopeeVoucher(getShopeeVoucher());
+        clone.setShipOutDate(getShipOutDate());
+        clone.setStatus(getStatus());
+        clone.setServiceFee(getServiceFee());
+        clone.setCommissionFee(getCommissionFee());
+        clone.setShippingRebateEstimate(getShippingRebateEstimate());
+        clone.setOrderCreationDate(getOrderCreationDate());
+        clone.setOrderCompleteDate(getOrderCompleteDate());
+        clone.setTrackingNumber(getTrackingNumber());
+        clone.setRequestApproved(isRequestApproved());
+        clone.setReturnType(getReturnType());
+
+        clone.setReturnMoveOutList(new ArrayList<SoftReference<ReturnMoveOut>>(getReturnMoveOutList().size()));
+        for(SoftReference<ReturnMoveOut> softMoveOut : getReturnMoveOutList()){
+            
+            ReturnMoveOut cloneReturnMove = softMoveOut.get().clone();
+            returnMoveOuts.add(cloneReturnMove);
+            clone.getReturnMoveOutList().add(new SoftReference<ReturnMoveOut>(cloneReturnMove));
+        }
+
+        return clone;
+    }
+
+    public void update(ReturnOrder clone) {
+        this.setId(clone.getId());
+        this.setManagementFee(clone.getManagementFee());
+        this.setOrderTotalAmount(clone.getOrderTotalAmount());
+        this.setShippingFee(clone.getShippingFee());
+        this.setShopeeVoucher(clone.getShopeeVoucher());
+        this.setShipOutDate(clone.getShipOutDate());
+        this.setStatus(clone.getStatus());
+        this.setServiceFee(clone.getServiceFee());
+        this.setCommissionFee(clone.getCommissionFee());
+        this.setShippingRebateEstimate(clone.getShippingRebateEstimate());
+        this.setOrderCreationDate(clone.getOrderCreationDate());
+        this.setOrderCompleteDate(clone.getOrderCompleteDate());
+        this.setTrackingNumber(clone.getTrackingNumber());
+        this.setRequestApproved(clone.isRequestApproved());
+        this.setReturnType(clone.getReturnType());
+
+        Comparator<SoftReference<ReturnMoveOut>> comparator = new Comparator<SoftReference<ReturnMoveOut>>() {
+
+            @Override
+            public int compare(SoftReference<ReturnMoveOut> o1, SoftReference<ReturnMoveOut> o2) {
+                if(!o1.get().getSku().equals(o2.get().getSku())){
+                    return o1.get().getSku().compareTo(o2.get().getSku());
+                }
+                if(!o1.get().getProductName().equals(o2.get().getProductName())){
+                    return o1.get().getProductName().compareTo(o2.get().getProductName());
+                }
+                if(!o1.get().getVariationName().equals(o2.get().getVariationName())){
+                    return o1.get().getVariationName().compareTo(o2.get().getVariationName());
+                }
+                if(o1.get().getQuantity() != o2.get().getQuantity()){
+                    if(o1.get().getQuantity() > o2.get().getQuantity()) return 1;
+                    if(o1.get().getQuantity() < o2.get().getQuantity()) return -1;
+                }
+                if(o1.get().getPrice() != o2.get().getPrice()){
+                    if(o1.get().getPrice() > o2.get().getPrice()) return 1;
+                    if(o1.get().getPrice() < o2.get().getPrice()) return -1;
+                }
+                return 0;
+            }
+            
+        };
+        clone.getReturnMoveOutList().sort(comparator);
+        getReturnMoveOutList().sort(comparator);
+        for(int i = 0; i < getReturnMoveOutList().size(); i++){
+            
+
+            ReturnMoveOut thisReturnMoveOut = getReturnMoveOutList().get(i).get();
+            ReturnMoveOut cloneReturnMoveOut = clone.getReturnMoveOutList().get(i).get();
+            
+            thisReturnMoveOut.setSku(cloneReturnMoveOut.getSku());
+            thisReturnMoveOut.setProductName(cloneReturnMoveOut.getProductName());
+            thisReturnMoveOut.setVariationName(cloneReturnMoveOut.getVariationName());
+            thisReturnMoveOut.setQuantity(cloneReturnMoveOut.getQuantity());
+            thisReturnMoveOut.setOrderId(cloneReturnMoveOut.getOrderId());
+            thisReturnMoveOut.setPrice(cloneReturnMoveOut.getPrice());
+            thisReturnMoveOut.setOrderId(cloneReturnMoveOut.getOrderId());
+            thisReturnMoveOut.setReturnStatus(cloneReturnMoveOut.getReturnStatus());
+            thisReturnMoveOut.setStatusQuantity(cloneReturnMoveOut.getStatusQuantity());
+        }
+
+    }
+
+    
     
 }

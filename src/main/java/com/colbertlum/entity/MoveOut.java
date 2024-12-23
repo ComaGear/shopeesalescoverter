@@ -11,12 +11,14 @@ public class MoveOut {
     private Order order;
     private int foundRow;
     private String orderId;
-    
+    private String id;
 
     public String getOrderId() {
-        if(orderId == null && order != null) return order.getId();
+        if (orderId == null && order != null)
+            return order.getId();
         return orderId;
     }
+
     public String getParentSku() {
         return parentSku;
     }
@@ -25,53 +27,68 @@ public class MoveOut {
         this.parentSku = parentSku;
     }
 
-    public MoveOut setOrderId(String id) {
-        this.orderId = id;
+    public MoveOut setId(String id) {
+        this.id = id;
         return this;
     }
 
-    public double getProductSubTotal(){
+    public String getId() {
+        return id;
+    }
+
+    public double getProductSubTotal() {
         return quantity * price;
     }
 
     public Order getOrder() {
         return order;
     }
+
     public MoveOut setOrder(Order order) {
         this.order = order;
         return this;
     }
+
     public String getSku() {
         return sku;
     }
+
     public MoveOut setSku(String sku) {
         this.sku = sku;
         return this;
     }
+
     public String getProductName() {
         return productName;
     }
+
     public MoveOut setProductName(String productName) {
         this.productName = productName;
         return this;
     }
+
     public String getVariationName() {
         return variationName;
     }
+
     public MoveOut setVariationName(String variationName) {
         this.variationName = variationName;
         return this;
     }
+
     public double getQuantity() {
         return quantity;
     }
+
     public MoveOut setQuantity(double quantity) {
         this.quantity = quantity;
         return this;
     }
+
     public double getPrice() {
         return price;
     }
+
     public MoveOut setPrice(double price) {
         this.price = price;
         return this;
@@ -81,7 +98,8 @@ public class MoveOut {
         this.foundRow = foundRow;
         return this;
     }
-    public int getFoundRow(){
+
+    public int getFoundRow() {
         return this.foundRow;
     }
 }

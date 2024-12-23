@@ -1,6 +1,6 @@
 package com.colbertlum;
 
-public interface CustomListener {
+public interface HandleOpenOrderFormListener {
     
     public void handleOrder(String orderId);
 }

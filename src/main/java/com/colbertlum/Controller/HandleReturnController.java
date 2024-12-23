@@ -2,10 +2,12 @@ package com.colbertlum.Controller;
 
 import java.lang.ref.SoftReference;
 import java.util.ArrayList;
+import java.util.HashMap;
 import java.util.List;
+import java.util.Map;
 import java.util.Stack;
 
-import com.colbertlum.CustomListener;
+import com.colbertlum.HandleOpenOrderFormListener;
 import com.colbertlum.Imputer.HandleReturnImputer;
 import com.colbertlum.cellFactory.ReturnMoveOutCellFactory;
 import com.colbertlum.cellFactory.ReturnOrderCellFactory;
@@ -15,7 +17,10 @@ import com.colbertlum.entity.ReturnOrder;
 import javafx.application.Platform;
 import javafx.collections.FXCollections;
 import javafx.collections.ObservableList;
+import javafx.event.Event;
 import javafx.event.EventHandler;
+import javafx.geometry.Insets;
+import javafx.geometry.Pos;
 import javafx.scene.Scene;
 import javafx.scene.control.Button;
 import javafx.scene.control.ListView;
@@ -23,6 +28,9 @@ import javafx.scene.control.MenuButton;
 import javafx.scene.control.MenuItem;
 import javafx.scene.control.TextField;
 import javafx.scene.input.KeyCode;
+import javafx.scene.input.KeyCodeCombination;
+import javafx.scene.input.KeyCombination;
+import javafx.scene.input.KeyEvent;
 import javafx.scene.layout.HBox;
 import javafx.scene.layout.Pane;
 import javafx.scene.layout.Priority;
@@ -78,9 +86,6 @@ public class HandleReturnController {
 
         // scan tracking number or Order id, if order is exist will open return movement page directly,
         // if order not is exist or not found, select all text let user can replace old text with new text.
-        // scaningSearchBar.textProperty().addListener((observe, oldText, newText) ->{
-        //     imputer
-        // });
         scaningSearchBar.setOnKeyPressed((keyEvent) ->{
             if(keyEvent.getCode().equals(KeyCode.ENTER)) {
                 ReturnOrder order = imputer.getOrder(scaningSearchBar.getText());
@@ -105,7 +110,7 @@ public class HandleReturnController {
         HBox headerPanel = new HBox(filterOrderMenuButton, scaningSearchBar);
 
         returnOrderListView = new ListView<ReturnOrder>();
-        ReturnOrderCellFactory returnOrderCellFactory = new ReturnOrderCellFactory(new CustomListener() {
+        ReturnOrderCellFactory returnOrderCellFactory = new ReturnOrderCellFactory(new HandleOpenOrderFormListener() {
             @Override
             public void handleOrder(String orderId){
                 ReturnOrder order = imputer.getOrder(orderId);
@@ -154,25 +159,43 @@ public class HandleReturnController {
 
 
     private void openReturnMovementHandleScene(ReturnOrder returnOrder){
-
+        
+        ArrayList<ReturnMoveOut> returnMoveOuts = new ArrayList<ReturnMoveOut>();
+        ReturnOrder cloneReturnOrder = returnOrder.clone(returnMoveOuts);
         
         TextField orderIdText = new TextField();
         orderIdText.setEditable(false);
         orderIdText.getStyleClass().add("copiable-text");
-        orderIdText.setText(returnOrder.getId());
+        orderIdText.setText(cloneReturnOrder.getId());
 
         TextField scaningSearchBar = new TextField();
 
         scaningSearchBar.setOnKeyPressed((keyEvent) ->{
             if(keyEvent.getCode().equals(KeyCode.ENTER)) {
-                ReturnMoveOut returnMoveOut = imputer.getReturnMoveOuInOrder(returnOrder, scaningSearchBar.getText());
-                if(returnMoveOut == null) scaningSearchBar.selectAll();
+                ReturnMoveOut returnMoveOut = imputer.getReturnMoveOuInOrder(cloneReturnOrder, scaningSearchBar.getText());
+                
+                if(returnMoveOut == null) {
+                    scaningSearchBar.selectAll();
+                    return;
+                }
+                
+                //application logic about fill return quantity to relative movement. 
+                if(returnMoveOut.getQuantity() > returnMoveOut.getStatusQuantity()) {
+                    // only increase when it not more than send out.
+                    returnMoveOut.setQuantity(returnMoveOut.getStatusQuantity() + 1);
+                }
+                if(returnMoveOut.getReturnStatus().equals(ReturnMoveOut.RETURNING)) 
+                    returnMoveOut.setReturnStatus(ReturnMoveOut.PARTICULAR_RECEIVED);
+                if(returnMoveOut.getQuantity() == returnMoveOut.getStatusQuantity() 
+                    && returnMoveOut.getReturnStatus().equals(ReturnMoveOut.PARTICULAR_RECEIVED)) {
+                    returnMoveOut.setReturnStatus(ReturnMoveOut.RECEIVED);
+                }
             }
         });
         scaningSearchBar.textProperty().addListener((observe, oldValue, newValue) -> {
             ArrayList<ReturnMoveOut> newReturnMoveOutList = new ArrayList<ReturnMoveOut>();
 
-            List<SoftReference<ReturnMoveOut>> returnMoveOutList = returnOrder.getReturnMoveOutList();
+            List<SoftReference<ReturnMoveOut>> returnMoveOutList = cloneReturnOrder.getReturnMoveOutList();
             for(SoftReference<ReturnMoveOut> softReturnMoveOut : returnMoveOutList){
                 if(softReturnMoveOut.get().getProductName().contains(newValue)) {
                     newReturnMoveOutList.add(softReturnMoveOut.get());
@@ -188,27 +211,53 @@ public class HandleReturnController {
             });
         });
 
-        Button backButton = new Button("back to Orders");
-        backButton.setOnAction((e) -> {
-            popScene();
-            refillMovementListView(new ArrayList<>());
+        Button saveButton = new Button("Save");
+        saveButton.setOnAction((e) -> {
+            returnOrder.update(cloneReturnOrder);
+            imputer.setUpdated(returnOrder);
+            cleanHandleReturnMovementScene();
         });
+
+        Button backButton = new Button("back to Orders");
+        backButton.setOnAction((e) -> cleanHandleReturnMovementScene());
 
         Pane spacer = new Pane();
         spacer.setMinSize(10, 1);
         HBox.setHgrow(spacer, Priority.ALWAYS);
 
-        HBox headerPanel = new HBox(orderIdText, scaningSearchBar, spacer, backButton);
+        HBox headerPanel = new HBox(orderIdText, scaningSearchBar, spacer, backButton, saveButton);
+        headerPanel.setPadding(new Insets(10, 10, 10, 10));
 
 
         returnMovementListView = new ListView<ReturnMoveOut>();
         ReturnMoveOutCellFactory returnMovemCellFactory = new ReturnMoveOutCellFactory();
         returnMovementListView.setCellFactory(returnMovemCellFactory);
         // ReturnMoveOut returnMoveOut = listView.getItems().get(cellFactory.getSelectedItemIndex());
-
-        Scene subScene = new Scene(new VBox(headerPanel, returnMovementListView));
+        
+        Scene subScene = new Scene(new VBox(headerPanel, returnMovementListView, saveButton));
         subScene.getStylesheets().add(getClass().getResource("copiable-text.css").toExternalForm());
+        
+        subScene.addEventFilter(KeyEvent.KEY_PRESSED, new EventHandler<KeyEvent>() {
+            final KeyCombination saveKeyCombination = new KeyCodeCombination(KeyCode.S, KeyCombination.CONTROL_ANY);
+            
+            @Override
+            public void handle(KeyEvent event) {
+                if(saveKeyCombination.match(event)){
+                    returnOrder.update(cloneReturnOrder);
+                    imputer.setUpdated(returnOrder);
+                    cleanHandleReturnMovementScene();
+                }
+                event.consume();
+            }
+            
+        });
+
         pushScene(subScene);
+    }
+
+    private void cleanHandleReturnMovementScene(){
+        popScene();
+        refillMovementListView(new ArrayList<>());
     }
 
     private void refillMovementListView(List<ReturnMoveOut> returnMoveOuts){
@@ -255,6 +304,5 @@ public class HandleReturnController {
 
     public HandleReturnController(){
         this.imputer = new HandleReturnImputer();
-
     }
 }
