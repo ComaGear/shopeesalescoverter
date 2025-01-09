@@ -18,6 +18,10 @@ public class MoveOut {
             return order.getId();
         return orderId;
     }
+    
+    public void setOrderId(String orderId) {
+        this.orderId = orderId;
+    }
 
     public String getParentSku() {
         return parentSku;
