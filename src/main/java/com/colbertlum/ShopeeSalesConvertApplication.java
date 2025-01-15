@@ -49,6 +49,8 @@ import com.colbertlum.entity.UOM;
 import javafx.application.Application;
 import javafx.event.ActionEvent;
 import javafx.event.EventHandler;
+import javafx.geometry.Insets;
+import javafx.geometry.Pos;
 import javafx.geometry.Rectangle2D;
 import javafx.scene.Scene;
 import javafx.scene.control.Alert;
@@ -64,6 +66,8 @@ import javafx.scene.control.MenuItem;
 import javafx.scene.control.Separator;
 import javafx.scene.control.TextField;
 import javafx.scene.layout.HBox;
+import javafx.scene.layout.Priority;
+import javafx.scene.layout.Region;
 import javafx.scene.layout.VBox;
 import javafx.scene.text.Font;
 import javafx.scene.text.Text;
@@ -118,6 +122,8 @@ public class ShopeeSalesConvertApplication extends Application {
 
         MenuBar menuBar = setupMenuBar();
 
+        Text reportPathHeaderText = new Text("Sales Report Position : ");
+        reportPathHeaderText.setFont(font);
         String reportPathString = getProperty(REPORT);
         Text reportPathText = new Text(reportPathString);
         reportPathText.setFont(font);
@@ -126,16 +132,20 @@ public class ShopeeSalesConvertApplication extends Application {
         fileChooser.getExtensionFilters().add(new FileChooser.ExtensionFilter("excel File", "*.xlsx"));
         // fileChooser.setInitialDirectory(new File(pathname));
 
-        Button selectBigSellerReportButton = new Button("select report");
-        selectBigSellerReportButton.setOnAction(e -> {
+        Button selectSalesReportButton = new Button("select report");
+        selectSalesReportButton.setOnAction(e -> {
             File report = fileChooser.showOpenDialog(priStage);
             if(report == null) return;
             reportPathText.setText(report.getPath());
             saveProperty(REPORT, report.getPath());
             reportPath = report.getPath();
         });
-        selectBigSellerReportButton.setPrefWidth(100);
-        HBox reportBarBox = new HBox(selectBigSellerReportButton, reportPathText);
+        selectSalesReportButton.setPrefWidth(100);
+        
+        Region reportBarSpacer = new Region();
+        HBox.setHgrow(reportBarSpacer, Priority.ALWAYS);
+        HBox reportBarBox = new HBox(reportPathHeaderText, reportPathText, reportBarSpacer, selectSalesReportButton);
+        reportBarBox.setPadding(new Insets(5));
         
         DatePicker startDatePicker = new DatePicker(LocalDate.now());
         DatePicker endDatePicker = new DatePicker(LocalDate.now());
@@ -148,11 +158,12 @@ public class ShopeeSalesConvertApplication extends Application {
             endDate = endDatePicker.getValue();
         });
 
-        Text startText = new Text("Start Date : ");
-        Text endText = new Text("End Date : ");
-        startText.setFont(font);
-        endText.setFont(font);
-        HBox datePickerHBox = new HBox(startText, startDatePicker, endText, endDatePicker);
+        // Text startText = new Text("Start Date : ");
+        // Text endText = new Text("End Date : ");
+        // startText.setFont(font);
+        // endText.setFont(font);
+        // HBox datePickerHBox = new HBox(startText, startDatePicker, endText, endDatePicker);
+        // datePickerHBox.setPadding(new Insets(5));
 
         TextField outputFileNameTextField = new TextField();
         LocalDate now = LocalDate.now();
@@ -171,11 +182,16 @@ public class ShopeeSalesConvertApplication extends Application {
             // if(this.uoms == null) uoms = getIrsUoms();
             // saveOutputToFile(processedMoveOuts, uoms, outputFilePath);
         });
-
-        HBox processBarBox = new HBox(processButton, outputPathText, outputFileNameTextField);
+        
+        Region processBarSpacer = new Region();
+        HBox.setHgrow(processBarSpacer, Priority.ALWAYS);
+        HBox processBarBox = new HBox(outputPathText, outputFileNameTextField, processBarSpacer, processButton);
+        processBarBox.setPadding(new Insets(5));
 
         Separator separator = new Separator();
         
+        Text onlineMassUpdateHeaderText = new Text("OnlineMassUpdate File Position : ");
+        onlineMassUpdateHeaderText.setFont(font);
         Text onlineMassUpdateFilePathText = new Text(getProperty(ONLINE_SALES_PATH));
         onlineMassUpdateFilePathText.setFont(font);
         Button selectOnlineSalesInfoButton = new Button("select mass update item sales stock generate by shopee");
@@ -186,14 +202,19 @@ public class ShopeeSalesConvertApplication extends Application {
             saveProperty(ONLINE_SALES_PATH, onlineMassUpdateSalesFile.getPath());
         });
         Button imputeStockButton = new Button("Impute Stock");
-        imputeStockButton.setPrefWidth(100);
+        imputeStockButton.setPrefWidth(400);
         imputeStockButton.setOnAction(handleImputeAction());
         
-        VBox massUpdateBox = new VBox(new HBox(selectOnlineSalesInfoButton, imputeStockButton), onlineMassUpdateFilePathText);
+        Region onlineMassUpdateBarSpacer = new Region();
+        HBox.setHgrow(onlineMassUpdateBarSpacer, Priority.ALWAYS);
+        VBox massUpdateBox = new VBox(new HBox(onlineMassUpdateHeaderText, onlineMassUpdateFilePathText), 
+            new HBox(selectOnlineSalesInfoButton, onlineMassUpdateBarSpacer, imputeStockButton));
+        massUpdateBox.setPadding(new Insets(5));
 
         VBox vBox;
         if(getProperty(DATA_SOURCE_TYPE).equals(SHOPEE_ORDER)) {
-            vBox = new VBox(menuBar, reportBarBox, datePickerHBox, processBarBox, separator, massUpdateBox);
+            // vBox = new VBox(menuBar, reportBarBox, datePickerHBox, processBarBox, separator, massUpdateBox);
+            vBox = new VBox(menuBar, reportBarBox, processBarBox, separator, massUpdateBox);
         } else {
             vBox = new VBox(menuBar, reportBarBox, processBarBox, separator, massUpdateBox);
         }

@@ -11,6 +11,7 @@ import com.colbertlum.entity.OnlineSalesInfoReason;
 
 import javafx.collections.FXCollections;
 import javafx.collections.ObservableList;
+import javafx.geometry.Insets;
 import javafx.scene.Scene;
 import javafx.scene.control.Button;
 import javafx.scene.control.ListView;
@@ -18,6 +19,8 @@ import javafx.scene.control.MenuButton;
 import javafx.scene.control.MenuItem;
 import javafx.scene.control.TextField;
 import javafx.scene.layout.HBox;
+import javafx.scene.layout.Priority;
+import javafx.scene.layout.Region;
 import javafx.scene.layout.VBox;
 import javafx.scene.text.Text;
 import javafx.stage.Stage;
@@ -83,11 +86,11 @@ public class StockImputingController {
                 String selectedMeasSku = measImputingController.getSelectedMeasSku();
                 if(selectedMeasSku != null && !selectedMeasSku.isEmpty() && selectedMeasSku.contains("-")){
                     status.getOnlineSalesInfo().setSku(selectedMeasSku);
-                } else {
+                } else if(selectedMeasSku != null && !selectedMeasSku.isEmpty()) {
                     status.getOnlineSalesInfo().setParentSku(selectedMeasSku);
                 }
                 
-                selectOnlineSalesList.clear(); // TODO check this works.
+                selectOnlineSalesList.clear();
                 refillOnlineListView(new ArrayList<OnlineSalesInfoReason>(observableOnlineInfoList));
             }
         });
@@ -113,7 +116,10 @@ public class StockImputingController {
             refillOnlineListView(new ArrayList<OnlineSalesInfoReason>(observableOnlineInfoList));
         });
 
-        HBox onlineListViewOperationHBox = new HBox(viewByMenuButton, applyMeasButton, applyStockButton, stockField);
+        Region onlineListViewOperationSpacer = new Region();
+        HBox.setHgrow(onlineListViewOperationSpacer, Priority.ALWAYS);
+        HBox onlineListViewOperationHBox = new HBox(viewByMenuButton, applyMeasButton, onlineListViewOperationSpacer, stockField, applyStockButton);
+        onlineListViewOperationHBox.setPadding(new Insets(2, 5, 2, 5));
 
         Text checkBoxText = new Text();
         checkBoxText.setWrappingWidth(30);
@@ -133,8 +139,7 @@ public class StockImputingController {
         
         HBox onlineSalesListViewHeader = new HBox(checkBoxText, productNameHeaderText, variationNameHeaderText, skuHeaderText
             , stockHeaderText, priceHeaderText, statusHeaderText);
-
-
+        onlineSalesListViewHeader.setPadding(new Insets(2, 5, 2, 5));
 
         VBox onlineSalesInfoPanel = new VBox(onlineListViewOperationHBox, onlineSalesListViewHeader, onlineSalesInfoStatusListView);
 

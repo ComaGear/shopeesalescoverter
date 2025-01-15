@@ -52,38 +52,7 @@ public class StockImputer {
     private List<ProductStock> productStocks;
     private List<Meas> measList;
     private List<OnlineSalesInfoReason> infoStatusList;
-
-    // public List<OnlineSalesInfoStatus> filterNotValidAndRemove(List<OnlineSalesInfo> onlineSalesInfos){
-    //     if(infoStatusList == null) infoStatusList = new ArrayList<OnlineSalesInfoStatus>();
-
-    //     for(OnlineSalesInfo info : onlineSalesInfos){
-    //         String sku = info.getParentSku();
-    //         if(sku == null || sku.isEmpty()){
-    //             infoStatusList.add(new OnlineSalesInfoStatus().setOnlineSalesInfo(info).setStatus("empty sku"));
-    //             continue;
-    //             // may be just ignoring it.
-    //         }
-
-    //         Meas meas = getMeas(sku);
-    //         if(meas == null){
-    //             infoStatusList.add(new OnlineSalesInfoStatus().setOnlineSalesInfo(info).setStatus("not exist sku"));
-    //             continue;
-    //         }
-
-    //         ProductStock productStock = getProductStock(meas.getId());
-    //         if(productStock == null && meas.getUpdateRule() != "disc"){
-    //             infoStatusList.add(new OnlineSalesInfoStatus().setOnlineSalesInfo(info).setStatus("not exist product id"));
-    //             continue;
-    //         }
-
-    //         if(meas.getUpdateRule() != null && meas.getUpdateRule().equals(SELF_MANUAL_INPUT)){
-                
-    //         }
-    //     }
-
-    //     return infoStatusList;
-    // }
-
+    
     public List<OnlineSalesInfo> figureStock(List<OnlineSalesInfo> onlineStocks) throws OnlineSalesInfoException{
         
         if(infoStatusList == null) infoStatusList = new ArrayList<OnlineSalesInfoReason>();
@@ -95,7 +64,6 @@ public class StockImputer {
             if(sku == null || sku.isEmpty()){
                 infoStatusList.add(new OnlineSalesInfoReason().setOnlineSalesInfo(info).setStatus(EMPTY_SKU));
                 continue;
-                // may be just ignoring it.
             }
 
             Meas meas = getMeas(sku);

@@ -168,14 +168,16 @@ public class HandleReturnImputer {
                 // TODO convert returnMoveOut's item sku to UOM base item.
                 // check returnMoveOut had get ProductId while transform from MoveOut before.
                 // if got it will igrone using OnlineMeas, directly using UOM as process output and handle return scene.
+                /**
                 UOM uom = null;
                 if(moveOut.getOrderId() != null) {
-                    uom = UOM.binarySearch(meas.getId(), uoms);
+                    uom = UOM.binarySearch(meas.getId(), ShopeeSalesConvertApplication.getIrsUoms());
                 } else {
                     uom = new UOM();
                     uom.setProductId("");
                     uom.setCostPrice(moveOut.getProductSubTotal() / moveOut.getQuantity());
                 }
+                */
             }
         }
     }

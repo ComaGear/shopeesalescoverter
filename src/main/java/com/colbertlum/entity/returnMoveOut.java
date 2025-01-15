@@ -9,22 +9,29 @@ public class ReturnMoveOut {
     private String orderId;
     private String returnStatus;
     private double statusQuantity;
+    private String id;
 
+    
     public static final String RETURNING = "returning";
     public static final String PARTICULAR_RECEIVED = "particular received";
     public static final String RECEIVED = "received";
     public static final String DAMAGED = "damaged";
     public static final String LOST = "lost";
     public static final String NONE = "none";
-
+    
     // - retuning
     // - particular received
     // - received
     // - damaged
     // - lost
     // - none
-
-
+    
+    public String getId() {
+        return id;
+    }
+    public void setId(String id) {
+        this.id = id;
+    }
     public String getReturnStatus() {
         return returnStatus;
     }
@@ -88,6 +95,7 @@ public class ReturnMoveOut {
         setPrice(moveOut.getPrice());
         setOrderId(moveOut.getOrder().getId());
         setReturnStatus(RETURNING);
+        setId(moveOut.getId());
     }
 
     public ReturnMoveOut(){
@@ -106,6 +114,7 @@ public class ReturnMoveOut {
         clone.setOrderId(getOrderId());
         clone.setReturnStatus(getReturnStatus());
         clone.setStatusQuantity(getStatusQuantity());
+        clone.setId(getId());
 
         return clone;
     }

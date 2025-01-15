@@ -5,6 +5,7 @@ import java.util.List;
 
 import com.colbertlum.entity.OnlineSalesInfoReason;
 
+import javafx.geometry.Insets;
 import javafx.scene.control.CheckBox;
 import javafx.scene.control.ListCell;
 import javafx.scene.control.ListView;
@@ -82,7 +83,9 @@ public class OnlineSalesInfoStatusCellFactory implements Callback<ListView<Onlin
                     Text statusText = new Text(infoStatus.getStatus());
                     statusText.setWrappingWidth(150);
                     
-                    setGraphic(new HBox(checkBox, productNameText, variationName, skuText, stockTextField, priceTextField, statusText));
+                    HBox hBox = new HBox(checkBox, productNameText, variationName, skuText, stockTextField, priceTextField, statusText);
+                    hBox.setPadding(new Insets(2, 5, 2, 5));
+                    setGraphic(hBox);
                 }
             }
         };

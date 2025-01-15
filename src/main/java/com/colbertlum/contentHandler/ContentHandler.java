@@ -1,6 +1,8 @@
 package com.colbertlum.contentHandler;
 
+import java.util.ArrayList;
 import java.util.HashMap;
+import java.util.List;
 import java.util.Map;
 
 import org.apache.poi.ss.usermodel.BuiltinFormats;
@@ -13,7 +15,9 @@ import org.xml.sax.Attributes;
 import org.xml.sax.SAXException;
 import org.xml.sax.helpers.DefaultHandler;
 
-public class ContentHandler extends DefaultHandler {
+import com.colbertlum.DataValidationInterface;
+
+public class ContentHandler extends DefaultHandler implements DataValidationInterface{
     
     
     enum dataType {
@@ -91,6 +95,7 @@ public class ContentHandler extends DefaultHandler {
                 column = columnHeaderMapper.get(columnString);
             }
             onCell(column, readingRow, string);
+            monitorData(column, string);
         }
 
         if ("row".equals(qName)) {
@@ -161,4 +166,108 @@ public class ContentHandler extends DefaultHandler {
         columnHeaderMapper = new HashMap<String, String>();
     }
 
+    @Override
+    public void appendHandlingColumnExpectData(String column, String data){
+        if(!expectDataOfColumnMap.containsKey(column)){
+            expectDataOfColumnMap.put(column, new ArrayList<>());
+        }
+
+        List<String> list = expectDataOfColumnMap.get(column);
+        list.add(data);
+    }
+
+    @Override
+    public void appendHandlingColumnContainsTextInExpectData(String column, String data){
+        if(!expectContainsTextInDataOfColumnMap.containsKey(column)){
+            expectContainsTextInDataOfColumnMap.put(column, new ArrayList<>());
+        }
+
+        List<String> list = expectContainsTextInDataOfColumnMap.get(column);
+        list.add(data);
+    }
+
+    @Override // ! should implemented by sub class. 
+    public void appendHandlingColumn() {
+
+        // appendHandlingColumnToMap("Order Status", "Cancelled");
+        // appendHandlingColumnToMap("Order Status", "Completed");
+        // appendHandlingColumnToMap("Order Status", "Unpaid");
+        // appendHandlingColumnToMap("Order Status", "Shipping");
+
+        // appendHandlingColumnContainsTextInDataToMap("Order Status", "Order Received, But");
+        
+        throw new UnsupportedOperationException("Unimplemented method 'appendHandlingColumn'");
+    }
+
+    @Override
+    public void monitorData(String column, String data) {
+        if(!expectContainsTextInDataOfColumnMap.containsKey(column)
+            || !expectDataOfColumnMap.containsKey(column)){
+            return;
+        }
+
+        if(!actualDataOfColumnMap.containsKey(column)){
+            actualDataOfColumnMap.put(column, new ArrayList<>());
+        }
+
+        List<String> list = actualDataOfColumnMap.get(column);
+        if(list.contains(column)) list.add(data);
+    }
+
+    @Override
+    public boolean hasUnExpectDataFromColumn(){
+        return !getContainedUnexpectDataColumn().isEmpty();
+    }
+
+    @Override
+    public List<String> getContainedUnexpectDataColumn(){
+        List<String> containedUnexpectColumns = new ArrayList<String>();
+
+        for(String key : expectDataOfColumnMap.keySet()){
+            List<String> list = actualDataOfColumnMap.get(key);
+            for(String uniData : list) {
+                if(!expectDataOfColumnMap.get(key).contains(uniData)){
+                    containedUnexpectColumns.add(key);
+                }
+            }
+        }
+        for(String key : expectContainsTextInDataOfColumnMap.keySet()){
+            List<String> list = new ArrayList<String>(actualDataOfColumnMap.get(key));
+            List<String> actualList = actualDataOfColumnMap.get(key);
+            List<String> expectList = expectContainsTextInDataOfColumnMap.get(key);
+
+            for(String expectString : expectList) {
+                for(String uniData : actualList){
+                    if(uniData.contains(expectString)) list.remove(uniData);
+                }
+            }
+            if(!list.isEmpty()) containedUnexpectColumns.add(key);
+        }
+
+        return containedUnexpectColumns;
+    }
+
+    @Override
+    public List<String> getUnExpectDataFromColumn(String column){
+        List<String> unexpectDataList = new ArrayList<String>();
+
+        List<String> actualList = actualDataOfColumnMap.get(column);
+    
+        for(String uniData : actualList) {
+            if(!expectDataOfColumnMap.get(column).contains(uniData)){
+                unexpectDataList.add(uniData);
+            }
+        }
+        
+        List<String> list = new ArrayList<String>(actualDataOfColumnMap.get(column));
+        List<String> expectList = expectContainsTextInDataOfColumnMap.get(column);
+        for(String expectString : expectList) {
+            for(String uniData : actualList){
+                if(uniData.contains(expectString)) list.remove(uniData);
+            }
+        }
+        if(!list.isEmpty()) unexpectDataList.addAll(list);
+
+        return unexpectDataList;
+    }
 }
