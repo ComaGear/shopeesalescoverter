@@ -12,10 +12,6 @@ public class MoveOut {
     private int foundRow;
     private String orderId;
     private String id;
-
-    public void setOrderId(String orderId){
-        this.orderId = orderId;
-    }
     
     public String getOrderId() {
         if (orderId == null && order != null)
