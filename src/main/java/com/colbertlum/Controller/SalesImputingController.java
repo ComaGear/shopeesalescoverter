@@ -73,6 +73,10 @@ public class SalesImputingController {
         return this.stage;
     }
 
+    private void refreshListView(ListView<MoveOutReason> listView, List<MoveOutReason> moveOutStatusList){
+        refillMoveOutListView(listView, new ArrayList<MoveOutReason>(moveOutStatusList));
+    }
+
     private void refillMoveOutListView(ListView<MoveOutReason> listView, List<MoveOutReason> moveOutStatusList){
         this.observableMoveOutStatusList.clear();
 
@@ -245,7 +249,8 @@ public class SalesImputingController {
 
             selectedMoveOutStatusList.clear();
 
-            refillMoveOutListView(moveOutListView, salesImputer.getMoveOutStatusList());
+            refreshListView(moveOutListView, observableMoveOutStatusList);
+            // refillMoveOutListView(moveOutListView, salesImputer.getMoveOutStatusList());
         });
 
         return new VBox(moveOutsSearchHBox, headerHBox, moveOutListView);

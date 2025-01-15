@@ -13,6 +13,7 @@ import com.colbertlum.entity.UOM;
 import javafx.collections.FXCollections;
 import javafx.collections.ObservableList;
 import javafx.event.EventHandler;
+import javafx.geometry.Insets;
 import javafx.scene.Scene;
 import javafx.scene.control.Alert;
 import javafx.scene.control.Button;
@@ -26,6 +27,8 @@ import javafx.scene.control.TextField;
 import javafx.scene.control.Tooltip;
 import javafx.scene.control.Alert.AlertType;
 import javafx.scene.layout.HBox;
+import javafx.scene.layout.Priority;
+import javafx.scene.layout.Region;
 import javafx.scene.layout.VBox;
 import javafx.scene.text.Text;
 import javafx.stage.Stage;
@@ -101,7 +104,7 @@ public class MeasImputingController {
 
     public VBox generatedUOMListView(){
         ListView<HBox> uomListView = new ListView<HBox>();
-        uomListView.getSelectionModel().setSelectionMode(SelectionMode.SINGLE);
+        // uomListView.getSelectionModel().setSelectionMode(SelectionMode.SINGLE);
 
         for(UOM uom : measImputer.getIrsUoms()){
             Text descriptionText = new Text(uom.getDescription());
@@ -173,7 +176,9 @@ public class MeasImputingController {
             toEditMeas.setId(idText.getText());
         });
 
-        return new VBox(new HBox(searchBar, useButton, updateIdButton), uomListView);
+        HBox hBox = new HBox(searchBar, useButton, updateIdButton);
+        hBox.setPadding(new Insets(2, 5, 2, 5));
+        return new VBox(hBox, uomListView);
         
     }
 
@@ -202,7 +207,10 @@ public class MeasImputingController {
 
 
         Button editButton = new Button("edit it");
-        HBox searchHBox = new HBox(menuButton, searchBar, editButton);
+        Region searchBoxSpacer = new Region();
+        HBox.setHgrow(searchBoxSpacer, Priority.ALWAYS);
+        HBox searchHBox = new HBox(menuButton, searchBar, searchBoxSpacer, editButton);
+        searchHBox.setPadding(new Insets(2, 5, 2, 5));
 
         Text skuHeaderText = new Text("SKU");
         skuHeaderText.setWrappingWidth(117);
@@ -218,6 +226,7 @@ public class MeasImputingController {
         copyHeader.setWrappingWidth(80);
 
         HBox headerHBox = new HBox(skuHeaderText, nameHeaderText, rateHeader, idHeader, ruleHeader, copyHeader);
+        headerHBox.setPadding(new Insets(2, 5, 2, 5));
 
         measListView = new ListView<Meas>();
         this.selectedMeasList = new ArrayList<Meas>();
@@ -414,9 +423,10 @@ public class MeasImputingController {
             selectedProductId = null;
         });
 
-
-        return new VBox(productNameLabel, productNameField, measurementLabel, 
-            measurementField, parentSkuLabel, parentSkuField, updateRuleLabel, updateRuleField, createButton,
+        VBox vBox = new VBox(productNameLabel, productNameField, measurementLabel, 
+        measurementField, parentSkuLabel, parentSkuField, updateRuleLabel, updateRuleField, createButton);
+        vBox.setPadding(new Insets(2, 5 , 2, 5));
+        return new VBox(vBox,
             generatedUOMListView());
     }
 

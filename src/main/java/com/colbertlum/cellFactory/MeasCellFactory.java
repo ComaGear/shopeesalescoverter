@@ -5,6 +5,7 @@ import java.util.List;
 import com.colbertlum.Imputer.MeasImputer;
 import com.colbertlum.entity.Meas;
 
+import javafx.geometry.Insets;
 import javafx.scene.control.Button;
 import javafx.scene.control.CheckBox;
 import javafx.scene.control.ListCell;
@@ -74,7 +75,9 @@ public class MeasCellFactory implements Callback<ListView<Meas>, ListCell<Meas>>
                     clipboard.setContent(clipboardContent);
                 });
 
-                setGraphic(new HBox(checkBox, relativeIdText, nameText, measuremenText, idText, menu, copySkuButton));
+                HBox hBox = new HBox(checkBox, relativeIdText, nameText, measuremenText, idText, menu, copySkuButton);
+                hBox.setPadding(new Insets(2, 5, 2, 5));
+                setGraphic(hBox);
 
             }
 
