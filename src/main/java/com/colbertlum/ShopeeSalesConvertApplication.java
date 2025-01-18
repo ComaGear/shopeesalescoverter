@@ -326,7 +326,7 @@ public class ShopeeSalesConvertApplication extends Application {
         alert.show();
         // return moveOuts;
 
-        OrderService orderService = new OrderService();
+    OrderService orderService = new OrderService(new OrderRepository());
         orderService.process(moveOuts);
     }
 

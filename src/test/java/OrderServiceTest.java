@@ -1,20 +1,21 @@
+import static org.junit.jupiter.api.Assertions.assertTrue;
+
 import java.lang.ref.SoftReference;
-import java.time.LocalDateTime;
-import java.time.format.DateTimeFormatter;
 import java.util.ArrayList;
 
 import org.junit.Test;
 
+import com.colbertlum.OrderRepository;
 import com.colbertlum.OrderService;
 import com.colbertlum.entity.MoveOut;
 import com.colbertlum.entity.Order;
 
-import javafx.scene.Scene;
-import javafx.scene.control.ListView;
-import javafx.stage.Stage;
-
 public class OrderServiceTest {
     
+    
+    private OrderRepository orderRepository = new OrderRepository();
+    private OrderService orderService = new OrderService(orderRepository);
+
     @Test
     public void shippingOrderToCompletedTest(){
         ArrayList<Order> orders = new ArrayList<Order>();
@@ -28,6 +29,29 @@ public class OrderServiceTest {
     }
 
     // test newShipping order will represent correcly at repository's shipping orders
+    @Test
+    public void newShippingOrderShouldExistedAtRepository(){
+        ArrayList<Order> arrayList = new ArrayList<Order>();
+
+        Order order = new Order();
+        order.setId("www123");
+        order.setStatus(OrderService.STATUS_SHIPPING);
+        
+        ArrayList<SoftReference<MoveOut>> softMoveOuts = new ArrayList<SoftReference<MoveOut>>();
+        MoveOut moveOut = new MoveOut().setSku("123").setPrice(1).setPrice(1);
+        softMoveOuts.add(new SoftReference<MoveOut>(moveOut));
+        moveOut.setOrder(order);
+        order.setMoveOutList(softMoveOuts);
+
+        arrayList.add(order);
+
+        ArrayList<MoveOut> moveOuts = new ArrayList<MoveOut>();
+        moveOuts.add(moveOut);
+        orderService.process(moveOuts);
+
+        assertTrue(orderRepository.getShippingOrders().contains(order));
+        
+    }
     // test newShipping and repository on shipping order will report a temporary movement record
 
     // test newCompleted order will represent correcly at repository's completed orders

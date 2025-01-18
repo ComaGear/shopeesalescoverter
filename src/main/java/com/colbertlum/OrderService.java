@@ -22,6 +22,8 @@ public class OrderService {
     public static final String STATUS_TO_SHIP = "To ship";
     public static final String STATUS_UNPAID = "Unpaid";
     public static final String STATUS_SHIPPING = "Shipping";
+    public static final String STATUS_DELIVERED = "Delivery";
+    public static final String STATUS_RECEIVED = "Order Received";
 
 
     private List<Order> beingCompleteOrderList;
@@ -31,8 +33,12 @@ public class OrderService {
     private List<Order> beingPendingOrderList;
     private OrderRepository orderRepository;
 
+    public static void inspectDataValidation(DataValidationInterface dataValidation){
+        dataValidation.appendHandlingColumnExpectData("Order Status", STATUS_CANCEL);
+        // TODO write all status to inspecting. upsert ShopeeOderReportContentHandler's override method 'appendHanding()' using this method
+    }
+
     public void process(List<MoveOut> moveOuts){
-        orderRepository = new OrderRepository();
 
         List<Order> orders = new ArrayList<Order>();
         for(MoveOut moveOut : moveOuts){
@@ -320,12 +326,14 @@ public class OrderService {
         return beingPendingOrderList;
     }
 
-    public OrderService() {
+    public OrderService(OrderRepository orderRepository) {
         this.beingCompleteOrderList = new ArrayList<Order>();
         this.beingShippingOrderList = new ArrayList<Order>();
         this.beingReturningAfterShippingOrderList = new ArrayList<Order>();
         this.beingReturningAfterCompleteOrderList = new ArrayList<Order>();
         this.beingPendingOrderList = new ArrayList<Order>();
+
+        this.orderRepository = orderRepository;
     }
 
 

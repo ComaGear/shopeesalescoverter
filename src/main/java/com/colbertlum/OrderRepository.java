@@ -86,6 +86,10 @@ public class OrderRepository {
 
     private void loadRepository(){
 
+        File file = new File(ShopeeSalesConvertApplication.getProperty(ShopeeSalesConvertApplication.ORDER_REPOSITORY_PATH));
+        if(!file.isFile()) {
+            new Alert(AlertType.WARNING).showAndWait();
+        } //TODO figure out a way ask user to select orderRepository file
 
         orders = new ArrayList<Order>();
         shippingOrders = new ArrayList<Order>();
@@ -98,7 +102,6 @@ public class OrderRepository {
         returnOrders = new ArrayList<ReturnOrder>();
 
         try {
-            File file = new File(ShopeeSalesConvertApplication.getProperty(ShopeeSalesConvertApplication.ORDER_REPOSITORY_PATH));
             XSSFReader xssfReader = new XSSFReader(OPCPackage.open(file));
             // MeasContentHandler contentHandler = new MeasContentHandler(xssfReader.getSharedStringsTable(), xssfReader.getStylesTable(),
             //     measList);
