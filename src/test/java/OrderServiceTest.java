@@ -2,6 +2,7 @@ import static org.junit.jupiter.api.Assertions.assertTrue;
 
 import java.lang.ref.SoftReference;
 import java.util.ArrayList;
+import java.util.List;
 
 import org.junit.Test;
 
@@ -26,6 +27,29 @@ public class OrderServiceTest {
         order.setMoveOutList(new ArrayList<SoftReference<MoveOut>>());
 
         new MoveOut();
+    }
+
+    static List<List<MoveOut>> argument(){
+        List<Order> orders = new ArrayList<Order>();
+
+        // shippingOrder
+        Order order = new Order();
+        order.setId("www123");
+        order.setStatus(OrderService.STATUS_SHIPPING);
+        // SoftReference to MoveOut from Order.
+        ArrayList<SoftReference<MoveOut>> softMoveOuts = new ArrayList<SoftReference<MoveOut>>();
+        MoveOut moveOut = new MoveOut().setSku("123").setPrice(1).setPrice(1);
+        softMoveOuts.add(new SoftReference<MoveOut>(moveOut));
+        moveOut.setOrder(order);
+        order.setMoveOutList(softMoveOuts);
+        orders.add(order);
+        // wrapping shipping MoveOuts prepare for AllMoveOuts
+        ArrayList<MoveOut> shippingMoveOuts = new ArrayList<MoveOut>();
+        shippingMoveOuts.add(moveOut);
+
+        List<List<MoveOut>> AllMoveOuts = new ArrayList<List<MoveOut>>();
+        AllMoveOuts.add(shippingMoveOuts);
+        return AllMoveOuts;
     }
 
     // test newShipping order will represent correcly at repository's shipping orders

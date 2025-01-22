@@ -2,31 +2,29 @@ package com.colbertlum.Controller;
 
 import java.lang.ref.SoftReference;
 import java.util.ArrayList;
-import java.util.HashMap;
 import java.util.List;
-import java.util.Map;
 import java.util.Stack;
 
 import com.colbertlum.HandleOpenOrderFormListener;
 import com.colbertlum.Imputer.HandleReturnImputer;
 import com.colbertlum.cellFactory.ReturnMoveOutCellFactory;
 import com.colbertlum.cellFactory.ReturnOrderCellFactory;
+import com.colbertlum.entity.MoveOut;
 import com.colbertlum.entity.ReturnMoveOut;
 import com.colbertlum.entity.ReturnOrder;
 
 import javafx.application.Platform;
 import javafx.collections.FXCollections;
 import javafx.collections.ObservableList;
-import javafx.event.Event;
 import javafx.event.EventHandler;
 import javafx.geometry.Insets;
-import javafx.geometry.Pos;
 import javafx.scene.Scene;
 import javafx.scene.control.Button;
 import javafx.scene.control.ListView;
 import javafx.scene.control.MenuButton;
 import javafx.scene.control.MenuItem;
 import javafx.scene.control.TextField;
+import javafx.scene.control.Tooltip;
 import javafx.scene.input.KeyCode;
 import javafx.scene.input.KeyCodeCombination;
 import javafx.scene.input.KeyCombination;
@@ -48,6 +46,7 @@ public class HandleReturnController {
 
     private HandleReturnImputer imputer;
     private ObservableList<ReturnOrder> observableReturnOrderList;
+    private ObservableList<ReturnMoveOut> observableReturnMoveOutList;
     private ListView<ReturnOrder> returnOrderListView;
     private String filterMode;
     private ListView<ReturnMoveOut> returnMovementListView;
@@ -162,12 +161,24 @@ public class HandleReturnController {
         
         ArrayList<ReturnMoveOut> returnMoveOuts = new ArrayList<ReturnMoveOut>();
         ReturnOrder cloneReturnOrder = returnOrder.clone(returnMoveOuts);
+
+        returnMovementListView = new ListView<ReturnMoveOut>();
+        ReturnMoveOutCellFactory returnMovementCellFactory = new ReturnMoveOutCellFactory();
+        returnMovementListView.setCellFactory(returnMovementCellFactory);
+        // ReturnMoveOut returnMoveOut = listView.getItems().get(cellFactory.getSelectedItemIndex());
+        // obtains ReturnMoveOutList from ReturnOrder to observableReturnMoveOutList and refill ListView
+        List<ReturnMoveOut> cloneReturnMoveOuts = new ArrayList<ReturnMoveOut>();
+        for(SoftReference<ReturnMoveOut> softCloneReturnMoveOut : cloneReturnOrder.getReturnMoveOutList()){
+            cloneReturnMoveOuts.add(softCloneReturnMoveOut.get());
+        }
+        observableReturnMoveOutList.addAll(cloneReturnMoveOuts);
+        refillMovementListView(observableReturnMoveOutList);
         
         TextField orderIdText = new TextField();
         orderIdText.setEditable(false);
         orderIdText.getStyleClass().add("copiable-text");
         orderIdText.setText(cloneReturnOrder.getId());
-
+        
         TextField scaningSearchBar = new TextField();
 
         scaningSearchBar.setOnKeyPressed((keyEvent) ->{
@@ -195,20 +206,49 @@ public class HandleReturnController {
         scaningSearchBar.textProperty().addListener((observe, oldValue, newValue) -> {
             ArrayList<ReturnMoveOut> newReturnMoveOutList = new ArrayList<ReturnMoveOut>();
 
-            List<SoftReference<ReturnMoveOut>> returnMoveOutList = cloneReturnOrder.getReturnMoveOutList();
-            for(SoftReference<ReturnMoveOut> softReturnMoveOut : returnMoveOutList){
-                if(softReturnMoveOut.get().getProductName().contains(newValue)) {
-                    newReturnMoveOutList.add(softReturnMoveOut.get());
-                } else if(softReturnMoveOut.get().getVariationName().contains(newValue)){
-                    newReturnMoveOutList.add(softReturnMoveOut.get()); 
+            if(newValue.isBlank() || newValue.isEmpty()) {
+                refillMovementListView(FXCollections.observableArrayList(cloneReturnMoveOuts));\
+                return;
+            }
+            // filter returnMoveOut contains newValue from searchBar
+            for(ReturnMoveOut returnMoveOut : cloneReturnMoveOuts){
+                if(returnMoveOut.getProductName().contains(newValue)) {
+                    newReturnMoveOutList.add(returnMoveOut);
+                } else if(returnMoveOut.getVariationName().contains(newValue)){
+                    newReturnMoveOutList.add(returnMoveOut); 
                 }
             }
-            refillMovementListView(newReturnMoveOutList);
+            refillMovementListView(FXCollections.observableArrayList(newReturnMoveOutList));
         });
         scaningSearchBar.focusedProperty().addListener((observe, oldValue, newValue) ->{
             Platform.runLater(() ->{
                 if(scaningSearchBar.isFocused() && !scaningSearchBar.getText().isEmpty()) scaningSearchBar.selectAll();
             });
+        });
+
+        Button splitMovementButton = new Button("Split Movement");
+        splitMovementButton.setTooltip(new Tooltip("it let single movement split to two movemnt with different status"));
+        boolean returnMovementSelecting = false;
+        splitMovementButton.setOnAction((e) ->{
+            
+            
+            // do split ReturnMoveOut UI ingretation and core.
+            if(returnMovementSelecting && returnMovementSelecting.getSelected() != null){
+                // TODO progress for #let user split return moveOuts into different status
+            }
+            
+            
+            // after work switch button display with two in one
+            if(returnMovementSelecting == false) {
+                splitMovementButton.setText("Spliting it");
+                returnMovementSelecting = true;
+            }
+            if(returnMovementSelecting == true) {
+                splitMovementButton.setText("Split Movement");
+                returnMovementSelecting = false;
+            }
+            returnMovementCellFactory.setSelecting(returnMovementSelecting);
+            refillMovementListView(observableReturnMoveOutList);
         });
 
         Button saveButton = new Button("Save");
@@ -229,10 +269,6 @@ public class HandleReturnController {
         headerPanel.setPadding(new Insets(10, 10, 10, 10));
 
 
-        returnMovementListView = new ListView<ReturnMoveOut>();
-        ReturnMoveOutCellFactory returnMovemCellFactory = new ReturnMoveOutCellFactory();
-        returnMovementListView.setCellFactory(returnMovemCellFactory);
-        // ReturnMoveOut returnMoveOut = listView.getItems().get(cellFactory.getSelectedItemIndex());
         
         Scene subScene = new Scene(new VBox(headerPanel, returnMovementListView, saveButton));
         subScene.getStylesheets().add(getClass().getResource("copiable-text.css").toExternalForm());
@@ -257,13 +293,13 @@ public class HandleReturnController {
 
     private void cleanHandleReturnMovementScene(){
         popScene();
-        refillMovementListView(new ArrayList<>());
+        observableReturnMoveOutList = FXCollections.observableArrayList();
+        refillMovementListView(observableReturnMoveOutList);
     }
 
-    private void refillMovementListView(List<ReturnMoveOut> returnMoveOuts){
-        returnMovementListView.getItems().clear();
-
-        returnMovementListView.getItems().addAll(returnMoveOuts);
+    private void refillMovementListView(ObservableList<ReturnMoveOut> returnMoveOuts){
+        returnMovementListView.setItems(FXCollections.emptyObservableList());
+        returnMovementListView.setItems(observableReturnMoveOutList);
     }
 
     public void initDialog(Stage stage){
