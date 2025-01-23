@@ -235,6 +235,7 @@ public class HandleReturnController {
             // do split ReturnMoveOut UI ingretation and core.
             if(returnMovementSelecting && returnMovementSelecting.getSelected() != null){
                 // TODO progress for #let user split return moveOuts into different status
+                
             }
             
             
@@ -268,9 +269,19 @@ public class HandleReturnController {
         HBox headerPanel = new HBox(orderIdText, scaningSearchBar, spacer, backButton, saveButton);
         headerPanel.setPadding(new Insets(10, 10, 10, 10));
 
+        Text productDescriptionHeaderText = new Text("Description");
+        Text skuHeaderText = new Text("SKU");
+        Text quantityHeaderText = new Text("Quantity");
+        Text returnQuantityHeaderText = new Text("to Return QTY");
+        productDescriptionHeaderText.setWrappingWidth(137);
+        skuHeaderText.setWrappingWidth(90);
+        quantityHeaderText.setWrappingWidth(30);
+        returnQuantityHeaderText.setWrappingWidth(50);
+        
+        HBox listViewHeaderHBox = new Hbox(productDescriptionHeaderText, skuHeaderText, quantityHeaderText, returnQuantityHeaderText);
 
         
-        Scene subScene = new Scene(new VBox(headerPanel, returnMovementListView, saveButton));
+        Scene subScene = new Scene(new VBox(headerPanel, listViewHeaderHBox, returnMovementListView, saveButton));
         subScene.getStylesheets().add(getClass().getResource("copiable-text.css").toExternalForm());
         
         subScene.addEventFilter(KeyEvent.KEY_PRESSED, new EventHandler<KeyEvent>() {

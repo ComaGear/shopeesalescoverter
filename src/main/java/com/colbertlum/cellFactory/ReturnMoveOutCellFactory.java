@@ -4,6 +4,7 @@ import java.text.DecimalFormat;
 import java.text.NumberFormat;
 import com.colbertlum.entity.ReturnMoveOut;
 
+import javafx.scene.control.CheckBox;
 import javafx.scene.control.ListCell;
 import javafx.scene.control.ListView;
 import javafx.scene.control.MenuButton;
@@ -17,9 +18,14 @@ public class ReturnMoveOutCellFactory implements Callback<ListView<ReturnMoveOut
 
     NumberFormat formater = new DecimalFormat("#0.00");
 
+    private ReturnMoveOut selectedReturnMoveOut = null;
+    private boolean selecting = false;
+
     @Override
     public ListCell<ReturnMoveOut> call(ListView<ReturnMoveOut> param) {
         return new ListCell<>() {
+
+            private CheckBox checkBox = new CheckBox();
 
             private Text productDescriptionText = new Text();
             private Text skuText = new Text();
@@ -37,6 +43,11 @@ public class ReturnMoveOutCellFactory implements Callback<ListView<ReturnMoveOut
 
 
             {
+                productDescriptionText.setWrappingWidth(120);
+                skuText.setWrappingWidth(90);
+                quantityText.setWrappingWidth(30);
+                returnQuantityTextFileField.setPrefWidth(50);
+
                 returnStatus.getItems().add(returningMenuItem);
                 returningMenuItem.setOnAction((e) ->{
                     if(iReturnMoveOut == null) return;
@@ -67,6 +78,13 @@ public class ReturnMoveOutCellFactory implements Callback<ListView<ReturnMoveOut
                     if(iReturnMoveOut == null) return;
                     iReturnMoveOut.setReturnStatus(ReturnMoveOut.NONE);
                 });
+                checkBox.setOnAction((e)-> {
+                    if(checkBox.isSelected()) {
+                        selectedReturnMoveOut = iReturnMoveOut;
+                    } else {
+                        selectedReturnMoveOut = null;
+                    }
+                });
             }
 
             @Override
@@ -75,6 +93,10 @@ public class ReturnMoveOutCellFactory implements Callback<ListView<ReturnMoveOut
                 if(returnMoveOut == null) {
                     setText("");
                 };
+
+                if(selecting) 
+                    checkBox.setDisable(false);
+                else checkBox.setDisable(true);
                 
                 iReturnMoveOut = returnMoveOut;
 
@@ -84,8 +106,7 @@ public class ReturnMoveOutCellFactory implements Callback<ListView<ReturnMoveOut
                 returnStatus.setText(returnMoveOut.getReturnStatus());
                 
                 returnQuantityTextFileField.setText(formater.format(returnMoveOut.getStatusQuantity()));
-                returnQuantityTextFileField.setPromptText("return");
-                returnQuantityTextFileField.setPrefWidth(50);
+                returnQuantityTextFileField.setPromptText("");
                 returnQuantityTextFileField.textProperty().addListener((observable, oldValue, newValue) -> {
                     if(!newValue.matches("\\d*")){
                         returnQuantityTextFileField.setText(newValue.replaceAll("[^\\d]", ""));
@@ -96,8 +117,17 @@ public class ReturnMoveOutCellFactory implements Callback<ListView<ReturnMoveOut
                     }
                 });
                     
-                setGraphic(new HBox(productDescriptionText, quantityText, returnStatus, returnQuantityTextFileField));
+                setGraphic(new HBox(checkBox, productDescriptionText, quantityText, returnStatus, returnQuantityTextFileField));
             }
         };
+    }
+
+    public ReturnMoveOut getSelected(){
+        return selectedReturnMoveOut;
+    }
+
+    public void setSelecting(boolean returnMovementSelecting) {
+        this.selecting = returnMovementSelecting;
+        if(returnMovementSelecting != true) selectedReturnMoveOut = null;
     }
 }
