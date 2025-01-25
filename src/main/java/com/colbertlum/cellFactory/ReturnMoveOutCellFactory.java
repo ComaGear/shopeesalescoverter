@@ -92,6 +92,7 @@ public class ReturnMoveOutCellFactory implements Callback<ListView<ReturnMoveOut
                 
                 if(returnMoveOut == null) {
                     setText("");
+                    return;
                 };
 
                 if(selecting) 

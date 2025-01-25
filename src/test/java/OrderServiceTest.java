@@ -3,6 +3,7 @@ import static org.junit.jupiter.api.Assertions.assertTrue;
 import java.lang.ref.SoftReference;
 import java.util.ArrayList;
 import java.util.List;
+import java.util.stream.Stream;
 
 import org.junit.Test;
 import org.junit.jupiter.params.provider.Arguments;
@@ -31,7 +32,7 @@ public class OrderServiceTest {
         new MoveOut();
     }
 
-    static List<List<MoveOut>> argument(){
+    static Stream<List<MoveOut>> argument(){
         List<Order> orders = new ArrayList<Order>();
 
         // shippingOrder
@@ -51,31 +52,25 @@ public class OrderServiceTest {
 
         List<List<MoveOut>> AllMoveOuts = new ArrayList<List<MoveOut>>();
         AllMoveOuts.add(shippingMoveOuts);
-        return AllMoveOuts;
+        return AllMoveOuts.stream();
     }
 
     // test newShipping order will represent correcly at repository's shipping orders
     @Test
-    public void newShippingOrderShouldExistedAtRepository(){
-        ArrayList<Order> arrayList = new ArrayList<Order>();
+    @MethodSource("argument")
+    public void newShippingOrderShouldExistedAtRepository(List<MoveOut> moveOuts){
+        ArrayList<Order> shippingOrders = new ArrayList<Order>();
+        for(MoveOut moveOut : moveOuts) {
+            if(OrderService.STATUS_SHIPPING.equals(moveOut.getOrder().getStatus())){
+                if(shippingOrders.contains(moveOut.getOrder())) return;
+                shippingOrders.add(moveOut.getOrder());
+            } 
+        }
 
-        Order order = new Order();
-        order.setId("www123");
-        order.setStatus(OrderService.STATUS_SHIPPING);
-        
-        ArrayList<SoftReference<MoveOut>> softMoveOuts = new ArrayList<SoftReference<MoveOut>>();
-        MoveOut moveOut = new MoveOut().setSku("123").setPrice(1).setPrice(1);
-        softMoveOuts.add(new SoftReference<MoveOut>(moveOut));
-        moveOut.setOrder(order);
-        order.setMoveOutList(softMoveOuts);
-
-        arrayList.add(order);
-
-        ArrayList<MoveOut> moveOuts = new ArrayList<MoveOut>();
-        moveOuts.add(moveOut);
         orderService.process(moveOuts);
 
-        assertTrue(orderRepository.getShippingOrders().contains(order));
+        if(shippingOrders.isEmpty()) assertTrue(orderRepository.getShippingOrders().isEmpty());
+        else assertTrue(orderRepository.getShippingOrders().containsAll(shippingOrders));
         
     }
     // test newShipping and repository on shipping order will report a temporary movement record

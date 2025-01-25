@@ -33,6 +33,7 @@ import javafx.scene.layout.HBox;
 import javafx.scene.layout.Pane;
 import javafx.scene.layout.Priority;
 import javafx.scene.layout.VBox;
+import javafx.scene.text.Text;
 import javafx.stage.Stage;
 import javafx.stage.WindowEvent;
 
@@ -50,6 +51,7 @@ public class HandleReturnController {
     private ListView<ReturnOrder> returnOrderListView;
     private String filterMode;
     private ListView<ReturnMoveOut> returnMovementListView;
+    private boolean returnMovementSelecting;
 
     private Scene generatePanel(){
 
@@ -207,7 +209,7 @@ public class HandleReturnController {
             ArrayList<ReturnMoveOut> newReturnMoveOutList = new ArrayList<ReturnMoveOut>();
 
             if(newValue.isBlank() || newValue.isEmpty()) {
-                refillMovementListView(FXCollections.observableArrayList(cloneReturnMoveOuts));\
+                refillMovementListView(FXCollections.observableArrayList(cloneReturnMoveOuts));
                 return;
             }
             // filter returnMoveOut contains newValue from searchBar
@@ -228,13 +230,14 @@ public class HandleReturnController {
 
         Button splitMovementButton = new Button("Split Movement");
         splitMovementButton.setTooltip(new Tooltip("it let single movement split to two movemnt with different status"));
-        boolean returnMovementSelecting = false;
+        returnMovementSelecting = false;
         splitMovementButton.setOnAction((e) ->{
             
             
             // do split ReturnMoveOut UI ingretation and core.
-            if(returnMovementSelecting && returnMovementSelecting.getSelected() != null){
+            if(returnMovementSelecting && returnMovementCellFactory.getSelected() != null){
                 // TODO progress for #let user split return moveOuts into different status
+                
                 
             }
             
@@ -278,7 +281,7 @@ public class HandleReturnController {
         quantityHeaderText.setWrappingWidth(30);
         returnQuantityHeaderText.setWrappingWidth(50);
         
-        HBox listViewHeaderHBox = new Hbox(productDescriptionHeaderText, skuHeaderText, quantityHeaderText, returnQuantityHeaderText);
+        HBox listViewHeaderHBox = new HBox(productDescriptionHeaderText, skuHeaderText, quantityHeaderText, returnQuantityHeaderText);
 
         
         Scene subScene = new Scene(new VBox(headerPanel, listViewHeaderHBox, returnMovementListView, saveButton));
@@ -311,6 +314,16 @@ public class HandleReturnController {
     private void refillMovementListView(ObservableList<ReturnMoveOut> returnMoveOuts){
         returnMovementListView.setItems(FXCollections.emptyObservableList());
         returnMovementListView.setItems(observableReturnMoveOutList);
+    }
+
+    private List<Double> openSplitMovementScene(double totalQuantity){
+        
+        Stage splitStage = new Stage();
+        splitStage.setTitle("Spliting Movement");
+        splitStage.showAndWait();
+
+        List<Double> splitResult = new ArrayList<Double>();
+        return splitResult;
     }
 
     public void initDialog(Stage stage){
