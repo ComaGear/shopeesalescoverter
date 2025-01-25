@@ -130,7 +130,7 @@ public class ShopeeSalesConvertApplication extends Application {
 
         FileChooser fileChooser = new FileChooser();
         fileChooser.getExtensionFilters().add(new FileChooser.ExtensionFilter("excel File", "*.xlsx"));
-        // fileChooser.setInitialDirectory(new File(pathname));
+        // TODO fileChooser.setInitialDirectory(new File(pathname));
 
         Button selectSalesReportButton = new Button("select report");
         selectSalesReportButton.setOnAction(e -> {
@@ -644,6 +644,30 @@ public class ShopeeSalesConvertApplication extends Application {
             completeOrderMovementPathText.setText("save Credit Note Report at : '" + folder.getPath() + "'");
         });
 
+        // a button let user choose where orderRepository for order status file to use and save path property
+        Button selectOrderRepositoryFileButton = new Button("Select Order Repository File");
+        selectOrderRepositoryFileButton.setOnAction((e) ->{
+            File file = xlsxFileChooser.showOpenDialog(priStage);
+            if(file == null || !file.exists()) return;
+            saveProperty(ORDER_REPOSITORY_PATH, file.getPath());
+            orderRepositoryPathText.setText("Order Record Repository at : '" + file.getPath() + "'");
+        });
+
+        // a button let user choose to generate file where orderRepository for order status file and save path propety
+        Button generateOrderRepositoryFileButton = new Button("Generate Order Repository File");
+        generateOrderRepositoryFileButton.setOnAction((e) -> {
+            File folder = folderChooser.showDialog(priStage);
+            if(folder == null || !folder.exists()) return;
+            File orderRepositoryFile = new File(folder.getPath() + File.pathSeparator + "OrderRepository.xlsx");
+            try {
+                orderRepositoryFile.createNewFile();
+            } catch (IOException e1) {
+                new Alert(AlertType.ERROR, e1.getStackTrace().toString(), ButtonType.CLOSE).showAndWait();
+                return;
+            }
+            saveProperty(ORDER_REPOSITORY_PATH, orderRepositoryFile.getPath());
+        });
+
         VBox vBox = new VBox(backButton, 
             measPathText, selectMeasButton,
             uomPathText, selectUomButton, 
@@ -652,7 +676,8 @@ public class ShopeeSalesConvertApplication extends Application {
             dataSourceText, reportSourceMenuButton,
             tempMovementPathText, selectTempMovementReportPathButton,
             completeOrderMovementPathText, selectCompletedOrderReportFolderPathButton,
-            creditNotePathText, selectCreditNoteReportFolderPathButton);
+            creditNotePathText, selectCreditNoteReportFolderPathButton,
+            orderRepositoryPathText, selectOrderRepositoryFileButton, generateOrderRepositoryFileButton);
 
         return new Scene(vBox, 600, 400);
     }
