@@ -847,7 +847,7 @@ public class ShopeeSalesConvertApplication extends Application {
             } else {
                 uom = new UOM();
                 uom.setProductId("");
-                uom.setCostPrice(moveOut.getProductSubTotal() / moveOut.getQuantity());
+                uom.setCostPrice(moveOut.getPrice());
             }
             double moveOutProfit = moveOut.getProductSubTotal() - (uom.getCostPrice() * moveOut.getQuantity());
             if(lastOrder.getId() != null && lastOrder.getId().equals(moveOut.getOrder().getId())) {

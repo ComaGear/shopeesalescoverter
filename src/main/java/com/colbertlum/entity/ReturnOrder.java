@@ -237,49 +237,54 @@ public class ReturnOrder {
         this.setRequestApproved(clone.isRequestApproved());
         this.setReturnType(clone.getReturnType());
 
-        Comparator<SoftReference<ReturnMoveOut>> comparator = new Comparator<SoftReference<ReturnMoveOut>>() {
 
-            @Override
-            public int compare(SoftReference<ReturnMoveOut> o1, SoftReference<ReturnMoveOut> o2) {
-                if(!o1.get().getSku().equals(o2.get().getSku())){
-                    return o1.get().getSku().compareTo(o2.get().getSku());
-                }
-                if(!o1.get().getProductName().equals(o2.get().getProductName())){
-                    return o1.get().getProductName().compareTo(o2.get().getProductName());
-                }
-                if(!o1.get().getVariationName().equals(o2.get().getVariationName())){
-                    return o1.get().getVariationName().compareTo(o2.get().getVariationName());
-                }
-                if(o1.get().getQuantity() != o2.get().getQuantity()){
-                    if(o1.get().getQuantity() > o2.get().getQuantity()) return 1;
-                    if(o1.get().getQuantity() < o2.get().getQuantity()) return -1;
-                }
-                if(o1.get().getPrice() != o2.get().getPrice()){
-                    if(o1.get().getPrice() > o2.get().getPrice()) return 1;
-                    if(o1.get().getPrice() < o2.get().getPrice()) return -1;
-                }
-                return 0;
-            }
+        
+        // just use new list from updated list.
+        this.setReturnMoveOutList(clone.getReturnMoveOutList());
+        
+        // Comparator<SoftReference<ReturnMoveOut>> comparator = new Comparator<SoftReference<ReturnMoveOut>>() {
+
+        //     @Override
+        //     public int compare(SoftReference<ReturnMoveOut> o1, SoftReference<ReturnMoveOut> o2) {
+        //         if(!o1.get().getSku().equals(o2.get().getSku())){
+        //             return o1.get().getSku().compareTo(o2.get().getSku());
+        //         }
+        //         if(!o1.get().getProductName().equals(o2.get().getProductName())){
+        //             return o1.get().getProductName().compareTo(o2.get().getProductName());
+        //         }
+        //         if(!o1.get().getVariationName().equals(o2.get().getVariationName())){
+        //             return o1.get().getVariationName().compareTo(o2.get().getVariationName());
+        //         }
+        //         if(o1.get().getQuantity() != o2.get().getQuantity()){
+        //             if(o1.get().getQuantity() > o2.get().getQuantity()) return 1;
+        //             if(o1.get().getQuantity() < o2.get().getQuantity()) return -1;
+        //         }
+        //         if(o1.get().getPrice() != o2.get().getPrice()){
+        //             if(o1.get().getPrice() > o2.get().getPrice()) return 1;
+        //             if(o1.get().getPrice() < o2.get().getPrice()) return -1;
+        //         }
+        //         return 0;
+        //     }
             
-        };
-        clone.getReturnMoveOutList().sort(comparator);
-        getReturnMoveOutList().sort(comparator);
-        for(int i = 0; i < getReturnMoveOutList().size(); i++){
+        // };
+        // clone.getReturnMoveOutList().sort(comparator);
+        // getReturnMoveOutList().sort(comparator);
+        // for(int i = 0; i < getReturnMoveOutList().size(); i++){
             
 
-            ReturnMoveOut thisReturnMoveOut = getReturnMoveOutList().get(i).get();
-            ReturnMoveOut cloneReturnMoveOut = clone.getReturnMoveOutList().get(i).get();
+        //     ReturnMoveOut thisReturnMoveOut = getReturnMoveOutList().get(i).get();
+        //     ReturnMoveOut cloneReturnMoveOut = clone.getReturnMoveOutList().get(i).get();
             
-            thisReturnMoveOut.setSku(cloneReturnMoveOut.getSku());
-            thisReturnMoveOut.setProductName(cloneReturnMoveOut.getProductName());
-            thisReturnMoveOut.setVariationName(cloneReturnMoveOut.getVariationName());
-            thisReturnMoveOut.setQuantity(cloneReturnMoveOut.getQuantity());
-            thisReturnMoveOut.setOrderId(cloneReturnMoveOut.getOrderId());
-            thisReturnMoveOut.setPrice(cloneReturnMoveOut.getPrice());
-            thisReturnMoveOut.setOrderId(cloneReturnMoveOut.getOrderId());
-            thisReturnMoveOut.setReturnStatus(cloneReturnMoveOut.getReturnStatus());
-            thisReturnMoveOut.setStatusQuantity(cloneReturnMoveOut.getStatusQuantity());
-        }
+        //     thisReturnMoveOut.setSku(cloneReturnMoveOut.getSku());
+        //     thisReturnMoveOut.setProductName(cloneReturnMoveOut.getProductName());
+        //     thisReturnMoveOut.setVariationName(cloneReturnMoveOut.getVariationName());
+        //     thisReturnMoveOut.setQuantity(cloneReturnMoveOut.getQuantity());
+        //     thisReturnMoveOut.setOrderId(cloneReturnMoveOut.getOrderId());
+        //     thisReturnMoveOut.setPrice(cloneReturnMoveOut.getPrice());
+        //     thisReturnMoveOut.setOrderId(cloneReturnMoveOut.getOrderId());
+        //     thisReturnMoveOut.setReturnStatus(cloneReturnMoveOut.getReturnStatus());
+        //     thisReturnMoveOut.setStatusQuantity(cloneReturnMoveOut.getStatusQuantity());
+        // }
 
     }
 

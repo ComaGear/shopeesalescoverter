@@ -1,6 +1,7 @@
 package com.colbertlum.Controller;
 
 import java.lang.ref.SoftReference;
+import java.text.DecimalFormat;
 import java.util.ArrayList;
 import java.util.List;
 import java.util.Stack;
@@ -18,6 +19,7 @@ import javafx.collections.FXCollections;
 import javafx.collections.ObservableList;
 import javafx.event.EventHandler;
 import javafx.geometry.Insets;
+import javafx.geometry.Pos;
 import javafx.scene.Scene;
 import javafx.scene.control.Button;
 import javafx.scene.control.ListView;
@@ -42,6 +44,7 @@ public class HandleReturnController {
     private static final String FILTED_BY_ALL = "All";
     private static final String FILTED_BY_RETURN_REFUND = "Return/Refund";
     private static final String INCOMPLETED_RETURN = "Incompleted Return";
+    private DecimalFormat decimalFormat = new DecimalFormat("##.00");
     private Stage stage;
     private Stack<Scene> sceneStack; 
 
@@ -237,8 +240,44 @@ public class HandleReturnController {
             // do split ReturnMoveOut UI ingretation and core.
             if(returnMovementSelecting && returnMovementCellFactory.getSelected() != null){
                 // TODO progress for #let user split return moveOuts into different status
+                ReturnMoveOut selectedReturnMoveOut = returnMovementCellFactory.getSelected();
                 
-                
+                List<Double> splitResult = openSplitMovementScene(selectedReturnMoveOut.getQuantity(), stage);
+                if(splitResult.isEmpty()) {
+                    return;
+                }
+
+                double splitRatio = splitResult.get(0) / selectedReturnMoveOut.getQuantity();
+
+                ReturnMoveOut firstReturnMoveOut = new ReturnMoveOut();
+                ReturnMoveOut secondReturnMoveOut = new ReturnMoveOut();
+
+                // distribute SelectReturnMoveOut's quantity to each splitted by spiltRatio
+                firstReturnMoveOut.setOrderId(selectedReturnMoveOut.getOrderId());
+                firstReturnMoveOut.setPrice(selectedReturnMoveOut.getPrice());
+                firstReturnMoveOut.setId(selectedReturnMoveOut.getId());
+                firstReturnMoveOut.setProductName(selectedReturnMoveOut.getProductName());
+                firstReturnMoveOut.setReturnStatus(selectedReturnMoveOut.getReturnStatus());
+                firstReturnMoveOut.setSku(selectedReturnMoveOut.getSku());
+                firstReturnMoveOut.setVariationName(selectedReturnMoveOut.getVariationName());
+                firstReturnMoveOut.setQuantity(selectedReturnMoveOut.getQuantity() * splitRatio);
+                firstReturnMoveOut.setStatusQuantity(selectedReturnMoveOut.getStatusQuantity() * splitRatio);
+
+                secondReturnMoveOut.setOrderId(selectedReturnMoveOut.getOrderId());
+                secondReturnMoveOut.setPrice(selectedReturnMoveOut.getPrice());
+                secondReturnMoveOut.setId(selectedReturnMoveOut.getId());
+                secondReturnMoveOut.setProductName(selectedReturnMoveOut.getProductName());
+                secondReturnMoveOut.setReturnStatus(selectedReturnMoveOut.getReturnStatus());
+                secondReturnMoveOut.setSku(selectedReturnMoveOut.getSku());
+                secondReturnMoveOut.setVariationName(selectedReturnMoveOut.getVariationName());
+                secondReturnMoveOut.setQuantity(selectedReturnMoveOut.getQuantity() * (1 - splitRatio));
+                secondReturnMoveOut.setStatusQuantity(selectedReturnMoveOut.getStatusQuantity() * (1 - splitRatio));
+
+                cloneReturnMoveOuts.remove(selectedReturnMoveOut);
+                cloneReturnMoveOuts.add(firstReturnMoveOut);
+                cloneReturnMoveOuts.add(secondReturnMoveOut);
+
+                refillMovementListView(FXCollections.observableArrayList(cloneReturnMoveOuts));
             }
             
             
@@ -257,6 +296,13 @@ public class HandleReturnController {
 
         Button saveButton = new Button("Save");
         saveButton.setOnAction((e) -> {
+
+            List<SoftReference<ReturnMoveOut>> list = new ArrayList<SoftReference<ReturnMoveOut>>();
+            for(ReturnMoveOut returnMoveOut : cloneReturnMoveOuts){
+                list.add(new SoftReference<ReturnMoveOut>(returnMoveOut));
+            }
+            cloneReturnOrder.setReturnMoveOutList(list);
+
             returnOrder.update(cloneReturnOrder);
             imputer.setUpdated(returnOrder);
             cleanHandleReturnMovementScene();
@@ -316,13 +362,76 @@ public class HandleReturnController {
         returnMovementListView.setItems(observableReturnMoveOutList);
     }
 
-    private List<Double> openSplitMovementScene(double totalQuantity){
+    /** this display a stage requesting user two input which use to spliting a ReturnMoveOut into two Object,
+     *  given TotalQuantity indicate original ReturnMoveOut's quantity.
+     * @param totalQuantity indicate original ReturnMoveOut's quantity.
+     * @return a list contained two variation to split, it will empty when first splited ReturnMoveOut exact same as totalQuantity.
+     */ 
+    private List<Double> openSplitMovementScene(double totalQuantity, Stage preStage){
+
+        double firstSplitQuantity = totalQuantity;
+        double secondSplitQuantity = 0.0d;
+
+        Text firstQuantityText = new Text("First :");
+        TextField firstSplitQuantityTextField = new TextField(decimalFormat.format(firstSplitQuantity));
+        firstSplitQuantityTextField.textProperty().addListener((observable, oldValue, newValue) -> {
+            if(!newValue.matches("\\d*"))
+                newValue = newValue.replaceAll("[^\\d.]", "");
+                firstSplitQuantityTextField.setText(newValue);
+        });
+        HBox firstMovementHBox = new HBox(firstQuantityText, firstSplitQuantityTextField);
+        firstMovementHBox.setPadding(new Insets(5));
+        
+        Text secondQuantityText = new Text("Second :");
+        TextField secondSplitQuantityTextField = new TextField(decimalFormat.format(secondSplitQuantity));
+        secondSplitQuantityTextField.textProperty().addListener((observable, oldValue, newValue) -> {
+            if(!newValue.matches("\\d*")) {
+                newValue = newValue.replaceAll("[^\\d.]", "");
+                secondSplitQuantityTextField.setText(newValue);
+            }
+        });
+        HBox secondMovemntHBox = new HBox(secondQuantityText, secondSplitQuantityTextField);
+        secondMovemntHBox.setPadding(new Insets(5));
         
         Stage splitStage = new Stage();
         splitStage.setTitle("Spliting Movement");
-        splitStage.showAndWait();
+        splitStage.setWidth(200);
+        splitStage.setHeight(300);
+        double centerX = preStage.getX() + (preStage.getWidth() / 2);
+        double centerY = preStage.getY() + (preStage.getHeight() / 2);
+        splitStage.setX(centerX - (splitStage.getWidth() / 2));
+        splitStage.setY(centerY - (splitStage.getHeight() / 2));
+        
 
         List<Double> splitResult = new ArrayList<Double>();
+
+        Text warningMessage = new Text("");
+        
+        Button confirmButton = new Button("Confirm");
+        confirmButton.setAlignment(Pos.BOTTOM_CENTER);
+        confirmButton.setPrefWidth(50);
+        confirmButton.setOnAction((e) -> {
+
+            double first = Double.parseDouble(firstSplitQuantityTextField.getText());
+            double second = Double.parseDouble(secondSplitQuantityTextField.getText());
+            if(totalQuantity - first - second != 0) {
+                warningMessage.setText("First and Second quantity should equal to total quantity");
+                return;
+            } else {
+                warningMessage.setText("");
+            }
+            
+            if(secondSplitQuantity != 0.0d && firstSplitQuantity != totalQuantity) {
+                splitResult.add(first);    
+                splitResult.add(second);
+                stage.close();
+            }
+        });
+
+        Scene scene = new Scene(new VBox(firstMovementHBox, secondMovemntHBox, warningMessage, confirmButton));
+        splitStage.setScene(scene);
+        splitStage.showAndWait();
+
         return splitResult;
     }
 
