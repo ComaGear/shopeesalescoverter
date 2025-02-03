@@ -3,6 +3,7 @@ package com.colbertlum.reporting;
 import java.io.File;
 import java.io.FileOutputStream;
 import java.io.IOException;
+import java.time.format.DateTimeFormatter;
 import java.util.ArrayList;
 import java.util.Comparator;
 import java.util.List;
@@ -17,6 +18,8 @@ import com.colbertlum.entity.SummaryOrder;
 import com.colbertlum.entity.UOM;
 
 public class TempMovementReporting {
+
+    private static final String DATE_PATTERN = "yyyy-MM-dd";
     
     public static void reporting(File file, List<MoveOut> moveOuts){
     
@@ -56,7 +59,9 @@ public class TempMovementReporting {
 
             if(moveOut.getQuantity() == 0) continue; 
 
-            String productName = moveOut.getProductName() + " - " + moveOut.getVariationName();
+            String productName = (moveOut.getProductName() == null ? "" : moveOut.getProductName())
+                + " - " + 
+                (moveOut.getVariationName() == null ? "" : moveOut.getVariationName());
 
             String characterFilter = "[^\\p{L}\\p{M}\\p{N}\\p{P}\\p{Z}\\p{Cf}\\p{Cs}\\s]";
             productName = productName.replaceAll(characterFilter,"");
@@ -117,7 +122,7 @@ public class TempMovementReporting {
 
             XSSFRow row = movementDetailSheet.createRow(index);
             row.createCell(0).setCellValue(moveOut.getOrder().getId());
-            row.createCell(1).setCellValue(moveOut.getOrder().getShipOutDate());
+            row.createCell(1).setCellValue(DateTimeFormatter.ofPattern(DATE_PATTERN).format(moveOut.getOrder().getShipOutDate()));
             row.createCell(2).setCellValue(moveOut.getId());
             row.createCell(3).setCellValue(moveOut.getProductName() + "-" + moveOut.getVariationName());
             row.createCell(4).setCellValue(moveOut.getQuantity());
@@ -204,7 +209,7 @@ public class TempMovementReporting {
         for(SummaryOrder order : summaryOrders){
             XSSFRow row = orderDetailSheet.createRow(index);
             row.createCell(0).setCellValue(order.getId());
-            row.createCell(1).setCellValue(order.getShipOutDate());
+            row.createCell(1).setCellValue(DateTimeFormatter.ofPattern(DATE_PATTERN).format(order.getShipOutDate()));
             row.createCell(2).setCellValue(order.getTotalAmount());
             row.createCell(3).setCellValue(order.getProfit());
             row.createCell(4).setCellValue(order.getProfit() / order.getTotalAmount());

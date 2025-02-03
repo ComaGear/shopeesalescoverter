@@ -73,7 +73,6 @@ import javafx.scene.text.Font;
 import javafx.scene.text.Text;
 import javafx.stage.DirectoryChooser;
 import javafx.stage.FileChooser;
-import javafx.stage.Screen;
 import javafx.stage.Stage;
 import javafx.stage.WindowEvent;
 
@@ -83,9 +82,9 @@ public class ShopeeSalesConvertApplication extends Application {
     public static final String BIG_SELLER = "Big Seller";
     public static final String SHOPEE_ORDER = "Shopee Order";
     public static final String DATA_SOURCE_TYPE = "data-source-type";
-    private static final String OUTPUT_PATH = "output-path";
+    public static final String OUTPUT_PATH = "output-path";
     public static final String MEAS = "meas";
-    private static final String UOM_STRING = "uom";
+    public static final String UOM_STRING = "uom";
     public static final String REPORT = "report";
     public static final String ONLINE_SALES_PATH = "onlineSales-path";
     public static final String STOCK_REPORT_PATH = "stock-report-path";
@@ -326,7 +325,7 @@ public class ShopeeSalesConvertApplication extends Application {
         alert.show();
         // return moveOuts;
 
-    OrderService orderService = new OrderService(new OrderRepository());
+    OrderService orderService = new OrderService(new OrderRepository(true));
         orderService.process(moveOuts);
     }
 
@@ -905,7 +904,7 @@ public class ShopeeSalesConvertApplication extends Application {
         return null;
     }
 
-    private static void saveProperty(String key, String value) {
+    public static void saveProperty(String key, String value) {
         try{
             Properties properties = getProperties();
             properties.setProperty(key, value);

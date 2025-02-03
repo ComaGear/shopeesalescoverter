@@ -164,6 +164,7 @@ public class ContentHandler extends DefaultHandler implements DataValidationInte
         this.stylesTable = stylesTable;
 
         columnHeaderMapper = new HashMap<String, String>();
+        dataFormatter = new DataFormatter();
     }
 
     @Override

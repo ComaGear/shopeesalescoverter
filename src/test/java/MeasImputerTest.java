@@ -2,12 +2,11 @@ import static org.junit.jupiter.api.Assertions.assertEquals;
 
 import java.util.ArrayList;
 import org.junit.jupiter.api.Test;
-import org.testfx.framework.junit.ApplicationTest;
+import org.testfx.framework.junit5.ApplicationTest;
 
 import com.colbertlum.ShopeeSalesConvertApplication;
 import com.colbertlum.Controller.SalesImputingController;
 import com.colbertlum.Imputer.MeasImputer;
-import com.colbertlum.Imputer.SalesImputer;
 import com.colbertlum.entity.Meas;
 
 import javafx.stage.Stage;

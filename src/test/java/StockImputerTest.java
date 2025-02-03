@@ -14,7 +14,7 @@ import org.apache.poi.openxml4j.exceptions.OpenXML4JException;
 import org.apache.poi.openxml4j.opc.OPCPackage;
 import org.apache.poi.util.XMLHelper;
 import org.apache.poi.xssf.eventusermodel.XSSFReader;
-import org.junit.Test;
+import org.junit.jupiter.api.Test;
 import org.xml.sax.InputSource;
 import org.xml.sax.SAXException;
 import org.xml.sax.XMLReader;
@@ -32,33 +32,16 @@ import com.colbertlum.entity.ProductStock;
 public class StockImputerTest {
 
     // @Test
-    public void updateMassUpdateFileStock() throws IOException{
+    public void updateMassUpdateFileStock() throws IOException, InvalidFormatException, OpenXML4JException, SAXException, ParserConfigurationException{
         ArrayList<OnlineSalesInfo> onlineSalesInfoList = new ArrayList<OnlineSalesInfo>();
         String pathStr = ShopeeSalesConvertApplication.getProperty(ShopeeSalesConvertApplication.ONLINE_SALES_PATH);
-        try {
-            File file = new File(pathStr);
-            XSSFReader xssfReader = new XSSFReader(OPCPackage.open(file));
-            OnlineSalesInfoContentHandler contentHandler = new OnlineSalesInfoContentHandler(xssfReader.getSharedStringsTable(), xssfReader.getStylesTable(), onlineSalesInfoList);
-            XMLReader xmlReader = XMLHelper.newXMLReader();
-            xmlReader.setContentHandler(contentHandler);
-            InputSource sheetData = new InputSource(xssfReader.getSheetsData().next());
-            xmlReader.parse(sheetData);
-        } catch (InvalidFormatException e) {
-            // TODO Auto-generated catch block
-            e.printStackTrace();
-        } catch (IOException e) {
-            // TODO Auto-generated catch block
-            e.printStackTrace();
-        } catch (OpenXML4JException e) {
-            // TODO Auto-generated catch block
-            e.printStackTrace();
-        } catch (SAXException e) {
-            // TODO Auto-generated catch block
-            e.printStackTrace();
-        } catch (ParserConfigurationException e) {
-            // TODO Auto-generated catch block
-            e.printStackTrace();
-        }
+        File file = new File(pathStr);
+        XSSFReader xssfReader = new XSSFReader(OPCPackage.open(file));
+        OnlineSalesInfoContentHandler contentHandler = new OnlineSalesInfoContentHandler(xssfReader.getSharedStringsTable(), xssfReader.getStylesTable(), onlineSalesInfoList);
+        XMLReader xmlReader = XMLHelper.newXMLReader();
+        xmlReader.setContentHandler(contentHandler);
+        InputSource sheetData = new InputSource(xssfReader.getSheetsData().next());
+        xmlReader.parse(sheetData);
 
         StockImputer stockImputer = new StockImputer(StockReportContentReader.getStockReport(), ShopeeSalesConvertApplication.getMeasList());
         try {
@@ -77,38 +60,19 @@ public class StockImputerTest {
     
 
     @Test
-    public void saveFileShouldSuccess() throws IOException{
+    public void saveFileShouldSuccess() throws IOException, InvalidFormatException, OpenXML4JException, SAXException, ParserConfigurationException{
 
         ArrayList<OnlineSalesInfo> onlineSalesInfoList = new ArrayList<OnlineSalesInfo>();
         String pathStr = ShopeeSalesConvertApplication.getProperty(ShopeeSalesConvertApplication.ONLINE_SALES_PATH);
-        try {
-            File file = new File(pathStr);
-            XSSFReader xssfReader = new XSSFReader(OPCPackage.open(file));
-            OnlineSalesInfoContentHandler contentHandler = new OnlineSalesInfoContentHandler(xssfReader.getSharedStringsTable(), xssfReader.getStylesTable(), onlineSalesInfoList);
-            XMLReader xmlReader = XMLHelper.newXMLReader();
-            xmlReader.setContentHandler(contentHandler);
-            InputSource sheetData = new InputSource(xssfReader.getSheetsData().next());
-            xmlReader.parse(sheetData);
-            
-        } catch (InvalidFormatException e) {
-            // TODO Auto-generated catch block
-            e.printStackTrace();
-        } catch (IOException e) {
-            // TODO Auto-generated catch block
-            e.printStackTrace();
-        } catch (OpenXML4JException e) {
-            // TODO Auto-generated catch block
-            e.printStackTrace();
-        } catch (SAXException e) {
-            // TODO Auto-generated catch block
-            e.printStackTrace();
-        } catch (ParserConfigurationException e) {
-            // TODO Auto-generated catch block
-            e.printStackTrace();
-        }
+        File file = new File(pathStr);
+        XSSFReader xssfReader = new XSSFReader(OPCPackage.open(file));
+        OnlineSalesInfoContentHandler contentHandler = new OnlineSalesInfoContentHandler(xssfReader.getSharedStringsTable(), xssfReader.getStylesTable(), onlineSalesInfoList);
+        XMLReader xmlReader = XMLHelper.newXMLReader();
+        xmlReader.setContentHandler(contentHandler);
+        InputSource sheetData = new InputSource(xssfReader.getSheetsData().next());
+        xmlReader.parse(sheetData);
 
         // try modify some record;
-
         onlineSalesInfoList.get(0).setParentSku("22");
         onlineSalesInfoList.get(0).setSku("22-a");
         onlineSalesInfoList.get(0).setPrice(1d);
@@ -119,7 +83,7 @@ public class StockImputerTest {
     }
 
     // @Test
-    public void figureStockShouldSuccess() throws IOException{
+    public void figureStockShouldSuccess() throws IOException, SAXException, InvalidFormatException, OpenXML4JException, ParserConfigurationException{
         List<ProductStock> stockReport;
         stockReport = StockReportContentReader.getStockReport();
         ArrayList<Meas> measList = ShopeeSalesConvertApplication.getMeasList();
@@ -127,32 +91,15 @@ public class StockImputerTest {
 
 
         ArrayList<OnlineSalesInfo> onlineSalesInfoList = new ArrayList<OnlineSalesInfo>();
-        try {
-            String pathStr = ShopeeSalesConvertApplication.getProperty(ShopeeSalesConvertApplication.ONLINE_SALES_PATH);
-            File file = new File(pathStr);
-            XSSFReader xssfReader = new XSSFReader(OPCPackage.open(file));
-            OnlineSalesInfoContentHandler contentHandler = new OnlineSalesInfoContentHandler(xssfReader.getSharedStringsTable(), xssfReader.getStylesTable(), onlineSalesInfoList);
-            XMLReader xmlReader = XMLHelper.newXMLReader();
-            xmlReader.setContentHandler(contentHandler);
-            InputSource sheetData = new InputSource(xssfReader.getSheetsData().next());
-            xmlReader.parse(sheetData);
-        } catch (InvalidFormatException e) {
-            // TODO Auto-generated catch block
-            e.printStackTrace();
-        } catch (IOException e) {
-            // TODO Auto-generated catch block
-            e.printStackTrace();
-        } catch (OpenXML4JException e) {
-            // TODO Auto-generated catch block
-            e.printStackTrace();
-        } catch (SAXException e) {
-            // TODO Auto-generated catch block
-            e.printStackTrace();
-        } catch (ParserConfigurationException e) {
-            // TODO Auto-generated catch block
-            e.printStackTrace();
-        }
-
+        String pathStr = ShopeeSalesConvertApplication.getProperty(ShopeeSalesConvertApplication.ONLINE_SALES_PATH);
+        File file = new File(pathStr);
+        XSSFReader xssfReader = new XSSFReader(OPCPackage.open(file));
+        OnlineSalesInfoContentHandler contentHandler = new OnlineSalesInfoContentHandler(xssfReader.getSharedStringsTable(), xssfReader.getStylesTable(), onlineSalesInfoList);
+        XMLReader xmlReader = XMLHelper.newXMLReader();
+        xmlReader.setContentHandler(contentHandler);
+        InputSource sheetData = new InputSource(xssfReader.getSheetsData().next());
+        xmlReader.parse(sheetData);
+        
         int originStock = 0;
         for(OnlineSalesInfo info : onlineSalesInfoList){
             originStock += info.getQuantity();
@@ -184,7 +131,6 @@ public class StockImputerTest {
         try {
             stockReport = StockReportContentReader.getStockReport();
         } catch (IOException e) {
-            // TODO Auto-generated catch block
             e.printStackTrace();
         }
 
@@ -197,33 +143,18 @@ public class StockImputerTest {
     }
 
     // @Test
-    public void readingOnlineSalesInfo(){
+    public void readingOnlineSalesInfo() throws InvalidFormatException, IOException, OpenXML4JException, SAXException, ParserConfigurationException{
         ArrayList<OnlineSalesInfo> onlineSalesInfoList = new ArrayList<OnlineSalesInfo>();
-        try {
-            String pathStr = ShopeeSalesConvertApplication.getProperty(ShopeeSalesConvertApplication.ONLINE_SALES_PATH);
-            File file = new File(pathStr);
-            XSSFReader xssfReader = new XSSFReader(OPCPackage.open(file));
-            OnlineSalesInfoContentHandler contentHandler = new OnlineSalesInfoContentHandler(xssfReader.getSharedStringsTable(), xssfReader.getStylesTable(), onlineSalesInfoList);
-            XMLReader xmlReader = XMLHelper.newXMLReader();
-            xmlReader.setContentHandler(contentHandler);
-            InputSource sheetData = new InputSource(xssfReader.getSheetsData().next());
-            xmlReader.parse(sheetData);
-        } catch (InvalidFormatException e) {
-            // TODO Auto-generated catch block
-            e.printStackTrace();
-        } catch (IOException e) {
-            // TODO Auto-generated catch block
-            e.printStackTrace();
-        } catch (OpenXML4JException e) {
-            // TODO Auto-generated catch block
-            e.printStackTrace();
-        } catch (SAXException e) {
-            // TODO Auto-generated catch block
-            e.printStackTrace();
-        } catch (ParserConfigurationException e) {
-            // TODO Auto-generated catch block
-            e.printStackTrace();
-        }
+        String pathStr = ShopeeSalesConvertApplication.getProperty(ShopeeSalesConvertApplication.ONLINE_SALES_PATH);
+        File file = new File(pathStr);
+        XSSFReader xssfReader = new XSSFReader(OPCPackage.open(file));
+        OnlineSalesInfoContentHandler contentHandler = new OnlineSalesInfoContentHandler(xssfReader.getSharedStringsTable(), xssfReader.getStylesTable(), onlineSalesInfoList);
+        XMLReader xmlReader = XMLHelper.newXMLReader();
+        xmlReader.setContentHandler(contentHandler);
+        InputSource sheetData = new InputSource(xssfReader.getSheetsData().next());
+        xmlReader.parse(sheetData);
+
+
         assertNotEquals(0, onlineSalesInfoList.size());
         assertNotNull(onlineSalesInfoList.get(3).getSku());
         for(OnlineSalesInfo info : onlineSalesInfoList){
@@ -240,10 +171,9 @@ public class StockImputerTest {
         try {
             updateRuleMeasure = stockImputer.getUpdateRuleMeasure("default");
         } catch (Throwable e) {
-            // TODO Auto-generated catch block
             e.printStackTrace();
         }
         
-        assertEquals(0.4d, updateRuleMeasure);
+        assertTrue(0.4d == updateRuleMeasure);
     }
 }

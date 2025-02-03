@@ -15,14 +15,18 @@ import java.util.Optional;
 
 import javax.xml.parsers.ParserConfigurationException;
 
+import org.apache.poi.openxml4j.exceptions.InvalidOperationException;
 import org.apache.poi.openxml4j.exceptions.OpenXML4JException;
 import org.apache.poi.openxml4j.opc.OPCPackage;
 import org.apache.poi.ss.usermodel.Cell;
 import org.apache.poi.ss.usermodel.Row;
 import org.apache.poi.ss.usermodel.Sheet;
+import org.apache.poi.ss.usermodel.WorkbookFactory;
 import org.apache.poi.util.XMLHelper;
 import org.apache.poi.xssf.eventusermodel.XSSFReader;
 import org.apache.poi.xssf.eventusermodel.XSSFReader.SheetIterator;
+import org.apache.poi.xssf.usermodel.XSSFRow;
+import org.apache.poi.xssf.usermodel.XSSFSheet;
 import org.apache.poi.xssf.usermodel.XSSFWorkbook;
 import org.xml.sax.InputSource;
 import org.xml.sax.SAXException;
@@ -43,7 +47,7 @@ import javafx.scene.control.ButtonType;
 
 public class OrderRepository {
 
-    private static final String DATE_PATTERN = "yyyy-MM-dd HH:mm";
+    private static final String DATE_PATTERN = "yyyy-MM-dd";
     private List<Order> orders;
     private List<Order> shippingOrders;
     private List<Order> completedOrders;
@@ -52,6 +56,10 @@ public class OrderRepository {
     private List<MoveOut> moveOutList;
     private List<ReturnOrder> returnOrders;
     private List<ReturnMoveOut> returnMoveOuts;
+
+    public List<Order> getOrders(){
+        return orders;
+    }
 
     public List<ReturnMoveOut> getReturnMoveOuts() {
         return returnMoveOuts;
@@ -69,10 +77,6 @@ public class OrderRepository {
         return returnAfterCompletedOrders;
     }
 
-    // public void setShippingOrders(List<Order> shippingOrders) {
-    //     this.shippingOrders = shippingOrders;
-    // }
-
     public void addCompletedOrders(List<Order> newCompletedOrders){
         completedOrders.addAll(newCompletedOrders);
     }
@@ -87,10 +91,7 @@ public class OrderRepository {
     private void loadRepository(){
 
         File file = new File(ShopeeSalesConvertApplication.getProperty(ShopeeSalesConvertApplication.ORDER_REPOSITORY_PATH));
-        if(!file.isFile()) {
-            new Alert(AlertType.WARNING).showAndWait();
-        } //TODO figure out a way ask user to select orderRepository file
-
+        
         orders = new ArrayList<Order>();
         shippingOrders = new ArrayList<Order>();
         completedOrders = new ArrayList<Order>();
@@ -195,74 +196,164 @@ public class OrderRepository {
         
     }
 
-    public void saveToRepository(List<Order> orders) throws IOException{
-
-        // ask user comfirm process will update to repository or skip following part.
-        Alert alert = new Alert(AlertType.CONFIRMATION);
-        alert.setContentText("Are you sure this process is valid and save which order to repository");
-        Optional<ButtonType> result = alert.showAndWait();
-        if(!result.isPresent() && result.get() != ButtonType.OK){
-            return;
-        }
-
+    public void createRepositoryFile() throws IOException{
         File file = new File(ShopeeSalesConvertApplication.getProperty(ShopeeSalesConvertApplication.ORDER_REPOSITORY_PATH));
-        FileInputStream fileInputStream = new FileInputStream(file);
-        XSSFWorkbook workbook = new XSSFWorkbook(fileInputStream);
-        Sheet orderSheet = workbook.getSheetAt(0);
-        Sheet movementSheet = workbook.getSheetAt(1);
-        Sheet returnMovementSheet = workbook.getSheetAt(2);
+        XSSFWorkbook workbook;
+        if(!file.exists()) file.createNewFile();
+        
+        workbook = new XSSFWorkbook();
+        Sheet orderSheet = workbook.createSheet("Orders");
+        Sheet movementSheet = workbook.createSheet("Movements");
+        Sheet returnMovementSheet = workbook.createSheet("Return Movements");
 
-        writeOrderSheet(orderSheet, orders);
-        writeMovementSheet(movementSheet, moveOutList);
-        writeReturnMovementSheet(returnMovementSheet, returnMoveOuts);
-
-        fileInputStream.close();
+        createOrderSheet(orderSheet);
+        createMovementSheet(movementSheet);
+        createReturnMovementSheet(returnMovementSheet);
         FileOutputStream fileOutputStream = new FileOutputStream(file);
         workbook.write(fileOutputStream);
         workbook.close();
         fileOutputStream.close();
     }
 
-    private void writeReturnMovementSheet(Sheet returnMovementSheet, List<ReturnMoveOut> returnMoveOuts) {
-        Row headerRow = returnMovementSheet.getRow(0);
-        if(headerRow == null) returnMovementSheet.createRow(0);
+    private void createReturnMovementSheet(Sheet returnMovementSheet) {
+        Row headerRow = returnMovementSheet.createRow(0);
 
-        Cell orderIdCellHeader = headerRow.getCell(0);
-        if(orderIdCellHeader == null) orderIdCellHeader = headerRow.createCell(0);
+        Cell orderIdCellHeader = headerRow.createCell(0);
         orderIdCellHeader.setCellValue("Order Id");
 
-        Cell SkuCellHeader = headerRow.getCell(1);
-        if(SkuCellHeader == null) SkuCellHeader = headerRow.createCell(1);
+        Cell SkuCellHeader = headerRow.createCell(1);
         SkuCellHeader.setCellValue("SKU");
 
-        Cell productNameCellHeader = headerRow.getCell(2);
-        if(productNameCellHeader == null) productNameCellHeader = headerRow.createCell(2);
+        Cell productNameCellHeader = headerRow.createCell(2);
         productNameCellHeader.setCellValue("Product Name");
 
-        Cell variationNameCellHeader = headerRow.getCell(3);
-        if(variationNameCellHeader == null) variationNameCellHeader = headerRow.createCell(3);
+        Cell variationNameCellHeader = headerRow.createCell(3);
         variationNameCellHeader.setCellValue("Variation Name");
 
-        Cell quantityCellHeader = headerRow.getCell(4);
-        if(quantityCellHeader == null) quantityCellHeader = headerRow.createCell(4);
+        Cell quantityCellHeader = headerRow.createCell(4);
         quantityCellHeader.setCellValue("Quantity");
 
-        Cell priceCellHeader = headerRow.getCell(5);
-        if(priceCellHeader == null) priceCellHeader = headerRow.createCell(5);
+        Cell priceCellHeader = headerRow.createCell(5);
         priceCellHeader.setCellValue("Price");
 
-        Cell returnStatusCellHeader = headerRow.getCell(6);
-        if(returnStatusCellHeader == null) returnStatusCellHeader = headerRow.createCell(6);
+        Cell returnStatusCellHeader = headerRow.createCell(6);
         returnStatusCellHeader.setCellValue("Return Status");
 
-        Cell statusQuantityCellHeader = headerRow.getCell(7);
-        if(statusQuantityCellHeader == null) statusQuantityCellHeader = headerRow.createCell(7);
+        Cell statusQuantityCellHeader = headerRow.createCell(7);
         statusQuantityCellHeader.setCellValue("Status Quantity");
+    }
+
+    private void createMovementSheet(Sheet movementSheet) {
+        Row headerRow = movementSheet.createRow(0);
+
+        Cell orderIdCellHeader = headerRow.createCell(0);
+        orderIdCellHeader.setCellValue("Order Id");
+
+        Cell SkuCellHeader = headerRow.createCell(1);
+        SkuCellHeader.setCellValue("SKU");
+
+        Cell productNameCellHeader = headerRow.createCell(2);
+        productNameCellHeader.setCellValue("Product Name");
+
+        Cell variationNameCellHeader = headerRow.createCell(3);
+        variationNameCellHeader.setCellValue("Variation Name");
+
+        Cell quantityCellHeader = headerRow.createCell(4);
+        quantityCellHeader.setCellValue("Quantity");
+
+        Cell priceCellHeader = headerRow.createCell(5);
+        priceCellHeader.setCellValue("Price");
+    }
+
+    private void createOrderSheet(Sheet orderSheet) {
+        
+        Row headerRow = orderSheet.createRow(0);
+
+        Cell orderIdCellHeader = headerRow.createCell(0);
+        orderIdCellHeader.setCellValue("Order Id");
+
+        Cell trackingNumberCellHeader = headerRow.createCell(1);
+        trackingNumberCellHeader.setCellValue("Tracking Number");
+
+        Cell creationDateCellHeader = headerRow.createCell(2);
+        creationDateCellHeader.setCellValue("Creation Date");
+
+        Cell shipOutDateCellHeader = headerRow.createCell(3);
+        shipOutDateCellHeader.setCellValue("ShipOut Date");
+
+        Cell completedDateCellHeader = headerRow.createCell(4);
+        completedDateCellHeader.setCellValue("Completed Date");
+
+        Cell RequestReturnRefundCellHeader = headerRow.createCell(5);
+        RequestReturnRefundCellHeader.setCellValue("Request Return/Refund");
+
+        Cell statusCellHeader = headerRow.createCell(6);
+        statusCellHeader.setCellValue("Status");
+
+        Cell orderTotalAmountCellHeader = headerRow.createCell(7);
+        orderTotalAmountCellHeader.setCellValue("Order Total Amount");
+
+        Cell managementFeeCellHeader = headerRow.createCell(8);
+        managementFeeCellHeader.setCellValue("Management Fee");
+
+        Cell transactionFeeCellHeader = headerRow.createCell(9);
+        transactionFeeCellHeader.setCellValue("Transaction Fee");
+
+        Cell serviceFeeCellHeader = headerRow.createCell(10);
+        serviceFeeCellHeader.setCellValue("Service Fee");
+
+        Cell CommissionFeeCellHeader = headerRow.createCell(11);
+        CommissionFeeCellHeader.setCellValue("Commission Fee");
+
+        Cell shopeeVoucherCellHeader = headerRow.createCell(12);
+        shopeeVoucherCellHeader.setCellValue("Shopee Voucher");
+
+        Cell shippingFeeCellHeader = headerRow.createCell(13);
+        shippingFeeCellHeader.setCellValue("Shipping Fee");
+
+        Cell shippingRebateCellHeader = headerRow.createCell(14);
+        shippingRebateCellHeader.setCellValue("Shipping Rebate");
+
+    }
+
+    public void saveToRepository(List<Order> orders) throws IOException{
+
+        // ask user comfirm process will update to repository or skip following part.
+        try {
+            Alert alert = new Alert(AlertType.CONFIRMATION);
+            alert.setContentText("Are you sure this process is valid and save which order to repository");
+            Optional<ButtonType> result = alert.showAndWait();
+            if(!result.isPresent() && result.get() != ButtonType.OK){
+                return;
+            }
+        } catch(ExceptionInInitializerError e){
+
+        }
+
+        File file = new File(ShopeeSalesConvertApplication.getProperty(ShopeeSalesConvertApplication.ORDER_REPOSITORY_PATH));
+        FileInputStream fileInputStream = new FileInputStream(file);
+        XSSFWorkbook workbook = (XSSFWorkbook) WorkbookFactory.create(fileInputStream);
+        XSSFSheet orderSheet = workbook.getSheetAt(0);
+        Sheet movementSheet = workbook.getSheetAt(1);
+        Sheet returnMovementSheet = workbook.getSheetAt(2);
+
+        writeOrderSheetCell(orderSheet, orders);
+        writeMovementSheetCell(movementSheet, moveOutList);
+        writeReturnMovementSheetCell(returnMovementSheet, returnMoveOuts);
+
+        FileOutputStream fileOutputStream = new FileOutputStream(file);
+        workbook.write(fileOutputStream);
+        workbook.close();
+        fileInputStream.close();
+        fileOutputStream.close();
+    }
+
+    private void writeReturnMovementSheetCell(Sheet returnMovementSheet, List<ReturnMoveOut> returnMoveOuts) {
 
         int index = 1;
+        if(returnMoveOuts == null) return;
         for(ReturnMoveOut returnMoveOut : returnMoveOuts){
-            Row row = returnMovementSheet.getRow(index);
-            if(row == null) row = returnMovementSheet.createRow(index);
+            Row row = returnMovementSheet.createRow(index);
             index++;
 
             Cell orderIdCell = row.getCell(0);
@@ -299,38 +390,12 @@ public class OrderRepository {
         }
     }
 
-    private void writeMovementSheet(Sheet movementSheet, List<MoveOut> moveOuts) {
-        Row headerRow = movementSheet.getRow(0);
-        if(headerRow == null) movementSheet.createRow(0);
-
-        Cell orderIdCellHeader = headerRow.getCell(0);
-        if(orderIdCellHeader == null) orderIdCellHeader = headerRow.createCell(0);
-        orderIdCellHeader.setCellValue("Order Id");
-
-        Cell SkuCellHeader = headerRow.getCell(1);
-        if(SkuCellHeader == null) SkuCellHeader = headerRow.createCell(1);
-        SkuCellHeader.setCellValue("SKU");
-
-        Cell productNameCellHeader = headerRow.getCell(2);
-        if(productNameCellHeader == null) productNameCellHeader = headerRow.createCell(2);
-        productNameCellHeader.setCellValue("Product Name");
-
-        Cell variationNameCellHeader = headerRow.getCell(3);
-        if(variationNameCellHeader == null) variationNameCellHeader = headerRow.createCell(3);
-        variationNameCellHeader.setCellValue("Variation Name");
-
-        Cell quantityCellHeader = headerRow.getCell(4);
-        if(quantityCellHeader == null) quantityCellHeader = headerRow.createCell(4);
-        quantityCellHeader.setCellValue("Quantity");
-
-        Cell priceCellHeader = headerRow.getCell(5);
-        if(priceCellHeader == null) priceCellHeader = headerRow.createCell(5);
-        priceCellHeader.setCellValue("Price");
+    private void writeMovementSheetCell(Sheet movementSheet, List<MoveOut> moveOuts) {
 
         int index = 1;
+        if(moveOuts == null) return;
         for(MoveOut moveOut : moveOuts){
-            Row row = movementSheet.getRow(index);
-            if(row == null) row = movementSheet.createRow(index);
+            Row row = movementSheet.createRow(index);
             index++;
 
             Cell orderIdCell = row.getCell(0);
@@ -359,74 +424,11 @@ public class OrderRepository {
         }
     }
 
-    private void writeOrderSheet(Sheet orderSheet, List<Order> orders) {
-        Row headerRow = orderSheet.getRow(0);
-        if(headerRow == null) orderSheet.createRow(0);
-
-        Cell orderIdCellHeader = headerRow.getCell(0);
-        if(orderIdCellHeader == null) orderIdCellHeader = headerRow.createCell(0);
-        orderIdCellHeader.setCellValue("Order Id");
-
-        Cell trackingNumberCellHeader = headerRow.getCell(1);
-        if(trackingNumberCellHeader == null) trackingNumberCellHeader = headerRow.createCell(1);
-        trackingNumberCellHeader.setCellValue("Tracking Number");
-
-        Cell creationDateCellHeader = headerRow.getCell(2);
-        if(creationDateCellHeader == null) creationDateCellHeader = headerRow.createCell(2);
-        creationDateCellHeader.setCellValue("Creation Date");
-
-        Cell shipOutDateCellHeader = headerRow.getCell(3);
-        if(shipOutDateCellHeader == null) shipOutDateCellHeader = headerRow.createCell(3);
-        shipOutDateCellHeader.setCellValue("ShipOut Date");
-
-        Cell completedDateCellHeader = headerRow.getCell(4);
-        if(completedDateCellHeader == null) completedDateCellHeader = headerRow.createCell(4);
-        completedDateCellHeader.setCellValue("Completed Date");
-
-        Cell RequestReturnRefundCellHeader = headerRow.getCell(5);
-        if(RequestReturnRefundCellHeader == null) RequestReturnRefundCellHeader = headerRow.createCell(5);
-        RequestReturnRefundCellHeader.setCellValue("Request Return/Refund");
-
-        Cell statusCellHeader = headerRow.getCell(6);
-        if(statusCellHeader == null) statusCellHeader = headerRow.createCell(6);
-        statusCellHeader.setCellValue("Status");
-
-        Cell orderTotalAmountCellHeader = headerRow.getCell(7);
-        if(orderTotalAmountCellHeader == null) orderTotalAmountCellHeader = headerRow.createCell(7);
-        orderTotalAmountCellHeader.setCellValue("Order Total Amount");
-
-        Cell managementFeeCellHeader = headerRow.getCell(8);
-        if(managementFeeCellHeader == null) managementFeeCellHeader = headerRow.createCell(8);
-        managementFeeCellHeader.setCellValue("Management Fee");
-
-        Cell transactionFeeCellHeader = headerRow.getCell(9);
-        if(transactionFeeCellHeader == null) transactionFeeCellHeader = headerRow.createCell(9);
-        transactionFeeCellHeader.setCellValue("Transaction Fee");
-
-        Cell serviceFeeCellHeader = headerRow.getCell(10);
-        if(serviceFeeCellHeader == null) serviceFeeCellHeader = headerRow.createCell(10);
-        serviceFeeCellHeader.setCellValue("Service Fee");
-
-        Cell CommissionFeeCellHeader = headerRow.getCell(11);
-        if(CommissionFeeCellHeader == null) CommissionFeeCellHeader = headerRow.createCell(11);
-        CommissionFeeCellHeader.setCellValue("Commission Fee");
-
-        Cell shopeeVoucherCellHeader = headerRow.getCell(12);
-        if(shopeeVoucherCellHeader == null) shopeeVoucherCellHeader = headerRow.createCell(12);
-        shopeeVoucherCellHeader.setCellValue("Shopee Voucher");
-
-        Cell shippingFeeCellHeader = headerRow.getCell(13);
-        if(shippingFeeCellHeader == null) shippingFeeCellHeader = headerRow.createCell(13);
-        shippingFeeCellHeader.setCellValue("Shipping Fee");
-
-        Cell shippingRebateCellHeader = headerRow.getCell(14);
-        if(shippingRebateCellHeader == null) shippingRebateCellHeader = headerRow.createCell(14);
-        shippingRebateCellHeader.setCellValue("Shipping Rebate");
-
+    private void writeOrderSheetCell(XSSFSheet orderSheet, List<Order> orders) {
         int index = 1;
+        if(orders == null) return;
         for(Order order : orders){
-            Row row = orderSheet.getRow(index);
-            if(row == null) orderSheet.createRow(index);
+            XSSFRow row = orderSheet.createRow(index);
             index++;
 
             Cell orderIdCell = row.getCell(0);
@@ -447,7 +449,8 @@ public class OrderRepository {
 
             Cell completedDateCell = row.getCell(4);
             if(completedDateCell == null) completedDateCell = row.createCell(4);
-            completedDateCell.setCellValue(order.getOrderCompleteDate().format(DateTimeFormatter.ofPattern(DATE_PATTERN)));
+            if(order.getOrderCompleteDate() != null)
+                completedDateCell.setCellValue(order.getOrderCompleteDate().format(DateTimeFormatter.ofPattern(DATE_PATTERN)));
             
             Cell RequestReturnRefundCell = row.getCell(5);
             if(RequestReturnRefundCell == null) RequestReturnRefundCell = row.createCell(5);
@@ -491,8 +494,10 @@ public class OrderRepository {
         }
     }
 
-    public OrderRepository(){
-        loadRepository();
+    public OrderRepository(boolean loadingRepository){
+        if(loadingRepository) {
+            loadRepository();
+        }
     }
 
     public void removeCompletedOrders(List<Order> removeOrders) {
@@ -565,6 +570,7 @@ public class OrderRepository {
 
     public void addShippingOrders(List<Order> newShippingOrders){
         orders.addAll(newShippingOrders);
+        shippingOrders.addAll(orders);
         for(Order order : newShippingOrders){
             List<SoftReference<MoveOut>> moveOuts = order.getMoveOutList();
             for(SoftReference<MoveOut> softMoveOut : moveOuts){

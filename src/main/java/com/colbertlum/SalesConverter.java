@@ -11,7 +11,7 @@ import com.colbertlum.entity.Order;
 public class SalesConverter {
     
     private List<MoveOut> moveOuts;
-    private ArrayList<Meas> measList;
+    private List<Meas> measList;
     private List<MoveOut> EmptySkuMoveOuts;
     private List<MoveOut> notExistSkuMoveOuts;
     private List<MoveOut> advanceFillMoveOuts;
@@ -43,7 +43,7 @@ public class SalesConverter {
         return !advanceFillMoveOuts.isEmpty();
     }
 
-    public SalesConverter(List<MoveOut> moveOuts, ArrayList<Meas> measList){
+    public SalesConverter(List<MoveOut> moveOuts, List<Meas> measList){
         this.moveOuts = moveOuts;
         this.measList = measList;
     }   

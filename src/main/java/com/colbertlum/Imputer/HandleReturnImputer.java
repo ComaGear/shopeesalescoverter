@@ -191,7 +191,7 @@ public class HandleReturnImputer {
     }
 
     public HandleReturnImputer(){
-        orderRepository = new OrderRepository();
+        orderRepository = new OrderRepository(true);
         this.returnOrderList = orderRepository.getReturnOrders();
         this.returnMoveOutList = orderRepository.getReturnMoveOuts();
     }

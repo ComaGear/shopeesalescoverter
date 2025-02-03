@@ -40,7 +40,7 @@ public class ShopeeOrderReportContentHandler extends ContentHandler {
     private static final String TRACKING_NUMBER = "Tracking Number*";
     private static final String RETURN_REFUND_REQUEST = "Return / Refund Status";
 
-    private ArrayList<MoveOut> moveOuts;
+    private List<MoveOut> moveOuts;
     private Map<String, Order> orderMap;
     private MoveOut moveOut;
     private Order order;
@@ -141,10 +141,14 @@ public class ShopeeOrderReportContentHandler extends ContentHandler {
 
 
     public ShopeeOrderReportContentHandler(SharedStrings sharedStrings, StylesTable stylesTable,
-            ArrayList<MoveOut> moveOuts) {
+            List<MoveOut> moveOuts) {
         super(sharedStrings, stylesTable);
 
         this.moveOuts = moveOuts;
         this.orderMap = new HashMap<String, Order>();
+
+        this.order = new Order();
+        this.order.setMoveOutList(new ArrayList<SoftReference<MoveOut>>());
+        this.moveOut = new MoveOut();
     }
 }
