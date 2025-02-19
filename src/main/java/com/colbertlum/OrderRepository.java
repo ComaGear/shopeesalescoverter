@@ -43,6 +43,7 @@ import com.colbertlum.entity.ReturnOrder;
 
 import javafx.scene.control.Alert;
 import javafx.scene.control.Alert.AlertType;
+import javafx.stage.Window;
 import javafx.scene.control.ButtonType;
 
 public class OrderRepository {
@@ -319,15 +320,17 @@ public class OrderRepository {
     public void saveToRepository(List<Order> orders) throws IOException{
 
         // ask user comfirm process will update to repository or skip following part.
-        try {
-            Alert alert = new Alert(AlertType.CONFIRMATION);
-            alert.setContentText("Are you sure this process is valid and save which order to repository");
-            Optional<ButtonType> result = alert.showAndWait();
-            if(!result.isPresent() && result.get() != ButtonType.OK){
-                return;
+        if(!Window.getWindows().isEmpty()) {
+            try {
+                Alert alert = new Alert(AlertType.CONFIRMATION);
+                alert.setContentText("Are you sure this process is valid and save which order to repository");
+                Optional<ButtonType> result = alert.showAndWait();
+                if(!result.isPresent() && result.get() != ButtonType.OK){
+                    return;
+                }
+            } catch(ExceptionInInitializerError e){
+    
             }
-        } catch(ExceptionInInitializerError e){
-
         }
 
         File file = new File(ShopeeSalesConvertApplication.getProperty(ShopeeSalesConvertApplication.ORDER_REPOSITORY_PATH));
@@ -507,13 +510,14 @@ public class OrderRepository {
             if(lookupOrder != null) {
                 completedOrders.remove(lookupOrder);
                 orders.remove(lookupOrder);
+
+                List<SoftReference<MoveOut>> softMoveOuts = lookupOrder.getMoveOutList();
+                ArrayList<MoveOut> removeMoveOuts = new ArrayList<MoveOut>();
+                for(SoftReference<MoveOut> softMoveOut : softMoveOuts){
+                    removeMoveOuts.add(softMoveOut.get());
+                }
+                moveOutList.removeAll(removeMoveOuts);
             }
-            List<SoftReference<MoveOut>> softMoveOuts = lookupOrder.getMoveOutList();
-            ArrayList<MoveOut> removeMoveOuts = new ArrayList<MoveOut>();
-            for(SoftReference<MoveOut> softMoveOut : softMoveOuts){
-                removeMoveOuts.add(softMoveOut.get());
-            }
-            moveOutList.removeAll(removeMoveOuts);
         }
     }
 
@@ -558,13 +562,14 @@ public class OrderRepository {
             if(lookupOrder != null) {
                 shippingOrders.remove(lookupOrder);
                 orders.remove(lookupOrder);
+                
+                List<SoftReference<MoveOut>> softMoveOuts = lookupOrder.getMoveOutList();
+                ArrayList<MoveOut> removeMoveOuts = new ArrayList<MoveOut>();
+                for(SoftReference<MoveOut> softMoveOut : softMoveOuts){
+                    removeMoveOuts.add(softMoveOut.get());
+                }
+                moveOutList.removeAll(removeMoveOuts);
             }
-            List<SoftReference<MoveOut>> softMoveOuts = lookupOrder.getMoveOutList();
-            ArrayList<MoveOut> removeMoveOuts = new ArrayList<MoveOut>();
-            for(SoftReference<MoveOut> softMoveOut : softMoveOuts){
-                removeMoveOuts.add(softMoveOut.get());
-            }
-            moveOutList.removeAll(removeMoveOuts);
         }
     }
 

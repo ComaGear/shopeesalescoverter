@@ -40,6 +40,8 @@ public class ShopeeOrderReportContentHandler extends ContentHandler {
     private static final String TRACKING_NUMBER = "Tracking Number*";
     private static final String RETURN_REFUND_REQUEST = "Return / Refund Status";
 
+    private static final String REQUEST_REFUND_APPROVED = "Request Approved";
+
     private List<MoveOut> moveOuts;
     private Map<String, Order> orderMap;
     private MoveOut moveOut;
@@ -104,7 +106,7 @@ public class ShopeeOrderReportContentHandler extends ContentHandler {
                 order.setTrackingNumber(value);
                 break;
             case RETURN_REFUND_REQUEST:
-                order.setRequestApproved(value.equals(value));
+                order.setRequestApproved(value.equals(REQUEST_REFUND_APPROVED));
             default:
                 break;
         }

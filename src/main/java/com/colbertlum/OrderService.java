@@ -29,11 +29,19 @@ public class OrderService {
     private List<Order> beingShippingOrderList;
     private List<Order> beingReturningAfterShippingOrderList;
     private List<Order> beingReturningAfterCompleteOrderList;
+    private List<Order> beingReceivedOrderList;
+    private List<Order> beingDeliveredOrderList;
     private List<Order> beingPendingOrderList;
     private OrderRepository orderRepository;
 
     public static void inspectDataValidation(DataValidationInterface dataValidation){
         dataValidation.appendHandlingColumnExpectData("Order Status", STATUS_CANCEL);
+        // appendHandlingColumnToMap("Order Status", "Cancelled");
+        // appendHandlingColumnToMap("Order Status", "Completed");
+        // appendHandlingColumnToMap("Order Status", "Unpaid");
+        // appendHandlingColumnToMap("Order Status", "Shipping");
+
+        // appendHandlingColumnContainsTextInDataToMap("Order Status", "Order Received, But");
         // TODO write all status to inspecting. upsert ShopeeOderReportContentHandler's override method 'appendHanding()' using this method
     }
 
@@ -49,15 +57,27 @@ public class OrderService {
         }
 
         // record completed order
-        ArrayList<Order> newCompletedOrder = figureOutNewCompletedOrder(orderRepository);
+        ArrayList<Order> newCompletedOrders = figureOutNewCompletedOrder(orderRepository);
         // save on completed order to repository
-        orderRepository.addCompletedOrders(newCompletedOrder);
-        orderRepository.removeShippingOrders(newCompletedOrder);
+        orderRepository.addCompletedOrders(newCompletedOrders);
+        orderRepository.removeShippingOrders(newCompletedOrders);
+
+        // record received order
+        List<Order> newReceivedOrders = figureOutNewReceivedOrder(orderRepository);
+        orderRepository.addCompletedOrders(newReceivedOrders);
+        orderRepository.removeShippingOrders(newReceivedOrders);
 
         // figureOut toReport orders from newCompleted and newInReturnAfterCompleted order with not record in repository.
         ArrayList<Order> toReportOrders = new ArrayList<Order>();
-        toReportOrders.addAll(newCompletedOrder);
-        toReportOrders.addAll(lookupOrderNotYetOnCompletedInRepository(figureOutNewInReturnAfterCompletedOrder(orderRepository), orderRepository));
+        if(!newCompletedOrders.isEmpty()) {
+            toReportOrders.addAll(newCompletedOrders);
+        }
+        if(!newReceivedOrders.isEmpty()) {
+            toReportOrders.addAll(newReceivedOrders);
+        }
+        if(!lookupOrderNotYetOnCompletedInRepository(figureOutNewInReturnAfterCompletedOrder(orderRepository), orderRepository).isEmpty()) {
+            toReportOrders.addAll(lookupOrderNotYetOnCompletedInRepository(figureOutNewInReturnAfterCompletedOrder(orderRepository), orderRepository));
+        }
         // toReportOrders.addAll(lookupOrderNotYetOnShipping(figureOutNewInReturnOrder(orderRepository), orderRepository));
         // toReportOrders.addAll(lookupOrderNotYetOnShipping(figureOutNewInReturnAfterCompletedOrder(orderRepository), orderRepository));
 
@@ -73,51 +93,63 @@ public class OrderService {
         orderRepository.removeShippingOrders(newReturnAfterCompletedOrder);
         orderRepository.addReturnAfterCompletedOrder(newReturnAfterCompletedOrder);
 
-        // reporting being Shipping Move Out.
-        ArrayList<MoveOut> ShippingMoveOuts = new ArrayList<MoveOut>();
+        // record delivered order
+        List<Order> newDeliveredOrders = figureOutNewDeliveredOrders(orderRepository);
+        orderRepository.addCompletedOrders(newDeliveredOrders);
+        orderRepository.removeShippingOrders(newDeliveredOrders);
+
+        // reporting being Shipping and Delivered MoveOut.
+        ArrayList<MoveOut> shippingMoveOuts = new ArrayList<MoveOut>();
         // ArrayList<Order> figureOutOrderInRepositoryOnlyOnShipping = figureOutOrderInRepositoryOnlyOnShipping(orderRepository);
         List<Order> shippingOrders = orderRepository.getShippingOrders();
         List<Order> newShippingOrders = figureOutNewShippingOrder(orderRepository);
         for(Order order : newShippingOrders){
             for(SoftReference<MoveOut> moveOut : order.getMoveOutList()){
-                ShippingMoveOuts.add(moveOut.get());
+                shippingMoveOuts.add(moveOut.get());
             }
         }
         for(Order order : shippingOrders){
             for(SoftReference<MoveOut> moveOut : order.getMoveOutList()){
-                ShippingMoveOuts.add(moveOut.get());
+                shippingMoveOuts.add(moveOut.get());
+            }
+        }
+        for(Order order : newDeliveredOrders) {
+            for(SoftReference<MoveOut> moveOut : order.getMoveOutList()) {
+                shippingMoveOuts.add(moveOut.get());
             }
         }
         File tempMovementFile = new File(ShopeeSalesConvertApplication.getProperty(ShopeeSalesConvertApplication.TEMP_MOVEMENT_FILE_PATH));
-        TempMovementReporting.reporting(tempMovementFile, new ArrayList<MoveOut>(ShippingMoveOuts));
-        // save on shipping order to repository
+        TempMovementReporting.reporting(tempMovementFile, new ArrayList<MoveOut>(shippingMoveOuts));
+        // save on shipping and delivered order to repository
         orderRepository.addShippingOrders(newShippingOrders);
         
 
         // reporting completed order by date.
-        toReportOrders.sort(new Comparator<Order>() {
+        if(!toReportOrders.isEmpty()){
+            toReportOrders.sort(new Comparator<Order>() {
 
-            @Override
-            public int compare(Order o1, Order o2) {
-                return o1.getOrderCompleteDate().compareTo(o2.getOrderCompleteDate());
+                @Override
+                public int compare(Order o1, Order o2) {
+                    return o1.getOrderCompleteDate().compareTo(o2.getOrderCompleteDate());
+                }
+                
+            });
+            HashMap<String, List<MoveOut>> dateDifferentMoveOuts = new HashMap<String, List<MoveOut>>();
+            for(Order order : toReportOrders){
+                LocalDate orderCompleteDate = order.getOrderCompleteDate();
+                String fileName = String.format("SalesCompleted$x.$x.$x", orderCompleteDate.getYear(), orderCompleteDate.getMonthValue(), orderCompleteDate.getDayOfMonth());
+                if(!dateDifferentMoveOuts.containsKey(fileName)){
+                    dateDifferentMoveOuts.put(fileName, new ArrayList<MoveOut>());
+                }
+                for(SoftReference<MoveOut> softMoveOut : order.getMoveOutList()){
+                    MoveOut moveOut = softMoveOut.get();
+                    dateDifferentMoveOuts.get(fileName).add(moveOut);
+                }
             }
-            
-        });
-        HashMap<String, List<MoveOut>> dateDifferentMoveOuts = new HashMap<String, List<MoveOut>>();
-        for(Order order : toReportOrders){
-            LocalDate orderCompleteDate = order.getOrderCompleteDate();
-            String fileName = String.format("SalesCompleted$x.$x.$x", orderCompleteDate.getYear(), orderCompleteDate.getMonthValue(), orderCompleteDate.getDayOfMonth());
-            if(!dateDifferentMoveOuts.containsKey(fileName)){
-                dateDifferentMoveOuts.put(fileName, new ArrayList<MoveOut>());
+            for(String fileName : dateDifferentMoveOuts.keySet()){
+                String filePath = ShopeeSalesConvertApplication.getProperty(ShopeeSalesConvertApplication.COMPLETE_ORDER_PATH) + File.pathSeparator + fileName;
+                CompletedMovementReporting.reporting(new File(filePath), dateDifferentMoveOuts.get(fileName));
             }
-            for(SoftReference<MoveOut> softMoveOut : order.getMoveOutList()){
-                MoveOut moveOut = softMoveOut.get();
-                dateDifferentMoveOuts.get(fileName).add(moveOut);
-            }
-        }
-        for(String fileName : dateDifferentMoveOuts.keySet()){
-            String filePath = ShopeeSalesConvertApplication.getProperty(ShopeeSalesConvertApplication.COMPLETE_ORDER_PATH) + File.pathSeparator + fileName;
-            CompletedMovementReporting.reporting(new File(filePath), dateDifferentMoveOuts.get(fileName));
         }
 
         orderRepository.submitTransaction();
@@ -162,8 +194,64 @@ public class OrderService {
         return previousNotYetOnShippingOrder;
     }
 
+    private List<Order> figureOutNewReceivedOrder(OrderRepository orderRepository) {
+
+        if(beingReceivedOrderList == null) return new ArrayList<>();
+
+        List<Order> completedOrdersInRepository = new ArrayList<Order>(orderRepository.getCompletedOrders());
+
+        Comparator<Order> comparator = new Comparator<Order>() {
+
+            @Override
+            public int compare(Order o1, Order o2) {
+                return o1.getId().compareTo(o2.getId());
+            }
+            
+        };
+        completedOrdersInRepository.sort(comparator);
+        beingReceivedOrderList.sort(comparator);
+        
+        ArrayList<Order> newReceivedOrders = new ArrayList<Order>();
+        for(int i = 0; i < beingReceivedOrderList.size(); i++){
+            Order lookupOrder = Lookup.lookupOrder(completedOrdersInRepository, beingReceivedOrderList.get(i).getId());
+            if(lookupOrder == null){
+                newReceivedOrders.add(beingReceivedOrderList.get(i));
+            }
+        }
+
+        return newReceivedOrders;
+    }
+
+    private List<Order> figureOutNewDeliveredOrders(OrderRepository orderRepository) {
+
+        if(beingDeliveredOrderList == null) return new ArrayList<>();
+
+        List<Order> newDeliveredOrders = new ArrayList<Order>();
+
+        Comparator<Order> comparator = new Comparator<Order>() {
+
+            @Override
+            public int compare(Order o1, Order o2) {
+                return o1.getId().compareTo(o2.getId());
+            }
+            
+        };
+        List<Order> repositoryShippingOrders = new ArrayList<Order>(orderRepository.getShippingOrders());
+        repositoryShippingOrders.sort(comparator);
+        beingDeliveredOrderList.sort(comparator);
+        for(Order order : beingDeliveredOrderList){
+            Order lookupOrder = Lookup.lookupOrder(repositoryShippingOrders, order.getId());
+            if(lookupOrder == null) {
+                newDeliveredOrders.add(order);
+            }
+        }
+
+        return newDeliveredOrders;
+    }
 
     private List<Order> figureOutNewShippingOrder(OrderRepository orderRepository) {
+
+        if(beingShippingOrderList == null) return new ArrayList<>();
 
         ArrayList<Order> newShippingOrders = new ArrayList<Order>();
 
@@ -190,6 +278,9 @@ public class OrderService {
 
 
     private List<Order> figureOutNewInReturnAfterCompletedOrder(OrderRepository orderRepository) {
+
+        if(beingReturningAfterCompleteOrderList == null) return new ArrayList<>();
+
         ArrayList<Order> newInReturnAfterCompletedOrder = new ArrayList<Order>();
        
         Comparator<Order> comparator = new Comparator<Order>(){
@@ -205,7 +296,7 @@ public class OrderService {
         beingReturningAfterCompleteOrderList.sort(comparator);
         for(Order order : beingReturningAfterCompleteOrderList){
             Order lookupOrder = Lookup.lookupOrder(repositoryReturnAfterCompletedOrders, order.getId());
-            if(lookupOrder == null){
+            if(lookupOrder != null){
                 newInReturnAfterCompletedOrder.add(order);
             }
         }
@@ -215,6 +306,9 @@ public class OrderService {
 
 
     private ArrayList<Order> figureOutNewInReturnOrder(OrderRepository orderRepository) {
+
+        if(beingReturningAfterShippingOrderList == null) return new ArrayList<>();
+
         ArrayList<Order> returnOrders = new ArrayList<Order>(orderRepository.getReturnAfterShippingOrders());
 
         Comparator<Order> comparator = new Comparator<Order>() {
@@ -240,6 +334,9 @@ public class OrderService {
 
 
     private ArrayList<Order> figureOutNewCompletedOrder(OrderRepository orderRepository) {
+
+        if(beingCompleteOrderList == null) return new ArrayList<>();
+
         ArrayList<Order> completedOrdersInRepository = new ArrayList<Order>(orderRepository.getCompletedOrders());
 
         Comparator<Order> comparator = new Comparator<Order>() {
@@ -266,26 +363,42 @@ public class OrderService {
     }
 
     private void determineStatus(Order order){
-        if(order.getStatus().equals(STATUS_COMPLETE) && order.isRequestApproved()){
-            // beingCompleteOrderList.add(order);
+        if(order.getStatus().equals(OrderService.STATUS_COMPLETE) && order.isRequestApproved()){
             beingReturningAfterCompleteOrderList.add(order);
             return;
         }
-        if(order.getStatus().equals(STATUS_COMPLETE)){
+        if(order.getStatus().equals(OrderService.STATUS_DELIVERED) && order.isRequestApproved()){
+            beingReturningAfterCompleteOrderList.add(order);
+            return;
+        }
+        if(order.getStatus().equals(OrderService.STATUS_RECEIVED) && order.isRequestApproved()){
+            beingReturningAfterCompleteOrderList.add(order);
+            return;
+        }
+        if(order.getStatus().equals(OrderService.STATUS_DELIVERED)) {
+            beingDeliveredOrderList.add(order);
+            return;
+        }
+        if(order.getStatus().contains(OrderService.STATUS_RECEIVED)) {
+            beingReceivedOrderList.add(order);
+            return;
+        }
+        if(order.getStatus().equals(OrderService.STATUS_COMPLETE)){
             beingCompleteOrderList.add(order);
             return;
         }
-        if(order.getStatus().equals(STATUS_SHIPPING)){
+        if(order.getStatus().equals(OrderService.STATUS_SHIPPING)){
             beingShippingOrderList.add(order);
             return;
         }
-        if(order.getStatus().equals(STATUS_CANCEL) && order.getShipOutDate() != null){
+        if(order.getStatus().equals(OrderService.STATUS_CANCEL) && order.getShipOutDate() != null){
             // beingCompleteOrderList.add(order);
             beingReturningAfterShippingOrderList.add(order);
             return;
         }
-        if(order.getStatus().equals(STATUS_TO_SHIP)){
+        if(order.getStatus().equals(OrderService.STATUS_TO_SHIP)){
             beingPendingOrderList.add(order);
+            return;
         }
     }
 
@@ -305,6 +418,13 @@ public class OrderService {
         return pendingStockReducingMap;
     }
 
+    public List<Order> getBeingDeliveredOrderList(){
+        return beingDeliveredOrderList;
+    }
+
+    public List<Order> getBeingReceivedOrderList(){
+        return beingReceivedOrderList;
+    }
 
     public List<Order> getBeingCompleteOrderList() {
         return beingCompleteOrderList;

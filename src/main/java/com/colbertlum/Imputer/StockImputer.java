@@ -115,16 +115,12 @@ public class StockImputer {
             InputSource sheetData = new InputSource(xssfReader.getSheetsData().next());
             xmlReader.parse(sheetData);
         } catch (InvalidFormatException e) {
-            // TODO Auto-generated catch block
             e.printStackTrace();
         } catch (OpenXML4JException e) {
-            // TODO Auto-generated catch block
             e.printStackTrace();
         } catch (SAXException e) {
-            // TODO Auto-generated catch block
             e.printStackTrace();
         } catch (ParserConfigurationException e) {
-            // TODO Auto-generated catch block
             e.printStackTrace();
         }
 
