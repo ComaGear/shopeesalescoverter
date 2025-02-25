@@ -106,4 +106,21 @@ public class MoveOut {
     public int getFoundRow() {
         return this.foundRow;
     }
+
+    @Override
+    public String toString() {
+        return new StringBuilder()
+            .append("MoveOut@")
+            .append("'Order ID: " + getOrder().getId() + "', ")
+            .append("'sku : " + getSku() + "', ")
+            .append("'Name' : " + getProductName() + "', ")
+            .append("'variation : " + getVariationName() + "', ")
+            .append("'QTY : " + getQuantity() + "', ")
+            .append("'Price : " + getPrice() + "', ")
+            .append("'foundRow : " + getFoundRow() + "', ")
+            .append("; /n")
+            .toString();
+    }
+
+    
 }

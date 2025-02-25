@@ -137,7 +137,7 @@ public class OrderService {
             HashMap<String, List<MoveOut>> dateDifferentMoveOuts = new HashMap<String, List<MoveOut>>();
             for(Order order : toReportOrders){
                 LocalDate orderCompleteDate = order.getOrderCompleteDate();
-                String fileName = String.format("SalesCompleted$x.$x.$x", orderCompleteDate.getYear(), orderCompleteDate.getMonthValue(), orderCompleteDate.getDayOfMonth());
+                String fileName = String.format("SalesCompleted%d.%d.%d", orderCompleteDate.getYear(), orderCompleteDate.getMonthValue(), orderCompleteDate.getDayOfMonth());
                 if(!dateDifferentMoveOuts.containsKey(fileName)){
                     dateDifferentMoveOuts.put(fileName, new ArrayList<MoveOut>());
                 }
@@ -147,7 +147,7 @@ public class OrderService {
                 }
             }
             for(String fileName : dateDifferentMoveOuts.keySet()){
-                String filePath = ShopeeSalesConvertApplication.getProperty(ShopeeSalesConvertApplication.COMPLETE_ORDER_PATH) + File.pathSeparator + fileName;
+                String filePath = ShopeeSalesConvertApplication.getProperty(ShopeeSalesConvertApplication.COMPLETE_ORDER_PATH) + File.separator + fileName + ".xlsx";
                 CompletedMovementReporting.reporting(new File(filePath), dateDifferentMoveOuts.get(fileName));
             }
         }

@@ -45,7 +45,12 @@ import com.colbertlum.entity.Order;
 
 public class OrderServiceTest {
 
-    private static final String 
+    private static final String COMPLETED = "completed";
+    private static final String SHIPPING = "shipping";
+    private static final String RETURN_AFTER_SHIPPING = "return after shipping";
+    private static final String RETURN_AFTER_COMPLETED = "return after completed";
+    private static final String PENDING = "pending";
+    private static final String CANCELLED = "cancelled";
 
     private static final String ORDER_REPOSITORY_XLSX = "./OrderRepository.xlsx";
     private static final String UOM_SOURCE = "uom.xlsx";
@@ -105,23 +110,13 @@ public class OrderServiceTest {
         for(MoveOut moveOut : allMoveOuts) {
             classificedMoveOuts.get(moveOut.getOrder().getStatus()).add(moveOut);
         }
-        classificedOrders = new HashMap<String, List<Order>>();
-        classificedOrders.put(OrderService.STATUS_CANCEL, new ArrayList<Order>());
-        classificedOrders.put(OrderService.STATUS_COMPLETE, new ArrayList<Order>());
-        classificedOrders.put(OrderService.STATUS_DELIVERED, new ArrayList<Order>());
-        classificedOrders.put(OrderService.STATUS_RECEIVED, new ArrayList<Order>());
-        classificedOrders.put(OrderService.STATUS_SHIPPING, new ArrayList<Order>());
-        classificedOrders.put(OrderService.STATUS_TO_SHIP, new ArrayList<Order>());
-        classificedOrders.put(OrderService.STATUS_UNPAID, new ArrayList<Order>());
-        for(Order order : orders) {
-            classificedOrders.get(order.getStatus()).add(order);
-        }
+        classificedOrders = classifyOrders(orders);
 
         ShopeeSalesConvertApplication.saveProperty(ShopeeSalesConvertApplication.REPORT, 
             new File(ShopeeSalesConvertApplication.class.getClassLoader().getResource(SECOND_ORDER_SALES_REPORT).getFile()).getAbsolutePath());
         secondMoveOutsList = new ArrayList<MoveOut>();
         String pathStr2 = ShopeeSalesConvertApplication.getProperty(ShopeeSalesConvertApplication.REPORT);
-        File file2 = new File(pathStr);
+        File file2 = new File(pathStr2);
         XSSFReader xssfReader2 = new XSSFReader(OPCPackage.open(file2));
         XMLReader xmlReader2 = XMLHelper.newXMLReader();
         ShopeeOrderReportContentHandler contentHandler2 = new ShopeeOrderReportContentHandler(xssfReader2.getSharedStringsTable(), xssfReader2.getStylesTable(), secondMoveOutsList);
@@ -141,17 +136,8 @@ public class OrderServiceTest {
         for(MoveOut moveOut : secondMoveOutsList) {
             secondClassificedMoveOuts.get(moveOut.getOrder().getStatus()).add(moveOut);
         }
-        secondClassificedOrders = new HashMap<String, List<Order>>();
-        secondClassificedOrders.put(OrderService.STATUS_CANCEL, new ArrayList<Order>());
-        secondClassificedOrders.put(OrderService.STATUS_COMPLETE, new ArrayList<Order>());
-        secondClassificedOrders.put(OrderService.STATUS_DELIVERED, new ArrayList<Order>());
-        secondClassificedOrders.put(OrderService.STATUS_RECEIVED, new ArrayList<Order>());
-        secondClassificedOrders.put(OrderService.STATUS_SHIPPING, new ArrayList<Order>());
-        secondClassificedOrders.put(OrderService.STATUS_TO_SHIP, new ArrayList<Order>());
-        secondClassificedOrders.put(OrderService.STATUS_UNPAID, new ArrayList<Order>());
-        for(Order order : secondOrders) {
-            secondClassificedOrders.get(order.getStatus()).add(order);
-        }
+        secondClassificedOrders = classifyOrders(secondOrders);
+
         SalesConverter salesConverter = new SalesConverter(allMoveOuts, measList);
         salesConverter.process();
         SalesConverter salesConverter2 = new SalesConverter(secondMoveOutsList, measList);
@@ -177,7 +163,7 @@ public class OrderServiceTest {
     private static Stream<Arguments> provideRandomStatusMultiList() {
 
         Random random = new Random();
-        List<String> keyList = new ArrayList<String>(classificedMoveOuts.keySet());
+        List<String> keyList = new ArrayList<String>(secondClassificedMoveOuts.keySet());
         List<List<MoveOut>> moveOutsList = new ArrayList<List<MoveOut>>();
         while(keyList.size() > 0){
             int index = random.nextInt(keyList.size() - 0) + 0;
@@ -241,6 +227,10 @@ public class OrderServiceTest {
         
     }
     // test newShipping and repository on shipping order will report a temporary movement record
+    @Test
+
+
+
     @MethodSource("provideRandomStatusMultiList")
     @ParameterizedTest
     public void newShippingAndExistedShippedRecordInTempMovementListAndSuccessOutputFile(List<MoveOut> moveOuts, List<MoveOut> secondMoveOuts){
@@ -260,20 +250,22 @@ public class OrderServiceTest {
         String secondStatus = "";
         if(!moveOuts.isEmpty()) firstStatus = moveOuts.get(0).getOrder().getStatus();
         if(!secondMoveOuts.isEmpty()) secondStatus = secondMoveOuts.get(0).getOrder().getStatus();
-        if(firstStatus.equals(secondStatus)) {
-            String status = moveOuts.get(0).getOrder().getStatus();
+        if(firstStatus.equals(secondStatus) && !moveOuts.isEmpty() && !secondMoveOuts.isEmpty() && !firstStatus.equals(OrderService.STATUS_CANCEL)) {
+            String status = classifyOrder(moveOuts.get(0).getOrder());
             List<Order> list = classificedOrders.get(status);
             list.addAll(secondClassificedOrders.get(status));
             List<Order> repositoryList = getRelativeStatusOrderListBySampleOrder(orderRepository, moveOuts.get(0).getOrder());
-            assertTrue(repositoryList.containsAll(list));
+            for(Order order : list) {
+                assertTrue(repositoryList.contains(order));
+            }
 
             ArrayList<Order> cloneList = new ArrayList<Order>(repositoryList);
             removeSame(cloneList, list);
             assertTrue(cloneList.isEmpty());
 
         } else {
-            if(!firstStatus.isEmpty()) {
-                String status = moveOuts.get(0).getOrder().getStatus();
+            if(!firstStatus.isEmpty() && !moveOuts.isEmpty() && !firstStatus.equals(OrderService.STATUS_CANCEL)) {
+                String status = classifyOrder(moveOuts.get(0).getOrder());
                 List<Order> list = classificedOrders.get(status);
                 List<Order> repositoryList = getRelativeStatusOrderListBySampleOrder(orderRepository, moveOuts.get(0).getOrder());
                 if(!moveOuts.get(0).getOrder().getStatus().equals(OrderService.STATUS_CANCEL) 
@@ -287,8 +279,8 @@ public class OrderServiceTest {
                     assertTrue(cloneList.isEmpty());
                 }
             }
-            if(!secondStatus.isEmpty()) {
-                String status = secondMoveOuts.get(0).getOrder().getStatus();
+            if(!secondStatus.isEmpty() && !secondMoveOuts.isEmpty() && !secondStatus.equals(OrderService.STATUS_CANCEL)) {
+                String status = classifyOrder(secondMoveOuts.get(0).getOrder());
                 List<Order> list = secondClassificedOrders.get(status);
                 List<Order> repositoryList = getRelativeStatusOrderListBySampleOrder(orderRepository, secondMoveOuts.get(0).getOrder());
                 if(!secondMoveOuts.get(0).getOrder().getStatus().equals(OrderService.STATUS_CANCEL) 
@@ -353,46 +345,88 @@ public class OrderServiceTest {
         });
     }
 
-    private List<Order> classifyOrders(Map<String, List<Order>> map, List<Order> orders) {
+    private static String classifyOrder(Order order) {
+        if(order.getStatus().equals(OrderService.STATUS_COMPLETE) && order.isRequestApproved()) {
+            return RETURN_AFTER_COMPLETED;
+        }
+        if(order.getStatus().equals(OrderService.STATUS_DELIVERED) && order.isRequestApproved()) {
+            return RETURN_AFTER_COMPLETED;
+        }
+        if(order.getStatus().equals(OrderService.STATUS_RECEIVED) && order.isRequestApproved()) {
+            return RETURN_AFTER_COMPLETED;
+        }
+        if(order.getStatus().equals(OrderService.STATUS_RECEIVED)) {
+            return COMPLETED;
+        }
+        if(order.getStatus().equals(OrderService.STATUS_DELIVERED)) {
+            return COMPLETED;
+        }
+        if(order.getStatus().equals(OrderService.STATUS_COMPLETE)) {
+            return COMPLETED;
+        }
+        if(order.getStatus().equals(OrderService.STATUS_CANCEL) && order.getShipOutDate() != null){
+            return RETURN_AFTER_SHIPPING;
+        }
+        if(order.getStatus().equals(OrderService.STATUS_SHIPPING)) {
+            return SHIPPING;
+        }
+        if(order.getStatus().equals(OrderService.STATUS_TO_SHIP) || order.getStatus().equals(OrderService.STATUS_UNPAID)) {
+            return PENDING;
+        }
+        return null;
+    }
 
-        map.put(OrderService.STATUS_CANCEL, new ArrayList<Order>());
-        map.put(OrderService.STATUS_COMPLETE, new ArrayList<Order>());
-        map.put(OrderService.STATUS_DELIVERED, new ArrayList<Order>());
-        map.put(OrderService.STATUS_RECEIVED, new ArrayList<Order>());
-        map.put(OrderService.STATUS_SHIPPING, new ArrayList<Order>());
-        map.put(OrderService.STATUS_TO_SHIP, new ArrayList<Order>());
-        map.put(OrderService.STATUS_UNPAID, new ArrayList<Order>());
+    private static Map<String, List<Order>> classifyOrders(List<Order> orders) {
+
+        Map<String, List<Order>> map = new HashMap<String, List<Order>>();
+
+        map.put(COMPLETED, new ArrayList<Order>());
+        map.put(SHIPPING, new ArrayList<Order>());
+        map.put(RETURN_AFTER_COMPLETED, new ArrayList<Order>());
+        map.put(RETURN_AFTER_SHIPPING, new ArrayList<Order>());
+        map.put(PENDING, new ArrayList<Order>());
 
         for(Order order : orders) {
             if(order.getStatus().equals(OrderService.STATUS_COMPLETE) && order.isRequestApproved()){
-                return repository.getReturnAfterCompletedOrders();
+                map.get(RETURN_AFTER_COMPLETED).add(order);
                 continue;
             }
+            if(order.getStatus().equals(OrderService.STATUS_DELIVERED) && order.isRequestApproved()){
+                map.get(RETURN_AFTER_COMPLETED).add(order);
+                continue;
+            }
+            if(order.getStatus().equals(OrderService.STATUS_RECEIVED) && order.isRequestApproved()){
+                map.get(RETURN_AFTER_COMPLETED).add(order);
+                continue;
+            }
+            if(order.getStatus().equals(OrderService.STATUS_DELIVERED)){
+                map.get(COMPLETED).add(order);
+                continue;
+            }
+            if(order.getStatus().contains(OrderService.STATUS_RECEIVED)){
+                map.get(COMPLETED).add(order);
+                continue;
+            }
+            if(order.getStatus().equals(OrderService.STATUS_COMPLETE)){
+                map.get(COMPLETED).add(order);
+                continue;
+            }
+            if(order.getStatus().equals(OrderService.STATUS_SHIPPING)){
+                map.get(SHIPPING).add(order);
+                continue;
+            }
+            if(order.getStatus().equals(OrderService.STATUS_CANCEL) && order.getShipOutDate() != null){
+                map.get(RETURN_AFTER_SHIPPING).add(order);
+                continue;
+            }
+            if(order.getStatus().equals(OrderService.STATUS_TO_SHIP) || order.getStatus().equals(OrderService.STATUS_UNPAID)){
+                map.get(PENDING).add(order);
+                continue;
+            }
+            
         }
-        if(order.getStatus().equals(OrderService.STATUS_DELIVERED) && order.isRequestApproved()){
-            return repository.getReturnAfterCompletedOrders();
-        }
-        if(order.getStatus().equals(OrderService.STATUS_RECEIVED) && order.isRequestApproved()){
-            return repository.getReturnAfterCompletedOrders();
-        }
-        if(order.getStatus().equals(OrderService.STATUS_DELIVERED)) {
-            return repository.getCompletedOrders();
-        }
-        if(order.getStatus().contains(OrderService.STATUS_RECEIVED)) {
-            return repository.getCompletedOrders();
-        }
-        if(order.getStatus().equals(OrderService.STATUS_COMPLETE)){
-            return repository.getCompletedOrders();
-        }
-        if(order.getStatus().equals(OrderService.STATUS_SHIPPING)){
-            return repository.getShippingOrders();
-        }
-        if(order.getStatus().equals(OrderService.STATUS_CANCEL) && order.getShipOutDate() != null){
-            return repository.getReturnAfterShippingOrders();
-        }
-        if(order.getStatus().equals(OrderService.STATUS_TO_SHIP)){
-            return new ArrayList<>();
-        }
+
+        return map;
     }
 
     private List<Order> getRelativeStatusOrderListBySampleOrder(OrderRepository repository, Order order) {

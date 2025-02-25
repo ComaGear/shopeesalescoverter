@@ -6,6 +6,7 @@ import java.util.ArrayList;
 import java.util.Comparator;
 import java.util.List;
 
+import org.apache.poi.sl.usermodel.Sheet;
 import org.apache.poi.xssf.usermodel.XSSFRow;
 import org.apache.poi.xssf.usermodel.XSSFSheet;
 import org.apache.poi.xssf.usermodel.XSSFWorkbook;
@@ -14,9 +15,9 @@ import com.colbertlum.OrderRepository;
 import com.colbertlum.ShopeeSalesConvertApplication;
 import com.colbertlum.Imputer.Utils.Lookup;
 import com.colbertlum.entity.Meas;
+import com.colbertlum.entity.MoveOut;
 import com.colbertlum.entity.ReturnMoveOut;
 import com.colbertlum.entity.ReturnOrder;
-import com.colbertlum.entity.UOM;
 
 public class HandleReturnImputer {
 
@@ -83,18 +84,24 @@ public class HandleReturnImputer {
 
         outputCreditNoteToXlsx(this.updatedReturnOrders);
     }
+
+    private void convertQuantityByStatus(List<ReturnMoveOut> returnMoveOuts) {
+        for(ReturnMoveOut returnMoveOut : returnMoveOuts) {
+            (())
+        }
+    }
     
     private void outputCreditNoteToXlsx(ArrayList<ReturnOrder> updatedReturnOrders){
         // TODO export a bundle of Credit Note seperate Return and Damaged item.
         // get output file location form ShopeeSalesConvertApplication
         String location = ShopeeSalesConvertApplication.getProperty(ShopeeSalesConvertApplication.CREDIT_NOTE_PATH);
         LocalDate now = LocalDate.now();
-        String damagedItemFileName = String.format("DamagedItem_..", now.getYear(), now.getMonthValue(), now.getDayOfMonth());
-        String returnedItemFileName = String.format("ReturnItem..", now.getYear(), now.getMonthValue(), now.getDayOfMonth());
+        String damagedItemFileName = String.format("DamagedItem_%d.%d.%d", now.getYear(), now.getMonthValue(), now.getDayOfMonth());
+        String returnedItemFileName = String.format("ReturnItem_%d.%d.%d", now.getYear(), now.getMonthValue(), now.getDayOfMonth());
 
         // reprocess ReturnOrders to ReturnMove list, easily parse to xlsx.
-        ArrayList<ReturnMoveOut> damagedItemMoveOuts = new ArrayList<ReturnMoveOut>();
-        ArrayList<ReturnMoveOut> returnedItemMoveOuts = new ArrayList<ReturnMoveOut>();
+        List<ReturnMoveOut> damagedItemMoveOuts = new ArrayList<ReturnMoveOut>();
+        List<ReturnMoveOut> returnedItemMoveOuts = new ArrayList<ReturnMoveOut>();
         for(ReturnOrder returnOrder : updatedReturnOrders){
             for(SoftReference<ReturnMoveOut> softReturnMoveOut : returnOrder.getReturnMoveOutList()){
 
@@ -128,57 +135,60 @@ public class HandleReturnImputer {
             }
         }
 
+        MeasImputer measImputer = new MeasImputer();
+        for(ReturnMoveOut moveOut : returnedItemMoveOuts) {
+            moveOut.setId(measImputer.getMeas(moveOut.getSku(), measList).getId());
+        }
+        for(ReturnMoveOut moveOut : damagedItemMoveOuts) {
+            moveOut.setId(measImputer.getMeas(moveOut.getSku(), measList).getId());
+        }
+
+        convertQuantityByStatus(returnedItemMoveOuts);
+        convertQuantityByStatus(damagedItemMoveOuts);
+
         // parse to xlsx.
         XSSFWorkbook workbook = new XSSFWorkbook();
         XSSFSheet damagedSheet = workbook.createSheet("Damaged Biztory");
         XSSFSheet returnedSheet = workbook.createSheet("Returned Biztory");
         XSSFSheet summarySheet = workbook.createSheet("Summary");
 
-        MeasImputer measImputer = new MeasImputer();
-
         if(damagedSheet != null && !damagedItemMoveOuts.isEmpty()){
+            writeDamagedSheet(summarySheet, damagedItemMoveOuts);
+        }
+    }
 
-            XSSFRow orderDetailHeaderRow = damagedSheet.createRow(0);
-            orderDetailHeaderRow.createCell(0).setCellValue("Order ID");
-            orderDetailHeaderRow.createCell(1).setCellValue("Order Shipout Date");
-            orderDetailHeaderRow.createCell(2).setCellValue("Product ID");
-            orderDetailHeaderRow.createCell(3).setCellValue("Product Name");
-            orderDetailHeaderRow.createCell(4).setCellValue("Qauntity");
-            orderDetailHeaderRow.createCell(5).setCellValue("Cost");
-            orderDetailHeaderRow.createCell(6).setCellValue("SubTotal");
-            orderDetailHeaderRow.createCell(7).setCellValue("SubCost");
-            orderDetailHeaderRow.createCell(8).setCellValue("Profit");
-            orderDetailHeaderRow.createCell(9).setCellValue("Profit Rate");
-            orderDetailHeaderRow.createCell(10).setCellValue("transaction Fee");
-            orderDetailHeaderRow.createCell(11).setCellValue("Service Fee");
-            orderDetailHeaderRow.createCell(12).setCellValue("Commission Fee");
-            orderDetailHeaderRow.createCell(13).setCellValue("Management Fee");
-            orderDetailHeaderRow.createCell(14).setCellValue("Grand Total");
-            orderDetailHeaderRow.createCell(15).setCellValue("Order Shipping Fee");
+    private void writeReturnedSheet(Sheet sheet, List<ReturnMoveOut> returnMoveOuts){
 
-            damagedItemMoveOuts.sort((o1, o2) -> {
-                return o1.getSku().compareTo(o2.getSku());
-            });
-            for(ReturnMoveOut moveOut : damagedItemMoveOuts){
-                Meas meas = measImputer.getMeas(moveOut.getSku(), measImputer.getMeasList());
-                moveOut.setOrderId(meas.getId());
-                moveOut.setQuantity(meas.getMeasurement() * moveOut.getQuantity());
-                moveOut.setPrice(moveOut.getPrice() / meas.getMeasurement());
+    }
+    
+    private void writeDamagedSheet(XSSFSheet biztorySheet, List<ReturnMoveOut> damagedItemMoveOuts){
 
-                // TODO convert returnMoveOut's item sku to UOM base item.
-                // check returnMoveOut had get ProductId while transform from MoveOut before.
-                // if got it will igrone using OnlineMeas, directly using UOM as process output and handle return scene.
-                /**
-                UOM uom = null;
-                if(moveOut.getOrderId() != null) {
-                    uom = UOM.binarySearch(meas.getId(), ShopeeSalesConvertApplication.getIrsUoms());
-                } else {
-                    uom = new UOM();
-                    uom.setProductId("");
-                    uom.setCostPrice(moveOut.getProductSubTotal() / moveOut.getQuantity());
-                }
-                */
-            }
+        int rowCount = 0;
+        XSSFRow headerRow = biztorySheet.createRow(rowCount++);
+        headerRow.createCell(0).setCellValue("Code");
+        headerRow.createCell(1).setCellValue("Description");
+        headerRow.createCell(2).setCellValue("Qty");
+        headerRow.createCell(3).setCellValue("unit");
+        headerRow.createCell(4).setCellValue("Unit Price");
+
+        damagedItemMoveOuts.sort((o1, o2) -> {
+            return o1.getSku().compareTo(o2.getSku());
+        });
+
+        for(ReturnMoveOut returnMoveOut : damagedItemMoveOuts) {
+            if(returnMoveOut.getStatusQuantity() == 0) continue; 
+
+            String productName = returnMoveOut.getProductName() + " - " + returnMoveOut.getVariationName();
+
+            String characterFilter = "[^\\p{L}\\p{M}\\p{N}\\p{P}\\p{Z}\\p{Cf}\\p{Cs}\\s]";
+            productName = productName.replaceAll(characterFilter,"");
+
+            XSSFRow row = biztorySheet.createRow(rowCount++);
+            row.createCell(0).setCellValue(returnMoveOut.getId());
+            row.createCell(1).setCellValue(productName);
+            row.createCell(2).setCellValue(returnMoveOut.getStatusQuantity());
+            row.createCell(3).setCellValue("");
+            row.createCell(4).setCellValue(moveOut.getProductSubTotal() / moveOut.getQuantity());
         }
     }
     
