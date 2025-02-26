@@ -1,5 +1,8 @@
 package com.colbertlum.Imputer;
 
+import java.io.File;
+import java.io.FileOutputStream;
+import java.io.IOException;
 import java.lang.ref.SoftReference;
 import java.time.LocalDate;
 import java.util.ArrayList;
@@ -18,6 +21,11 @@ import com.colbertlum.entity.Meas;
 import com.colbertlum.entity.MoveOut;
 import com.colbertlum.entity.ReturnMoveOut;
 import com.colbertlum.entity.ReturnOrder;
+
+import javafx.scene.control.Alert;
+import javafx.scene.control.ButtonType;
+import javafx.scene.control.Alert.AlertType;
+import javafx.stage.Window;
 
 public class HandleReturnImputer {
 
@@ -80,24 +88,30 @@ public class HandleReturnImputer {
     
     public void saveTransaction() {
         orderRepository.submitTransaction();
-    
-
-        outputCreditNoteToXlsx(this.updatedReturnOrders);
-    }
-
-    private void convertQuantityByStatus(List<ReturnMoveOut> returnMoveOuts) {
-        for(ReturnMoveOut returnMoveOut : returnMoveOuts) {
-            (())
+        
+        try{
+            outputCreditNoteToXlsx(this.updatedReturnOrders);
+        } catch (IOException e) {
+            if(!Window.getWindows().isEmpty()) {
+                Alert alert = new Alert(AlertType.ERROR);
+                alert.setTitle("Couldn't output Credit Note due to.. ");
+                alert.setContentText(e.getMessage());
+                alert.getButtonTypes().add(ButtonType.CANCEL);
+                alert.showAndWait();
+            }
+            System.out.println(e.getMessage());
         }
     }
-    
-    private void outputCreditNoteToXlsx(ArrayList<ReturnOrder> updatedReturnOrders){
-        // TODO export a bundle of Credit Note seperate Return and Damaged item.
+
+    private void outputCreditNoteToXlsx(ArrayList<ReturnOrder> updatedReturnOrders) throws IOException{
         // get output file location form ShopeeSalesConvertApplication
         String location = ShopeeSalesConvertApplication.getProperty(ShopeeSalesConvertApplication.CREDIT_NOTE_PATH);
         LocalDate now = LocalDate.now();
-        String damagedItemFileName = String.format("DamagedItem_%d.%d.%d", now.getYear(), now.getMonthValue(), now.getDayOfMonth());
-        String returnedItemFileName = String.format("ReturnItem_%d.%d.%d", now.getYear(), now.getMonthValue(), now.getDayOfMonth());
+        String creditNoteName = String.format("CreditNote_%d.%d.%d", now.getYear(), now.getMonthValue(), now.getDayOfMonth());        
+        String filePath = location + File.separator + creditNoteName + ".xlsx";
+        File file = new File(filePath);
+        file.createNewFile();
+        FileOutputStream fileOutputStream = new FileOutputStream(file);
 
         // reprocess ReturnOrders to ReturnMove list, easily parse to xlsx.
         List<ReturnMoveOut> damagedItemMoveOuts = new ArrayList<ReturnMoveOut>();
@@ -143,9 +157,6 @@ public class HandleReturnImputer {
             moveOut.setId(measImputer.getMeas(moveOut.getSku(), measList).getId());
         }
 
-        convertQuantityByStatus(returnedItemMoveOuts);
-        convertQuantityByStatus(damagedItemMoveOuts);
-
         // parse to xlsx.
         XSSFWorkbook workbook = new XSSFWorkbook();
         XSSFSheet damagedSheet = workbook.createSheet("Damaged Biztory");
@@ -155,10 +166,43 @@ public class HandleReturnImputer {
         if(damagedSheet != null && !damagedItemMoveOuts.isEmpty()){
             writeDamagedSheet(summarySheet, damagedItemMoveOuts);
         }
+        if(returnedSheet != null && !returnedItemMoveOuts.isEmpty()){
+            writeReturnedSheet(summarySheet, returnedItemMoveOuts);
+        }
+
+        workbook.write(fileOutputStream);
+        workbook.close();
+        fileOutputStream.close();
     }
 
-    private void writeReturnedSheet(Sheet sheet, List<ReturnMoveOut> returnMoveOuts){
+    private void writeReturnedSheet(XSSFSheet biztorySheet, List<ReturnMoveOut> returnedMoveOuts){
+        int rowCount = 0;
+        XSSFRow headerRow = biztorySheet.createRow(rowCount++);
+        headerRow.createCell(0).setCellValue("Code");
+        headerRow.createCell(1).setCellValue("Description");
+        headerRow.createCell(2).setCellValue("Qty");
+        headerRow.createCell(3).setCellValue("unit");
+        headerRow.createCell(4).setCellValue("Unit Price");
 
+        returnedMoveOuts.sort((o1, o2) -> {
+            return o1.getSku().compareTo(o2.getSku());
+        });
+
+        for(ReturnMoveOut returnMoveOut : returnedMoveOuts) {
+            if(returnMoveOut.getStatusQuantity() == 0) continue; 
+
+            String productName = returnMoveOut.getProductName() + " - " + returnMoveOut.getVariationName();
+
+            String characterFilter = "[^\\p{L}\\p{M}\\p{N}\\p{P}\\p{Z}\\p{Cf}\\p{Cs}\\s]";
+            productName = productName.replaceAll(characterFilter,"");
+
+            XSSFRow row = biztorySheet.createRow(rowCount++);
+            row.createCell(0).setCellValue(returnMoveOut.getId());
+            row.createCell(1).setCellValue(productName);
+            row.createCell(2).setCellValue(returnMoveOut.getStatusQuantity());
+            row.createCell(3).setCellValue("");
+            row.createCell(4).setCellValue(returnMoveOut.getPrice());
+        }   
     }
     
     private void writeDamagedSheet(XSSFSheet biztorySheet, List<ReturnMoveOut> damagedItemMoveOuts){
@@ -188,8 +232,18 @@ public class HandleReturnImputer {
             row.createCell(1).setCellValue(productName);
             row.createCell(2).setCellValue(returnMoveOut.getStatusQuantity());
             row.createCell(3).setCellValue("");
-            row.createCell(4).setCellValue(moveOut.getProductSubTotal() / moveOut.getQuantity());
+            row.createCell(4).setCellValue(returnMoveOut.getPrice());
         }
+
+        
+        double totalLost = 0.0d;
+        for(ReturnMoveOut returnMoveOut : damagedItemMoveOuts) {
+            totalLost += returnMoveOut.getPrice() * returnMoveOut.getStatusQuantity();
+        }
+        rowCount += 5;
+        XSSFRow summaryRow = biztorySheet.createRow(rowCount);
+        summaryRow.createCell(0).setCellValue("Total Loss :");
+        summaryRow.createCell(1).setCellValue(totalLost);
     }
     
     public void setUpdated(ReturnOrder returnOrder) {

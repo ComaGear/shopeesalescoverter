@@ -8,6 +8,8 @@ import java.io.FileWriter;
 import java.io.IOException;
 import java.io.InputStream;
 import java.time.LocalDate;
+import java.time.LocalDateTime;
+import java.time.format.DateTimeFormatter;
 import java.util.ArrayList;
 import java.util.Comparator;
 import java.util.List;
@@ -92,6 +94,8 @@ public class ShopeeSalesConvertApplication extends Application {
     public static final String COMPLETE_ORDER_PATH = "completed_movement_path";
     public static final String CREDIT_NOTE_PATH = "credit-note-path";
     public static final String ORDER_REPOSITORY_PATH = "order_repository_path";
+    public static final String OLD_VERSION_CUTOFF_DATE = "old_version_cutoff_date";
+    public static final String ORDER_REPOSITORY_REMAIN_AFTER_DATE = "order_repository_remain_after_date";
 
     private List<UOM> uoms;
 
@@ -298,8 +302,20 @@ public class ShopeeSalesConvertApplication extends Application {
         };
     }
 
+    private List<MoveOut> cutoffBeforeDate(List<MoveOut> moveOuts, LocalDate localDate) {
+        moveOuts.removeIf(moveOut -> 
+            moveOut.getOrder() != null &&
+            moveOut.getOrder().getShipOutDate() != null &&
+            moveOut.getOrder().getShipOutDate().isBefore(localDate)
+        );
+
+        return moveOuts;
+    }
+
     private void processSales() {
-        List<MoveOut> moveOuts = getMoveOuts();
+        LocalDate cutoffLocalDate = LocalDate.parse(ShopeeSalesConvertApplication.getProperty(OLD_VERSION_CUTOFF_DATE), DateTimeFormatter.ofPattern("yyyy-mm-dd"));
+        List<MoveOut> moveOuts = cutoffBeforeDate(getMoveOuts(), cutoffLocalDate);
+        
 
         if(this.measImputer == null) this.measImputer = new MeasImputer(); 
         SalesConverter salesConverter = new SalesConverter(moveOuts, this.measImputer.getMeasList());
@@ -315,7 +331,7 @@ public class ShopeeSalesConvertApplication extends Application {
             salesImputingController.initDialog(dialogStage);
             salesImputingController.getStage().showAndWait();
 
-            moveOuts = getMoveOuts();
+            moveOuts = cutoffBeforeDate(getMoveOuts(), cutoffLocalDate);
             salesConverter = new SalesConverter(moveOuts, new MeasImputer().getMeasList());
             salesConverter.process();
         }
@@ -556,6 +572,10 @@ public class ShopeeSalesConvertApplication extends Application {
         creditNotePathText.setFont(font);
         Text orderRepositoryPathText = new Text("Order Record Repository at : '" + getProperty(ORDER_REPOSITORY_PATH) + "'");
         orderRepositoryPathText.setFont(font);
+        Text oldVersionCutOffDateText = new Text("Old version sales operate mode cut off at :");
+        oldVersionCutOffDateText.setFont(font);
+        Text orderRepositoryRemainAfterDateText = new Text("remaining order in repository after date :" + getProperty(ORDER_REPOSITORY_REMAIN_AFTER_DATE));
+        orderRepositoryRemainAfterDateText.setFont(font);
         
         FileChooser xlsxFileChooser = new FileChooser();
         xlsxFileChooser.getExtensionFilters().add(new FileChooser.ExtensionFilter("excel File", "*.xlsx"));
@@ -667,6 +687,18 @@ public class ShopeeSalesConvertApplication extends Application {
             saveProperty(ORDER_REPOSITORY_PATH, orderRepositoryFile.getPath());
         });
 
+        if(getProperty(OLD_VERSION_CUTOFF_DATE) == null || getProperty(OLD_VERSION_CUTOFF_DATE).isEmpty()){
+            saveProperty(OLD_VERSION_CUTOFF_DATE, LocalDate.now().format(DateTimeFormatter.ofPattern("yyyy-mm-dd")));
+        }
+        DatePicker cutoffDatePicker = new DatePicker(LocalDate.parse(getProperty(OLD_VERSION_CUTOFF_DATE)
+            , DateTimeFormatter.ofPattern("yyyy-mm-dd")));
+
+        if(getProperty(ORDER_REPOSITORY_REMAIN_AFTER_DATE) == null || getProperty(ORDER_REPOSITORY_REMAIN_AFTER_DATE).isEmpty()){
+                saveProperty(ORDER_REPOSITORY_REMAIN_AFTER_DATE, LocalDate.now().format(DateTimeFormatter.ofPattern("yyyy-mm-dd")));
+            }
+        DatePicker orderRemainAfterDatePicker = new DatePicker(LocalDate.parse(getProperty(ORDER_REPOSITORY_REMAIN_AFTER_DATE)
+            , DateTimeFormatter.ofPattern("yyyy-mm-dd")));
+
         VBox vBox = new VBox(backButton, 
             measPathText, selectMeasButton,
             uomPathText, selectUomButton, 
@@ -676,7 +708,9 @@ public class ShopeeSalesConvertApplication extends Application {
             tempMovementPathText, selectTempMovementReportPathButton,
             completeOrderMovementPathText, selectCompletedOrderReportFolderPathButton,
             creditNotePathText, selectCreditNoteReportFolderPathButton,
-            orderRepositoryPathText, selectOrderRepositoryFileButton, generateOrderRepositoryFileButton);
+            orderRepositoryPathText, selectOrderRepositoryFileButton, generateOrderRepositoryFileButton,
+            oldVersionCutOffDateText, cutoffDatePicker,
+            orderRepositoryRemainAfterDateText, orderRemainAfterDatePicker);
 
         return new Scene(vBox, 600, 400);
     }

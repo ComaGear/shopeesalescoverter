@@ -95,14 +95,15 @@ public class OrderService {
 
         // record delivered order
         List<Order> newDeliveredOrders = figureOutNewDeliveredOrders(orderRepository);
-        orderRepository.addCompletedOrders(newDeliveredOrders);
-        orderRepository.removeShippingOrders(newDeliveredOrders);
+        orderRepository.addShippingOrders(newDeliveredOrders);
 
         // reporting being Shipping and Delivered MoveOut.
         ArrayList<MoveOut> shippingMoveOuts = new ArrayList<MoveOut>();
         // ArrayList<Order> figureOutOrderInRepositoryOnlyOnShipping = figureOutOrderInRepositoryOnlyOnShipping(orderRepository);
         List<Order> shippingOrders = orderRepository.getShippingOrders();
         List<Order> newShippingOrders = figureOutNewShippingOrder(orderRepository);
+        orderRepository.addShippingOrders(newShippingOrders);
+
         for(Order order : newShippingOrders){
             for(SoftReference<MoveOut> moveOut : order.getMoveOutList()){
                 shippingMoveOuts.add(moveOut.get());
@@ -121,7 +122,7 @@ public class OrderService {
         File tempMovementFile = new File(ShopeeSalesConvertApplication.getProperty(ShopeeSalesConvertApplication.TEMP_MOVEMENT_FILE_PATH));
         TempMovementReporting.reporting(tempMovementFile, new ArrayList<MoveOut>(shippingMoveOuts));
         // save on shipping and delivered order to repository
-        orderRepository.addShippingOrders(newShippingOrders);
+
         
 
         // reporting completed order by date.
