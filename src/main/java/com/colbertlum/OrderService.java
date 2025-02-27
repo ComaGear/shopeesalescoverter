@@ -7,10 +7,12 @@ import java.util.ArrayList;
 import java.util.Comparator;
 import java.util.HashMap;
 import java.util.List;
+import java.util.Map;
 
 import com.colbertlum.Imputer.Utils.Lookup;
 import com.colbertlum.entity.MoveOut;
 import com.colbertlum.entity.Order;
+import com.colbertlum.entity.ReturnMoveOut;
 import com.colbertlum.reporting.CompletedMovementReporting;
 import com.colbertlum.reporting.TempMovementReporting;
 
@@ -417,6 +419,13 @@ public class OrderService {
         }
         
         return pendingStockReducingMap;
+    }
+
+    public HashMap<String, Double> getReservedDamagedStockQuantity() {
+        List<ReturnMoveOut> returnMoveOuts = orderRepository.getReturnMoveOuts();
+        Map<String, Double> map = new HashMap<String, Double>();
+        
+        for(returnMoveOuts)
     }
 
     public List<Order> getBeingDeliveredOrderList(){

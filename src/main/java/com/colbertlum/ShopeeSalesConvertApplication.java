@@ -326,9 +326,8 @@ public class ShopeeSalesConvertApplication extends Application {
                 new SalesImputingController(salesConverter.getEmptySkuMoveOuts(), salesConverter.getNotExistSkuMoveOuts()
                     , salesConverter.getAdvanceFillMoveOuts());
             dialogStage = new Stage();
-            dialogStage.setX(priStage.getX() + 10);
-            dialogStage.setY(priStage.getY() + 10);
-            salesImputingController.initDialog(dialogStage);
+            
+            salesImputingController.initDialog(dialogStage, priStage);
             salesImputingController.getStage().showAndWait();
 
             moveOuts = cutoffBeforeDate(getMoveOuts(), cutoffLocalDate);

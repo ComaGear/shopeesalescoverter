@@ -6,6 +6,7 @@ import java.io.FileOutputStream;
 import java.io.IOException;
 import java.io.InputStream;
 import java.lang.ref.SoftReference;
+import java.time.LocalDate;
 import java.time.format.DateTimeFormatter;
 import java.util.ArrayList;
 import java.util.HashMap;
@@ -319,6 +320,13 @@ public class OrderRepository {
 
     public void saveToRepository(List<Order> orders) throws IOException{
 
+        String dateString = ShopeeSalesConvertApplication.getProperty(ShopeeSalesConvertApplication.ORDER_REPOSITORY_REMAIN_AFTER_DATE);
+        if(dateString != null && !dateString.isEmpty()){
+            LocalDate remainAfterDate = LocalDate.parse(dateString, DateTimeFormatter.ofPattern(DATE_PATTERN));
+            orders.removeIf(order -> order.getShipOutDate().isBefore(remainAfterDate));
+            if(orders.isEmpty()) return;
+        }
+
         // ask user comfirm process will update to repository or skip following part.
         if(!Window.getWindows().isEmpty()) {
             try {
@@ -329,7 +337,7 @@ public class OrderRepository {
                     return;
                 }
             } catch(ExceptionInInitializerError e){
-    
+                System.out.println(e.getMessage());
             }
         }
 
@@ -391,6 +399,11 @@ public class OrderRepository {
             if(statusQuantityCell == null) statusQuantityCell = row.createCell(7);
             statusQuantityCell.setCellValue(returnMoveOut.getStatusQuantity());
         }
+
+        while(returnMovementSheet.getRow(index) != null) {
+            Row row = returnMovementSheet.getRow(index);
+            returnMovementSheet.removeRow(row);
+        }
     }
 
     private void writeMovementSheetCell(Sheet movementSheet, List<MoveOut> moveOuts) {
@@ -424,6 +437,11 @@ public class OrderRepository {
             Cell priceCell = row.getCell(5);
             if(priceCell == null) priceCell = row.createCell(5);
             priceCell.setCellValue(moveOut.getPrice());
+        }
+
+        while(movementSheet.getRow(index) != null) {
+            Row row = movementSheet.getRow(index);
+            movementSheet.removeRow(row);
         }
     }
 
@@ -494,6 +512,11 @@ public class OrderRepository {
             Cell shippingRebateCell = row.getCell(14);
             if(shippingRebateCell == null) shippingRebateCell = row.createCell(14);
             shippingRebateCell.setCellValue(order.getServiceFee());
+        }
+
+        while(orderSheet.getRow(index) != null) {
+            Row row = orderSheet.getRow(index);
+            orderSheet.removeRow(row);
         }
     }
 

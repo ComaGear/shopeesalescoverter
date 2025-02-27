@@ -6,8 +6,10 @@ import java.util.List;
 
 import com.colbertlum.Imputer.SalesImputer;
 import com.colbertlum.cellFactory.SalesCellFactory;
+import com.colbertlum.contentHandler.uomContentHandler;
 import com.colbertlum.entity.MoveOut;
 import com.colbertlum.entity.MoveOutReason;
+import com.colbertlum.entity.UOM;
 
 import javafx.collections.FXCollections;
 import javafx.collections.ObservableList;
@@ -38,12 +40,14 @@ public class SalesImputingController {
     private ObservableList<MoveOutReason> observableMoveOutStatusList;
     private String filterMode;
 
-    public void initDialog(Stage stage){    
+    public void initDialog(Stage stage, Stage prStage){    
         this.stage = stage;
         
         stage.setTitle("sales Imputer");
-        stage.setWidth(1400);
+        stage.setWidth(2000);
         stage.setHeight(600);
+        stage.setX((prStage.getX() + (prStage.getWidth() / 2)) - (stage.getWidth() / 2));
+        stage.setY((prStage.getY() + (prStage.getHeight() / 2)) - (stage.getHeight() / 2));
         stage.setOnCloseRequest(new EventHandler<WindowEvent>() {
 
             @Override
@@ -156,10 +160,12 @@ public class SalesImputingController {
         variationHeaderText.setWrappingWidth(200);
         Text foundRowHeader = new Text("ROW POSITION");
         foundRowHeader.setWrappingWidth(100);
+        Text UOMNameHeader = new Text("UOM NAME");
+        UOMNameHeader.setWrappingWidth(300);
         Text statusHeader = new Text("STATUS");
         statusHeader.setWrappingWidth(100);
 
-        HBox headerHBox = new HBox(skuHeaderText, nameHeaderText, variationHeaderText, foundRowHeader, statusHeader);
+        HBox headerHBox = new HBox(skuHeaderText, nameHeaderText, variationHeaderText, foundRowHeader, UOMNameHeader, statusHeader);
 
         ListView<MoveOutReason> moveOutListView = new ListView<MoveOutReason>();
         SalesCellFactory salesCellFactory = new SalesCellFactory(this.selectedMoveOutStatusList);
