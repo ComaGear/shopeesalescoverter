@@ -12,6 +12,7 @@ import java.util.Map;
 import com.colbertlum.Imputer.Utils.Lookup;
 import com.colbertlum.entity.MoveOut;
 import com.colbertlum.entity.Order;
+import com.colbertlum.entity.ProductStock;
 import com.colbertlum.entity.ReturnMoveOut;
 import com.colbertlum.reporting.CompletedMovementReporting;
 import com.colbertlum.reporting.TempMovementReporting;
@@ -47,7 +48,16 @@ public class OrderService {
         // TODO write all status to inspecting. upsert ShopeeOderReportContentHandler's override method 'appendHanding()' using this method
     }
 
+    private void cleanPending(List<MoveOut> moveOuts) {
+        moveOuts.removeIf(moveOut -> 
+            STATUS_UNPAID.equals(moveOut.getOrder().getStatus()) 
+                || STATUS_TO_SHIP.equals(moveOut.getOrder().getStatus())
+        );
+    }
+
     public void process(List<MoveOut> moveOuts){
+
+        cleanPending(moveOuts);
 
         List<Order> orders = new ArrayList<Order>();
         for(MoveOut moveOut : moveOuts){
@@ -405,7 +415,15 @@ public class OrderService {
         }
     }
 
-    private HashMap<String, Double> calculatePendingOrderStockRequirement(List<MoveOut> moveOuts){
+    public void reduceStockMap(List<ProductStock> stockList, Map<String, Double> toReduceMap) {
+        for(String key : toReduceMap.keySet()) {
+            ProductStock productStock = ProductStock.binarySearch(key, stockList);
+            Double d = productStock.getAvailableStock() - toReduceMap.get(key);
+            productStock.setStock(d);
+        }
+    }
+
+    public Map<String, Double> calculatePendingOrderStockRequirement(List<MoveOut> moveOuts){
 
         HashMap<String, Double> pendingStockReducingMap = new HashMap<String, Double>();
 
@@ -421,11 +439,14 @@ public class OrderService {
         return pendingStockReducingMap;
     }
 
-    public HashMap<String, Double> getReservedDamagedStockQuantity() {
+    public Map<String, Double> getReservedDamagedStockQuantity() {
         List<ReturnMoveOut> returnMoveOuts = orderRepository.getReturnMoveOuts();
         Map<String, Double> map = new HashMap<String, Double>();
         
-        for(returnMoveOuts)
+        for(ReturnMoveOut returnMoveOut : returnMoveOuts){
+            map.put(returnMoveOut.getId(), returnMoveOut.getStatusQuantity());
+        }
+        return map;
     }
 
     public List<Order> getBeingDeliveredOrderList(){

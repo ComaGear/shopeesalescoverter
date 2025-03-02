@@ -12,7 +12,9 @@ import java.time.LocalDateTime;
 import java.time.format.DateTimeFormatter;
 import java.util.ArrayList;
 import java.util.Comparator;
+import java.util.HashMap;
 import java.util.List;
+import java.util.Map;
 import java.util.Properties;
 import java.util.Stack;
 
@@ -45,6 +47,7 @@ import com.colbertlum.entity.Meas;
 import com.colbertlum.entity.MoveOut;
 import com.colbertlum.entity.OnlineSalesInfo;
 import com.colbertlum.entity.Order;
+import com.colbertlum.entity.ProductStock;
 import com.colbertlum.entity.SummaryOrder;
 import com.colbertlum.entity.UOM;
 
@@ -242,7 +245,13 @@ public class ShopeeSalesConvertApplication extends Application {
         return e -> {
             StockImputer stockImputer = null;
             try {
-                stockImputer = new StockImputer(StockReportContentReader.getStockReport(), getMeasList());
+                List<ProductStock> stockReport = StockReportContentReader.getStockReport();
+                OrderService orderService = new OrderService(new OrderRepository(true));
+                orderService.reduceStockMap(stockReport, orderService.getReservedDamagedStockQuantity());
+                Map<String, Double> pendingOrderStockMap = orderService.calculatePendingOrderStockRequirement(getMoveOuts());
+                orderService.reduceStockMap(stockReport, pendingOrderStockMap);
+
+                stockImputer = new StockImputer(stockReport, getMeasList());
             } catch (IOException e1) {
                 Alert alert = new Alert(AlertType.ERROR);
                 alert.setContentText("you must select valid Stock Report File \n that generate from biztory");
@@ -434,35 +443,37 @@ public class ShopeeSalesConvertApplication extends Application {
         // filtering by start and end date.
         if(getProperty(DATA_SOURCE_TYPE).equals(SHOPEE_ORDER)) {
 
-            if(startDate == null || endDate == null){
-                new Alert(AlertType.ERROR, "please choose valid date.", ButtonType.OK).showAndWait();
-                throw new IllegalArgumentException("not valid start or end date");
-            } 
+            // if(startDate == null || endDate == null){
+            //     new Alert(AlertType.ERROR, "please choose valid date.", ButtonType.OK).showAndWait();
+            //     throw new IllegalArgumentException("not valid start or end date");
+            // } 
 
-            if(startDate.isAfter(endDate)){
-                new Alert(AlertType.ERROR, "start date could not greater than end date", ButtonType.OK).showAndWait();
-                throw new IllegalArgumentException("not valid start or end date");
-            } 
+            // if(startDate.isAfter(endDate)){
+            //     new Alert(AlertType.ERROR, "start date could not greater than end date", ButtonType.OK).showAndWait();
+            //     throw new IllegalArgumentException("not valid start or end date");
+            // } 
 
-            ArrayList<MoveOut> newMoveOuts = new ArrayList<MoveOut>();
+            // ArrayList<MoveOut> newMoveOuts = new ArrayList<MoveOut>();
 
-            for(MoveOut moveOut : moveOuts){
+            // for(MoveOut moveOut : moveOuts){
 
-                String status = moveOut.getOrder().getStatus();
-                if(Order.STATUS_UNPAID.equals(status) || Order.STATUS_TO_SHIP.equals(status)){
-                    continue;
-                }
-                LocalDate shipOutDate = moveOut.getOrder().getShipOutDate();
-                if(shipOutDate == null){
-                    continue;
-                }
+            //     String status = moveOut.getOrder().getStatus();
+            //     if(Order.STATUS_UNPAID.equals(status) || Order.STATUS_TO_SHIP.equals(status)){
+            //         continue;
+            //     }
+            //     LocalDate shipOutDate = moveOut.getOrder().getShipOutDate();
+            //     if(shipOutDate == null){
+            //         continue;
+            //     }
 
-                if(shipOutDate.isBefore(startDate) || shipOutDate.isAfter(endDate)){
-                    continue;
-                }
-                newMoveOuts.add(moveOut);
-            }
-            return newMoveOuts;
+            //     if(shipOutDate.isBefore(startDate) || shipOutDate.isAfter(endDate)){
+            //         continue;
+            //     }
+            //     newMoveOuts.add(moveOut);
+            // }
+            // return newMoveOuts;
+
+            return moveOuts;
         }
 
         return moveOuts;
