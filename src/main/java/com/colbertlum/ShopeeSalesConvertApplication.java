@@ -484,6 +484,9 @@ public class ShopeeSalesConvertApplication extends Application {
 
         Menu helpMenu = new Menu("Help");
         menuBar.getMenus().add(helpMenu);
+
+        Menu massUpdateMenu = new Menu("Mass Update");
+        menuBar.getMenus().add(massUpdateMenu);
         
         MenuItem settingMenuItem = new MenuItem("Settings");
         helpMenu.getItems().add(settingMenuItem);
@@ -510,6 +513,12 @@ public class ShopeeSalesConvertApplication extends Application {
                 }
                 
             });
+        });
+
+        MenuItem massUpdateBigSellerStockCountingMenuItem = new MenuItem("massUpdate Stock Count");
+        massUpdateMenu.getItems().add(massUpdateBigSellerStockCountingMenuItem);
+        massUpdateBigSellerStockCountingMenuItem.setOnAction(e -> {
+            
         });
 
         MenuItem handleReturnMenuItem = new MenuItem("handle returning");

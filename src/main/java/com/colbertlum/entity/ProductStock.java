@@ -26,6 +26,8 @@ public class ProductStock {
     }
 
     public static ProductStock binarySearch(String id, List<ProductStock> stockList) {
+        if(id == null) return null;
+ 
         int mid = 0;
         int lo = 0;
         int hi = stockList.size()-1;

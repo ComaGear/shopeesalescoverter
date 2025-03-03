@@ -418,8 +418,10 @@ public class OrderService {
     public void reduceStockMap(List<ProductStock> stockList, Map<String, Double> toReduceMap) {
         for(String key : toReduceMap.keySet()) {
             ProductStock productStock = ProductStock.binarySearch(key, stockList);
-            Double d = productStock.getAvailableStock() - toReduceMap.get(key);
-            productStock.setStock(d);
+            if(productStock != null) {
+                Double d = productStock.getAvailableStock() - toReduceMap.get(key);
+                productStock.setStock(d);
+            }
         }
     }
 

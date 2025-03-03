@@ -4,6 +4,7 @@ import java.util.List;
 
 import com.colbertlum.entity.Meas;
 import com.colbertlum.entity.Order;
+import com.colbertlum.entity.ProductStock;
 import com.colbertlum.entity.ReturnOrder;
 
 public class Lookup {
@@ -63,6 +64,23 @@ public class Lookup {
             else if(list.get(mid).getRelativeId().compareTo(sku) < 0) lo = mid+1;
             else {
                 return list.get(mid);
+            }
+        }
+        return null;
+    }
+
+    public static ProductStock lookupProductStock(String id, List<ProductStock> stockList) {
+        if(id == null) return null;
+    
+        int mid = 0;
+        int lo = 0;
+        int hi = stockList.size()-1;
+        while(lo <= hi){
+            mid = lo + (hi-lo) / 2;
+            if(stockList.get(mid).getId().compareTo(id) > 0) hi = mid-1;
+            else if(stockList.get(mid).getId().compareTo(id) < 0) lo = mid+1;
+            else {
+                return stockList.get(mid);
             }
         }
         return null;
