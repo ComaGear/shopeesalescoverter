@@ -26,7 +26,7 @@ import com.colbertlum.contentHandler.OnlineSalesInfoContentHandler;
 import com.colbertlum.contentHandler.StockReportContentReader;
 import com.colbertlum.entity.Meas;
 import com.colbertlum.entity.OnlineSalesInfo;
-import com.colbertlum.entity.OnlineSalesInfoReason;
+import com.colbertlum.entity.ListingStockReason;
 import com.colbertlum.entity.ProductStock;
 
 public class StockImputerTest {
@@ -47,11 +47,11 @@ public class StockImputerTest {
         try {
             stockImputer.figureStock(onlineSalesInfoList);
         } catch (OnlineSalesInfoException e) {
-            List<OnlineSalesInfoReason> onlineSalesInfoStatusList = e.getOnlineSalesInfoStatusList();
-            for(OnlineSalesInfoReason status : onlineSalesInfoStatusList){
+            List<ListingStockReason> onlineSalesInfoStatusList = e.getOnlineSalesInfoStatusList();
+            for(ListingStockReason status : onlineSalesInfoStatusList){
                 OnlineSalesInfo onlineSalesInfo = status.getOnlineSalesInfo();
                 // onlineSalesInfo.setQuantity(0);
-                stockImputer.updateOnlineSalesInfo(onlineSalesInfo, onlineSalesInfoList);
+                stockImputer.retieveUpdateOnlineSalesInfo(onlineSalesInfo, onlineSalesInfoList);
             }
         }
 
@@ -109,8 +109,8 @@ public class StockImputerTest {
         try {
             stockImputer.figureStock(onlineSalesInfoList);
         } catch (OnlineSalesInfoException e) {
-            List<OnlineSalesInfoReason> onlineSalesInfoStatusList = e.getOnlineSalesInfoStatusList();
-            for(OnlineSalesInfoReason status : onlineSalesInfoStatusList){
+            List<ListingStockReason> onlineSalesInfoStatusList = e.getOnlineSalesInfoStatusList();
+            for(ListingStockReason status : onlineSalesInfoStatusList){
                 assertNotNull(status.getStatus());
                 assertNotNull(status.getOnlineSalesInfo());
             }

@@ -2,17 +2,17 @@ package com.colbertlum.Exception;
 
 import java.util.List;
 
-import com.colbertlum.entity.OnlineSalesInfoReason;
+import com.colbertlum.entity.ListingStockReason;
 
 public class OnlineSalesInfoException extends Exception {
     
-    private final List<OnlineSalesInfoReason> onlineSalesInfoStatusList;
+    private final List<ListingStockReason> onlineSalesInfoStatusList;
 
-    public OnlineSalesInfoException(List<OnlineSalesInfoReason> onlineSalesInfoStatusList) {
+    public OnlineSalesInfoException(List<ListingStockReason> onlineSalesInfoStatusList) {
         this.onlineSalesInfoStatusList = onlineSalesInfoStatusList;
     }
 
-    public List<OnlineSalesInfoReason> getOnlineSalesInfoStatusList() {
+    public List<ListingStockReason> getOnlineSalesInfoStatusList() {
         return onlineSalesInfoStatusList;
     }
 

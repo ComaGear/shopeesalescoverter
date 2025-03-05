@@ -33,7 +33,8 @@ import com.colbertlum.Exception.OnlineSalesInfoException;
 import com.colbertlum.contentHandler.OnlineSalesInfoContentHandler;
 import com.colbertlum.entity.Meas;
 import com.colbertlum.entity.OnlineSalesInfo;
-import com.colbertlum.entity.OnlineSalesInfoReason;
+import com.colbertlum.entity.ListingStock;
+import com.colbertlum.entity.ListingStockReason;
 import com.colbertlum.entity.ProductStock;
 
 public class StockImputer {
@@ -51,36 +52,35 @@ public class StockImputer {
     private Map<String, Double> updateRuleMap;
     private List<ProductStock> productStocks;
     private List<Meas> measList;
-    private List<OnlineSalesInfoReason> infoStatusList;
+    private List<ListingStockReason> infoStatusList;
     
-    public List<OnlineSalesInfo> figureStock(List<OnlineSalesInfo> onlineStocks) throws OnlineSalesInfoException{
+    public List<ListingStock> figureStock(List<ListingStock> listingStocks) throws OnlineSalesInfoException{
         
-        if(infoStatusList == null) infoStatusList = new ArrayList<OnlineSalesInfoReason>();
+        if(infoStatusList == null) infoStatusList = new ArrayList<ListingStockReason>();
         
-        for(OnlineSalesInfo info : onlineStocks){
+        for(ListingStock info : listingStocks){
 
             String sku = info.getSku();
-            if(sku == null) sku = info.getParentSku();
             if(sku == null || sku.isEmpty()){
-                infoStatusList.add(new OnlineSalesInfoReason().setOnlineSalesInfo(info).setStatus(EMPTY_SKU));
+                infoStatusList.add(new ListingStockReason().setOnlineSalesInfo(info).setStatus(EMPTY_SKU));
                 continue;
             }
 
             Meas meas = getMeas(sku);
             if(meas == null){
-                infoStatusList.add(new OnlineSalesInfoReason().setOnlineSalesInfo(info).setStatus(NOT_EXIST_SKU_STATUS));
+                infoStatusList.add(new ListingStockReason().setOnlineSalesInfo(info).setStatus(NOT_EXIST_SKU_STATUS));
                 continue;
             }
 
             ProductStock productStock = getProductStock(meas.getId());
             if(productStock == null && meas.getUpdateRule() != "disc"){
-                infoStatusList.add(new OnlineSalesInfoReason().setOnlineSalesInfo(info).setStatus(NOT_EXIST_PRODUCT_ID_STATUS));
+                infoStatusList.add(new ListingStockReason().setOnlineSalesInfo(info).setStatus(NOT_EXIST_PRODUCT_ID_STATUS));
                 continue;
             }
             
             double updateRuleDouble = 1d;
             if(meas.getUpdateRule() != null && meas.getUpdateRule().equals(SELF_MANUAL_INPUT)){
-                infoStatusList.add(new OnlineSalesInfoReason().setOnlineSalesInfo(info).setStatus(MANUAL_SET_STOCK_STATUS));
+                infoStatusList.add(new ListingStockReason().setOnlineSalesInfo(info).setStatus(MANUAL_SET_STOCK_STATUS));
                 continue;
             }
             try {
@@ -92,9 +92,9 @@ public class StockImputer {
             double availableStock = (productStock.getAvailableStock() / meas.getMeasurement()) * updateRuleDouble;
             if(availableStock > 0) {
                 int floor = (int) Math.floor(availableStock);
-                info.setQuantity(floor);
+                info.setStock(floor);
             }else {
-                info.setQuantity(0);
+                info.setStock(0);
             }
         }
 
@@ -102,112 +102,7 @@ public class StockImputer {
             throw new OnlineSalesInfoException(infoStatusList);
         }
 
-        return onlineStocks;
-    }
-
-    public List<OnlineSalesInfo> getOnlineSalesInfoList(File file) throws IOException{
-        ArrayList<OnlineSalesInfo> onlineSalesInfoList = new ArrayList<OnlineSalesInfo>();
-        try {
-            XSSFReader xssfReader = new XSSFReader(OPCPackage.open(file));
-            OnlineSalesInfoContentHandler contentHandler = new OnlineSalesInfoContentHandler(xssfReader.getSharedStringsTable(), xssfReader.getStylesTable(), onlineSalesInfoList);
-            XMLReader xmlReader = XMLHelper.newXMLReader();
-            xmlReader.setContentHandler(contentHandler);
-            InputSource sheetData = new InputSource(xssfReader.getSheetsData().next());
-            xmlReader.parse(sheetData);
-        } catch (InvalidFormatException e) {
-            e.printStackTrace();
-        } catch (OpenXML4JException e) {
-            e.printStackTrace();
-        } catch (SAXException e) {
-            e.printStackTrace();
-        } catch (ParserConfigurationException e) {
-            e.printStackTrace();
-        }
-
-        return onlineSalesInfoList;
-    }
-
-    public void updateOnlineSalesInfo(OnlineSalesInfo info, List<OnlineSalesInfo> infoList){
-        
-        infoList.sort(new Comparator<OnlineSalesInfo>() {
-
-            @Override
-            public int compare(OnlineSalesInfo o1, OnlineSalesInfo o2) {
-                int compareTo = o1.getProductId().compareTo(o2.getProductId());
-                if(compareTo == 0){
-                    return o1.getVariationId().compareTo(o2.getVariationId());
-                }
-                return compareTo;
-            }
-        });
-
-        int lo = 0;
-        int hi = measList.size()-1;
-        OnlineSalesInfo foundInfo = null;
-
-        while(lo <= hi){
-            int mid = lo + (hi - lo) / 2;
-            if(infoList.get(mid).getProductId().compareTo(info.getProductId()) > 0) hi = mid-1;
-            else if(infoList.get(mid).getProductId().compareTo(info.getProductId()) < 0) lo = mid+1;
-            else {
-                if(infoList.get(mid).getVariationId().compareTo(info.getVariationId()) > 0) hi = mid-1;
-                else if(infoList.get(mid).getVariationId().compareTo(info.getVariationId()) < 0) lo = mid+1;
-                foundInfo = infoList.get(mid);
-                break;
-            }
-        }
-
-        if(foundInfo != null){
-            foundInfo.setQuantity(info.getQuantity());
-            foundInfo.setParentSku(info.getParentSku());
-            String sku = info.getSku();
-            if(sku != null && !sku.isEmpty() && sku.contains("-")){
-                foundInfo.setSku(sku);
-            } else {
-                foundInfo.setParentSku(sku);
-            }
-            foundInfo.setPrice(info.getPrice());
-        }
-    }
-
-    public static void saveOutputToFile(List<OnlineSalesInfo> infoList, File file) throws IOException{
-        FileInputStream fileInputStream = new FileInputStream(file);
-        try (XSSFWorkbook workbook = new XSSFWorkbook(fileInputStream)) {
-            Sheet sheet = workbook.getSheetAt(0);
-            for(OnlineSalesInfo info : infoList){
-                int foundRow = info.getFoundRow();
-                Row row = sheet.getRow(foundRow);
-                Cell cell = row.getCell(0);
-                if(cell == null || !cell.getStringCellValue().equals(info.getProductId())
-                    || row.getCell(2) == null || !row.getCell(2).getStringCellValue().equals(info.getVariationId())){
-                    return;
-                }
-                if(info.getParentSku() != null){
-                    Cell parentSKuCell = row.getCell(4);
-                    if(parentSKuCell == null) parentSKuCell = row.createCell(4);
-                    parentSKuCell.setCellValue(info.getParentSku());
-                } 
-                if(info.getSku() != null){
-                    Cell skuCell = row.getCell(5);
-                    if(skuCell == null) skuCell = row.createCell(5);
-                    skuCell.setCellValue(info.getSku());
-                }
-                Cell priceCell = row.getCell(6);
-                if(priceCell == null) priceCell = row.createCell(6);
-                priceCell.setCellValue(info.getPrice());
-
-                Cell stockCell = row.getCell(7);
-                if(stockCell == null) stockCell = row.createCell(7);
-                stockCell.setCellValue(Double.valueOf(info.getQuantity()));
-            }
-
-            fileInputStream.close();
-
-            FileOutputStream fileOutputStream = new FileOutputStream(file);
-            workbook.write(fileOutputStream);
-            workbook.close();
-            fileOutputStream.close();
-        }
+        return listingStocks;
     }
 
     public Double getUpdateRuleMeasure(String updateRule) throws Throwable{

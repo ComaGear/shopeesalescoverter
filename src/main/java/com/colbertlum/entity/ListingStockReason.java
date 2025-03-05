@@ -1,21 +1,21 @@
 package com.colbertlum.entity;
 
-public class OnlineSalesInfoReason {
+public class ListingStockReason {
 
-    private OnlineSalesInfo info;
+    private ListingStock info;
     private String status;
 
-    public OnlineSalesInfo getOnlineSalesInfo() {
+    public ListingStock getOnlineSalesInfo() {
         return info;
     }
-    public OnlineSalesInfoReason setOnlineSalesInfo(OnlineSalesInfo info) {
+    public ListingStockReason setOnlineSalesInfo(ListingStock info) {
         this.info = info;
         return this;
     }
     public String getStatus() {
         return status;
     }
-    public OnlineSalesInfoReason setStatus(String status) {
+    public ListingStockReason setStatus(String status) {
         this.status = status;
         return this;
     }

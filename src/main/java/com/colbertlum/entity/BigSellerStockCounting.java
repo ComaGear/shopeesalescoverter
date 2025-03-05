@@ -1,28 +1,14 @@
 package com.colbertlum.entity;
 
-public class BigSellerStockCounting {
-    private String SKU; // SKU Name
-    private String ProductName; // Title
+public class BigSellerStockCounting extends ListingStock {
+
     private String Warehouse;
     private String shelf;
     private String Area;
     private int onHand; // On Hand in Big Seller inventory for Merchant SKU 
-    private int stock; // count
     private String note;
     private String imageUrl;
 
-    public String getSKU() {
-        return SKU;
-    }
-    public void setSKU(String sKU) {
-        SKU = sKU;
-    }
-    public String getProductName() {
-        return ProductName;
-    }
-    public void setProductName(String productName) {
-        ProductName = productName;
-    }
     public String getWarehouse() {
         return Warehouse;
     }
@@ -47,12 +33,6 @@ public class BigSellerStockCounting {
     public void setOnHand(int onHand) {
         this.onHand = onHand;
     }
-    public int getStock() {
-        return stock;
-    }
-    public void setStock(int stock) {
-        this.stock = stock;
-    }
     public String getNote() {
         return note;
     }
@@ -65,6 +45,4 @@ public class BigSellerStockCounting {
     public void setImageUrl(String imageUrl) {
         this.imageUrl = imageUrl;
     }
-
-    
 }

@@ -4,10 +4,9 @@ import java.util.ArrayList;
 import java.util.List;
 
 import com.colbertlum.Imputer.StockImputer;
-import com.colbertlum.cellFactory.OnlineSalesInfoStatusCellFactory;
+import com.colbertlum.cellFactory.ListingStockReasonCellFactory;
 
-import com.colbertlum.entity.OnlineSalesInfo;
-import com.colbertlum.entity.OnlineSalesInfoReason;
+import com.colbertlum.entity.ListingStockReason;
 
 import javafx.collections.FXCollections;
 import javafx.collections.ObservableList;
@@ -28,19 +27,19 @@ import javafx.stage.Stage;
 public class StockImputingController {
 
     private Stage imputerStage;
-    private List<OnlineSalesInfoReason> onlineSalesInfoStatusList;
-    private List<OnlineSalesInfoReason> selectOnlineSalesList;
+    private List<ListingStockReason> listingStockReasonList;
+    private List<ListingStockReason> selectOnlineSalesList;
     private MeasImputingController measImputingController;
-    private ObservableList<OnlineSalesInfoReason> observableOnlineInfoList;
-    private ListView<OnlineSalesInfoReason> onlineSalesInfoStatusListView;
+    private ObservableList<ListingStockReason> observableOnlineInfoList;
+    private ListView<ListingStockReason> onlineSalesInfoStatusListView;
 
-    public StockImputingController(Stage imputerStage, List<OnlineSalesInfoReason> onlineSalesInfoStatusList) {
+    public StockImputingController(Stage imputerStage, List<ListingStockReason> listingStockReasonList) {
         this.imputerStage = imputerStage;
         imputerStage.setWidth(1400);
         imputerStage.setHeight(600);
         this.imputerStage.setTitle("Online Sales Info Imputer");
-        this.onlineSalesInfoStatusList = onlineSalesInfoStatusList;
-        this.selectOnlineSalesList = new ArrayList<OnlineSalesInfoReason>();
+        this.listingStockReasonList = listingStockReasonList;
+        this.selectOnlineSalesList = new ArrayList<ListingStockReason>();
         measImputingController = new MeasImputingController();
 
         imputerStage.setOnCloseRequest(e ->{
@@ -50,10 +49,10 @@ public class StockImputingController {
 
     public void initStage() {
         
-        onlineSalesInfoStatusListView = new ListView<OnlineSalesInfoReason>();
-        onlineSalesInfoStatusListView.setCellFactory(new OnlineSalesInfoStatusCellFactory(this.selectOnlineSalesList));
+        onlineSalesInfoStatusListView = new ListView<ListingStockReason>();
+        onlineSalesInfoStatusListView.setCellFactory(new ListingStockReasonCellFactory(this.selectOnlineSalesList));
         observableOnlineInfoList = FXCollections.observableArrayList();
-        observableOnlineInfoList.setAll(this.onlineSalesInfoStatusList);
+        observableOnlineInfoList.setAll(this.listingStockReasonList);
         onlineSalesInfoStatusListView.getItems().setAll(observableOnlineInfoList);
 
         MenuItem emptySkuMenuItem = new MenuItem("empty sku");
@@ -82,16 +81,14 @@ public class StockImputingController {
 
         Button applyMeasButton = new Button("apply To");
         applyMeasButton.setOnAction(a ->{
-            for(OnlineSalesInfoReason status : selectOnlineSalesList) {
+            for(ListingStockReason status : selectOnlineSalesList) {
                 String selectedMeasSku = measImputingController.getSelectedMeasSku();
-                if(selectedMeasSku != null && !selectedMeasSku.isEmpty() && selectedMeasSku.contains("-")){
+                if(selectedMeasSku != null && !selectedMeasSku.isEmpty()){
                     status.getOnlineSalesInfo().setSku(selectedMeasSku);
-                } else if(selectedMeasSku != null && !selectedMeasSku.isEmpty()) {
-                    status.getOnlineSalesInfo().setParentSku(selectedMeasSku);
                 }
-                
+
                 selectOnlineSalesList.clear();
-                refillOnlineListView(new ArrayList<OnlineSalesInfoReason>(observableOnlineInfoList));
+                refillOnlineListView(new ArrayList<ListingStockReason>(observableOnlineInfoList));
             }
         });
 
@@ -108,12 +105,12 @@ public class StockImputingController {
             int stock = Integer.parseInt(stockField.getText());
             stockField.clear();
 
-            for(OnlineSalesInfoReason infoStatus : selectOnlineSalesList){
-                infoStatus.getOnlineSalesInfo().setQuantity(stock);
+            for(ListingStockReason infoStatus : selectOnlineSalesList){
+                infoStatus.getOnlineSalesInfo().setStock(stock);
             }
 
             selectOnlineSalesList.clear();
-            refillOnlineListView(new ArrayList<OnlineSalesInfoReason>(observableOnlineInfoList));
+            refillOnlineListView(new ArrayList<ListingStockReason>(observableOnlineInfoList));
         });
 
         Region onlineListViewOperationSpacer = new Region();
@@ -148,15 +145,15 @@ public class StockImputingController {
         this.imputerStage.setScene(new Scene(new HBox(listViewPanel, measImputingController.generatePanel())));
     }
 
-    private void refillOnlineListView(List<OnlineSalesInfoReason> onlineSalesInfoStatusList) {
+    private void refillOnlineListView(List<ListingStockReason> onlineSalesInfoStatusList) {
         this.observableOnlineInfoList.clear();
         this.observableOnlineInfoList.addAll(onlineSalesInfoStatusList);
         this.onlineSalesInfoStatusListView.setItems(observableOnlineInfoList);
     }
 
-    private List<OnlineSalesInfoReason> filterStatusBy(String string) {
-        ArrayList<OnlineSalesInfoReason> arrayList = new ArrayList<OnlineSalesInfoReason>();
-        for(OnlineSalesInfoReason status : onlineSalesInfoStatusList){
+    private List<ListingStockReason> filterStatusBy(String string) {
+        ArrayList<ListingStockReason> arrayList = new ArrayList<ListingStockReason>();
+        for(ListingStockReason status : listingStockReasonList){
             if(status.getStatus().equals(string)) arrayList.add(status);
         }
         return arrayList;
@@ -166,13 +163,13 @@ public class StockImputingController {
         return imputerStage;
     }
 
-    public List<OnlineSalesInfo> getFixedOnlineInfo() {
-        ArrayList<OnlineSalesInfo> arrayList = new ArrayList<OnlineSalesInfo>();
-        for(OnlineSalesInfoReason infoStatus : this.onlineSalesInfoStatusList){
-            arrayList.add(infoStatus.getOnlineSalesInfo());
-        }
-        return arrayList;
-    }
+    // public List<OnlineSalesInfo> getFixedOnlineInfo() {
+    //     ArrayList<OnlineSalesInfo> arrayList = new ArrayList<OnlineSalesInfo>();
+    //     for(ListingStockReason infoStatus : this.listingStockReasonList){
+    //         arrayList.add(infoStatus.getOnlineSalesInfo());
+    //     }
+    //     return arrayList;
+    // }
 
 
 }

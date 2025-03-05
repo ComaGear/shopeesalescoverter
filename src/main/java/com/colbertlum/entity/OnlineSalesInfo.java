@@ -1,9 +1,7 @@
 package com.colbertlum.entity;
 
-public class OnlineSalesInfo {
+public class OnlineSalesInfo extends ListingStock{
 
-    private String sku;
-    private int quantity;
     private String parentSku;
     private double price;
     private String productId;
@@ -12,6 +10,38 @@ public class OnlineSalesInfo {
     private String productName;
     private String variationName;
     
+
+    @Override
+    public String getName() {
+        return getProductName() + "-" + getVariationName();
+    }
+
+    @Override
+    public void setName(String productName) {
+        String[] split = productName.split("\\-");
+        setProductName(split[0]);
+        setVariationName(split[1]);
+    }
+
+    
+
+    @Override
+    public String getSku() {
+        if(super.getSku() == null) {
+            if(parentSku != null) super.setSku(getParentSku());
+            if(getParentSku() != null) return getParentSku();
+            return "";
+        }
+        return super.getSku();
+    }
+
+    @Override
+    public void setSku(String sku) {
+        if(sku == null && getParentSku() != null) {
+            setSku(getParentSku());
+        }
+        super.setSku(sku);
+    }
 
     public String getProductName() {
         return productName;
@@ -70,20 +100,11 @@ public class OnlineSalesInfo {
     }
 
     public int getQuantity() {
-        return quantity;
+        return super.getStock();
     }
 
     public void setQuantity(int quantity) {
-        this.quantity = quantity;
-    }
-
-    public String getSku() {
-        return sku;
-    }
-
-    public void setSku(String sku) {
-        if(parentSku != null && this.parentSku.equals(sku)) return; 
-        this.sku = sku;
+        super.setStock(quantity);
     }
 
 }
