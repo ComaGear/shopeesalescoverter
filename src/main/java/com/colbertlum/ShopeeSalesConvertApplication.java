@@ -31,6 +31,7 @@ import org.xml.sax.InputSource;
 import org.xml.sax.SAXException;
 import org.xml.sax.XMLReader;
 
+import com.colbertlum.Controller.BigSellerDragMassUpdateStockCountingController;
 import com.colbertlum.Controller.HandleReturnController;
 import com.colbertlum.Controller.MeasImputingController;
 import com.colbertlum.Controller.SalesImputingController;
@@ -522,7 +523,9 @@ public class ShopeeSalesConvertApplication extends Application {
         MenuItem massUpdateBigSellerStockCountingMenuItem = new MenuItem("massUpdate Stock Count");
         massUpdateMenu.getItems().add(massUpdateBigSellerStockCountingMenuItem);
         massUpdateBigSellerStockCountingMenuItem.setOnAction(e -> {
-            
+            BigSellerDragMassUpdateStockCountingController controller = new BigSellerDragMassUpdateStockCountingController();
+            controller.openBigSellerMassUpdateStockCountingDragStage(new Stage(), priStage);
+            Map<String, String>  = controller.getResult();
         });
 
         MenuItem handleReturnMenuItem = new MenuItem("handle returning");
@@ -541,6 +544,25 @@ public class ShopeeSalesConvertApplication extends Application {
 
         return menuBar;
     }
+
+    // private Map<String, String> openBigSellerMassUpdateStockCountingDragStage(Stage stage, Stage prStage) {
+
+    //     stage.setWidth(600);
+    //     stage.setHeight(400);
+    //     stage.setX((prStage.getX() + (prStage.getWidth() / 2)) - (stage.getWidth()));
+    //     stage.setY((prStage.getY() + (prStage.getHeight() / 2)) - (stage.getHeight()));
+
+        
+
+    //     Scene scene = new Scene(new VBox(new HBox(exportFilePane, importFilePane), confirmButton));
+    //     stage.setScene(scene);
+
+    //     stage.setOnCloseRequest((e) -> {
+    //         return null;
+    //     });
+
+    //     stage.showAndWait();
+    // } 
 
     private void pushScene(Scene scene) {
         if(sceneStack == null) sceneStack = new Stack<Scene>();
@@ -738,199 +760,199 @@ public class ShopeeSalesConvertApplication extends Application {
         return new Scene(vBox, 600, 400);
     }
 
-    private void saveOutputToFile(List<MoveOut> moveOuts, List<UOM> uoms, String outputFilePath){
-        XSSFWorkbook workbook = new XSSFWorkbook();
-        XSSFSheet biztorySheet = workbook.createSheet("biztory");
+    // private void saveOutputToFile(List<MoveOut> moveOuts, List<UOM> uoms, String outputFilePath){
+    //     XSSFWorkbook workbook = new XSSFWorkbook();
+    //     XSSFSheet biztorySheet = workbook.createSheet("biztory");
         
 
-        int rowCount = 0;
-        XSSFRow headerRow = biztorySheet.createRow(rowCount++);
-        headerRow.createCell(0).setCellValue("Code");
-        headerRow.createCell(1).setCellValue("Description");
-        headerRow.createCell(2).setCellValue("Qty");
-        headerRow.createCell(3).setCellValue("unit");
-        headerRow.createCell(4).setCellValue("Unit Price");
+    //     int rowCount = 0;
+    //     XSSFRow headerRow = biztorySheet.createRow(rowCount++);
+    //     headerRow.createCell(0).setCellValue("Code");
+    //     headerRow.createCell(1).setCellValue("Description");
+    //     headerRow.createCell(2).setCellValue("Qty");
+    //     headerRow.createCell(3).setCellValue("unit");
+    //     headerRow.createCell(4).setCellValue("Unit Price");
 
-        for(MoveOut moveOut : moveOuts){
+    //     for(MoveOut moveOut : moveOuts){
 
-            if(moveOut.getQuantity() == 0) continue; 
+    //         if(moveOut.getQuantity() == 0) continue; 
 
-            String productName = moveOut.getProductName() + " - " + moveOut.getVariationName();
+    //         String productName = moveOut.getProductName() + " - " + moveOut.getVariationName();
 
-            String characterFilter = "[^\\p{L}\\p{M}\\p{N}\\p{P}\\p{Z}\\p{Cf}\\p{Cs}\\s]";
-            productName = productName.replaceAll(characterFilter,"");
+    //         String characterFilter = "[^\\p{L}\\p{M}\\p{N}\\p{P}\\p{Z}\\p{Cf}\\p{Cs}\\s]";
+    //         productName = productName.replaceAll(characterFilter,"");
 
-            XSSFRow row = biztorySheet.createRow(rowCount++);
-            row.createCell(0).setCellValue(moveOut.getId());
-            row.createCell(1).setCellValue(productName);
-            row.createCell(2).setCellValue(moveOut.getQuantity());
-            row.createCell(3).setCellValue("");
-            row.createCell(4).setCellValue(moveOut.getProductSubTotal() / moveOut.getQuantity());
-        }
+    //         XSSFRow row = biztorySheet.createRow(rowCount++);
+    //         row.createCell(0).setCellValue(moveOut.getId());
+    //         row.createCell(1).setCellValue(productName);
+    //         row.createCell(2).setCellValue(moveOut.getQuantity());
+    //         row.createCell(3).setCellValue("");
+    //         row.createCell(4).setCellValue(moveOut.getProductSubTotal() / moveOut.getQuantity());
+    //     }
 
 
-        XSSFSheet orderDetailSheet = workbook.createSheet("order profit");
-        writeOrderSummarySheet(orderDetailSheet, moveOuts);
+    //     XSSFSheet orderDetailSheet = workbook.createSheet("order profit");
+    //     writeOrderSummarySheet(orderDetailSheet, moveOuts);
 
-        XSSFSheet movementDetailSheet = workbook.createSheet("movement detail");
-        writeProductProfitSummarySheet(movementDetailSheet, moveOuts);
+    //     XSSFSheet movementDetailSheet = workbook.createSheet("movement detail");
+    //     writeProductProfitSummarySheet(movementDetailSheet, moveOuts);
 
-        try{
+    //     try{
             
-            FileOutputStream fileOutputStream = new FileOutputStream(outputFilePath);
-            // FileOutputStream fileOutputStream = new FileOutputStream("C:\\Users\\comag\\Desktop\\" + outputFileNameStr + ".xlsx");
-            workbook.write(fileOutputStream);
+    //         FileOutputStream fileOutputStream = new FileOutputStream(outputFilePath);
+    //         // FileOutputStream fileOutputStream = new FileOutputStream("C:\\Users\\comag\\Desktop\\" + outputFileNameStr + ".xlsx");
+    //         workbook.write(fileOutputStream);
 
-            fileOutputStream.close();
-            workbook.close();
-        }catch(IOException exception){
-            exception.printStackTrace();
-            System.out.println(exception.toString());
-        }
-    }
+    //         fileOutputStream.close();
+    //         workbook.close();
+    //     }catch(IOException exception){
+    //         exception.printStackTrace();
+    //         System.out.println(exception.toString());
+    //     }
+    // }
 
-    private void writeProductProfitSummarySheet(XSSFSheet movementDetailSheet, List<MoveOut> moveOuts) {
+    // private void writeProductProfitSummarySheet(XSSFSheet movementDetailSheet, List<MoveOut> moveOuts) {
 
-        if(this.uoms == null) this.uoms = getIrsUoms();
+    //     if(this.uoms == null) this.uoms = getIrsUoms();
 
-        XSSFRow orderDetailHeaderRow = movementDetailSheet.createRow(0);
-        orderDetailHeaderRow.createCell(0).setCellValue("Order ID");
-        orderDetailHeaderRow.createCell(1).setCellValue("Order Shipout Date");
-        orderDetailHeaderRow.createCell(2).setCellValue("Product ID");
-        orderDetailHeaderRow.createCell(3).setCellValue("Product Name");
-        orderDetailHeaderRow.createCell(4).setCellValue("Qauntity");
-        orderDetailHeaderRow.createCell(5).setCellValue("Cost");
-        orderDetailHeaderRow.createCell(6).setCellValue("SubTotal");
-        orderDetailHeaderRow.createCell(7).setCellValue("SubCost");
-        orderDetailHeaderRow.createCell(8).setCellValue("Profit");
-        orderDetailHeaderRow.createCell(9).setCellValue("Profit Rate");
-        orderDetailHeaderRow.createCell(10).setCellValue("transaction Fee");
-        orderDetailHeaderRow.createCell(11).setCellValue("Service Fee");
-        orderDetailHeaderRow.createCell(12).setCellValue("Commission Fee");
-        orderDetailHeaderRow.createCell(13).setCellValue("Management Fee");
-        orderDetailHeaderRow.createCell(14).setCellValue("Grand Total");
-        orderDetailHeaderRow.createCell(15).setCellValue("Order Shipping Fee");
+    //     XSSFRow orderDetailHeaderRow = movementDetailSheet.createRow(0);
+    //     orderDetailHeaderRow.createCell(0).setCellValue("Order ID");
+    //     orderDetailHeaderRow.createCell(1).setCellValue("Order Shipout Date");
+    //     orderDetailHeaderRow.createCell(2).setCellValue("Product ID");
+    //     orderDetailHeaderRow.createCell(3).setCellValue("Product Name");
+    //     orderDetailHeaderRow.createCell(4).setCellValue("Qauntity");
+    //     orderDetailHeaderRow.createCell(5).setCellValue("Cost");
+    //     orderDetailHeaderRow.createCell(6).setCellValue("SubTotal");
+    //     orderDetailHeaderRow.createCell(7).setCellValue("SubCost");
+    //     orderDetailHeaderRow.createCell(8).setCellValue("Profit");
+    //     orderDetailHeaderRow.createCell(9).setCellValue("Profit Rate");
+    //     orderDetailHeaderRow.createCell(10).setCellValue("transaction Fee");
+    //     orderDetailHeaderRow.createCell(11).setCellValue("Service Fee");
+    //     orderDetailHeaderRow.createCell(12).setCellValue("Commission Fee");
+    //     orderDetailHeaderRow.createCell(13).setCellValue("Management Fee");
+    //     orderDetailHeaderRow.createCell(14).setCellValue("Grand Total");
+    //     orderDetailHeaderRow.createCell(15).setCellValue("Order Shipping Fee");
 
 
-        moveOuts.sort(new Comparator<MoveOut>() {
+    //     moveOuts.sort(new Comparator<MoveOut>() {
 
-            @Override
-            public int compare(MoveOut o1, MoveOut o2) {
-                return o1.getOrder().getId().compareTo(o2.getOrder().getId());
-            }
+    //         @Override
+    //         public int compare(MoveOut o1, MoveOut o2) {
+    //             return o1.getOrder().getId().compareTo(o2.getOrder().getId());
+    //         }
             
-        });
+    //     });
 
-        uoms.removeIf(uom -> (uom.getRate() != 1));
-        int index = 1;
-        for(MoveOut moveOut : moveOuts){
+    //     uoms.removeIf(uom -> (uom.getRate() != 1));
+    //     int index = 1;
+    //     for(MoveOut moveOut : moveOuts){
 
-            UOM uom = null;
-            if(moveOut.getId() != null) {
-                // TODO Why this moveOut using orderID? it should be Meas's id.
-                uom = UOM.binarySearch(moveOut.getId(), uoms); 
-            } else {
-                uom = new UOM();
-                uom.setProductId("");
-                uom.setCostPrice(moveOut.getProductSubTotal() / moveOut.getQuantity());
-            }
+    //         UOM uom = null;
+    //         if(moveOut.getId() != null) {
+    //             // TODO Why this moveOut using orderID? it should be Meas's id.
+    //             uom = UOM.binarySearch(moveOut.getId(), uoms); 
+    //         } else {
+    //             uom = new UOM();
+    //             uom.setProductId("");
+    //             uom.setCostPrice(moveOut.getProductSubTotal() / moveOut.getQuantity());
+    //         }
 
-            XSSFRow row = movementDetailSheet.createRow(index);
-            row.createCell(0).setCellValue(moveOut.getOrder().getId());
-            row.createCell(1).setCellValue(moveOut.getOrder().getShipOutDate());
-            row.createCell(2).setCellValue(moveOut.getId());
-            row.createCell(3).setCellValue(moveOut.getProductName() + "-" + moveOut.getVariationName());
-            row.createCell(4).setCellValue(moveOut.getQuantity());
-            row.createCell(5).setCellValue(uom.getCostPrice());
-            row.createCell(6).setCellValue(moveOut.getProductSubTotal());
-            row.createCell(7).setCellValue(uom.getCostPrice() * moveOut.getQuantity());
-            row.createCell(8).setCellValue(moveOut.getProductSubTotal() - (uom.getCostPrice() * moveOut.getQuantity()));
-            row.createCell(9).setCellValue(1 - ((uom.getCostPrice() * moveOut.getQuantity()) / moveOut.getProductSubTotal()));
-            row.createCell(10).setCellValue(moveOut.getOrder().getTransactionFee());
-            row.createCell(11).setCellValue(moveOut.getOrder().getCommissionFee());
-            row.createCell(12).setCellValue(moveOut.getOrder().getServiceFee());
-            row.createCell(13).setCellValue(moveOut.getOrder().getManagementFee());
-            row.createCell(14).setCellValue(moveOut.getOrder().getOrderTotalAmount());
-            row.createCell(15).setCellValue(moveOut.getOrder().getShippingFee());
+    //         XSSFRow row = movementDetailSheet.createRow(index);
+    //         row.createCell(0).setCellValue(moveOut.getOrder().getId());
+    //         row.createCell(1).setCellValue(moveOut.getOrder().getShipOutDate());
+    //         row.createCell(2).setCellValue(moveOut.getId());
+    //         row.createCell(3).setCellValue(moveOut.getProductName() + "-" + moveOut.getVariationName());
+    //         row.createCell(4).setCellValue(moveOut.getQuantity());
+    //         row.createCell(5).setCellValue(uom.getCostPrice());
+    //         row.createCell(6).setCellValue(moveOut.getProductSubTotal());
+    //         row.createCell(7).setCellValue(uom.getCostPrice() * moveOut.getQuantity());
+    //         row.createCell(8).setCellValue(moveOut.getProductSubTotal() - (uom.getCostPrice() * moveOut.getQuantity()));
+    //         row.createCell(9).setCellValue(1 - ((uom.getCostPrice() * moveOut.getQuantity()) / moveOut.getProductSubTotal()));
+    //         row.createCell(10).setCellValue(moveOut.getOrder().getTransactionFee());
+    //         row.createCell(11).setCellValue(moveOut.getOrder().getCommissionFee());
+    //         row.createCell(12).setCellValue(moveOut.getOrder().getServiceFee());
+    //         row.createCell(13).setCellValue(moveOut.getOrder().getManagementFee());
+    //         row.createCell(14).setCellValue(moveOut.getOrder().getOrderTotalAmount());
+    //         row.createCell(15).setCellValue(moveOut.getOrder().getShippingFee());
 
-            index++;
-        }
-    }
+    //         index++;
+    //     }
+    // }
 
-    private void writeOrderSummarySheet(XSSFSheet orderDetailSheet, List<MoveOut> moveOuts) {
+    // private void writeOrderSummarySheet(XSSFSheet orderDetailSheet, List<MoveOut> moveOuts) {
 
-        if(this.uoms == null) this.uoms = getIrsUoms();
+    //     if(this.uoms == null) this.uoms = getIrsUoms();
 
-        XSSFRow orderDetailHeaderRow = orderDetailSheet.createRow(0);
-        orderDetailHeaderRow.createCell(0).setCellValue("Order ID");
-        orderDetailHeaderRow.createCell(1).setCellValue("Order Shipout Date");
-        orderDetailHeaderRow.createCell(2).setCellValue("Total Amount");
-        orderDetailHeaderRow.createCell(3).setCellValue("Profit");
-        orderDetailHeaderRow.createCell(4).setCellValue("Profit Rate");
+    //     XSSFRow orderDetailHeaderRow = orderDetailSheet.createRow(0);
+    //     orderDetailHeaderRow.createCell(0).setCellValue("Order ID");
+    //     orderDetailHeaderRow.createCell(1).setCellValue("Order Shipout Date");
+    //     orderDetailHeaderRow.createCell(2).setCellValue("Total Amount");
+    //     orderDetailHeaderRow.createCell(3).setCellValue("Profit");
+    //     orderDetailHeaderRow.createCell(4).setCellValue("Profit Rate");
 
-        moveOuts.sort(new Comparator<MoveOut>() {
+    //     moveOuts.sort(new Comparator<MoveOut>() {
 
-            @Override
-            public int compare(MoveOut o1, MoveOut o2) {
-                return o1.getOrder().getId().compareTo(o2.getOrder().getId());
-            }
+    //         @Override
+    //         public int compare(MoveOut o1, MoveOut o2) {
+    //             return o1.getOrder().getId().compareTo(o2.getOrder().getId());
+    //         }
             
-        });
+    //     });
 
 
-        uoms.removeIf(uom -> (uom.getRate() != 1));
-        ArrayList<SummaryOrder> summaryOrders = new ArrayList<SummaryOrder>();
-        uoms.sort(new Comparator<UOM>() {
+    //     uoms.removeIf(uom -> (uom.getRate() != 1));
+    //     ArrayList<SummaryOrder> summaryOrders = new ArrayList<SummaryOrder>();
+    //     uoms.sort(new Comparator<UOM>() {
 
-            @Override
-            public int compare(UOM o1, UOM o2) {
-                return o1.getProductId().toLowerCase().compareTo(o2.getProductId().toLowerCase());
-            }
+    //         @Override
+    //         public int compare(UOM o1, UOM o2) {
+    //             return o1.getProductId().toLowerCase().compareTo(o2.getProductId().toLowerCase());
+    //         }
             
-        });
+    //     });
 
-        for(MoveOut moveOut : moveOuts){
-            SummaryOrder lastOrder = null;
-            if(!summaryOrders.isEmpty()) {
-                lastOrder = summaryOrders.get(summaryOrders.size()-1);
-            } else {
-                lastOrder = new SummaryOrder();
-            }
+    //     for(MoveOut moveOut : moveOuts){
+    //         SummaryOrder lastOrder = null;
+    //         if(!summaryOrders.isEmpty()) {
+    //             lastOrder = summaryOrders.get(summaryOrders.size()-1);
+    //         } else {
+    //             lastOrder = new SummaryOrder();
+    //         }
             
-            UOM uom = null;
-            if(moveOut.getId() != null) {
-                uom = UOM.binarySearch(moveOut.getId(), uoms);
-            } else {
-                uom = new UOM();
-                uom.setProductId("");
-                uom.setCostPrice(moveOut.getPrice());
-            }
-            double moveOutProfit = moveOut.getProductSubTotal() - (uom.getCostPrice() * moveOut.getQuantity());
-            if(lastOrder.getId() != null && lastOrder.getId().equals(moveOut.getOrder().getId())) {
-               lastOrder.setProfit(lastOrder.getProfit() + moveOutProfit);
-               lastOrder.setTotalAmount(lastOrder.getTotalAmount() + moveOut.getProductSubTotal());
-            } else {
-                lastOrder = new SummaryOrder();
-                lastOrder.setId(moveOut.getOrder().getId());
-                lastOrder.setProfit(moveOutProfit);
-                lastOrder.setShipOutDate(moveOut.getOrder().getShipOutDate());
-                lastOrder.setTotalAmount(moveOut.getProductSubTotal());
-                summaryOrders.add(lastOrder);
-            }
+    //         UOM uom = null;
+    //         if(moveOut.getId() != null) {
+    //             uom = UOM.binarySearch(moveOut.getId(), uoms);
+    //         } else {
+    //             uom = new UOM();
+    //             uom.setProductId("");
+    //             uom.setCostPrice(moveOut.getPrice());
+    //         }
+    //         double moveOutProfit = moveOut.getProductSubTotal() - (uom.getCostPrice() * moveOut.getQuantity());
+    //         if(lastOrder.getId() != null && lastOrder.getId().equals(moveOut.getOrder().getId())) {
+    //            lastOrder.setProfit(lastOrder.getProfit() + moveOutProfit);
+    //            lastOrder.setTotalAmount(lastOrder.getTotalAmount() + moveOut.getProductSubTotal());
+    //         } else {
+    //             lastOrder = new SummaryOrder();
+    //             lastOrder.setId(moveOut.getOrder().getId());
+    //             lastOrder.setProfit(moveOutProfit);
+    //             lastOrder.setShipOutDate(moveOut.getOrder().getShipOutDate());
+    //             lastOrder.setTotalAmount(moveOut.getProductSubTotal());
+    //             summaryOrders.add(lastOrder);
+    //         }
             
-        }
+    //     }
 
-        int index = 1;
-        for(SummaryOrder order : summaryOrders){
-            XSSFRow row = orderDetailSheet.createRow(index);
-            row.createCell(0).setCellValue(order.getId());
-            row.createCell(1).setCellValue(order.getShipOutDate());
-            row.createCell(2).setCellValue(order.getTotalAmount());
-            row.createCell(3).setCellValue(order.getProfit());
-            row.createCell(4).setCellValue(order.getProfit() / order.getTotalAmount());
-            index++;
-        }
-    }
+    //     int index = 1;
+    //     for(SummaryOrder order : summaryOrders){
+    //         XSSFRow row = orderDetailSheet.createRow(index);
+    //         row.createCell(0).setCellValue(order.getId());
+    //         row.createCell(1).setCellValue(order.getShipOutDate());
+    //         row.createCell(2).setCellValue(order.getTotalAmount());
+    //         row.createCell(3).setCellValue(order.getProfit());
+    //         row.createCell(4).setCellValue(order.getProfit() / order.getTotalAmount());
+    //         index++;
+    //     }
+    // }
 
     private static Properties getProperties() throws IOException{
         Properties properties;
