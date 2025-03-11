@@ -49,6 +49,7 @@ public class OnlineSalesInfoFactory {
             e.printStackTrace();
         }
 
+        // List<ListingStock> listingStocks = new ArrayList<ListingStock>(onlineSalesInfoList);
         return onlineSalesInfoList;
     }
 
@@ -108,7 +109,16 @@ public class OnlineSalesInfoFactory {
     }
 
     
-    public static void saveOutputToFile(List<OnlineSalesInfo> infoList, File file) throws IOException{
+    public static void saveOutputToFile(List<ListingStock> listingInfoList, File file) throws IOException{
+        if(listingInfoList.isEmpty() && !(listingInfoList.get(0) instanceof OnlineSalesInfo)) {
+            return;
+        }
+        List<OnlineSalesInfo> infoList = new ArrayList<OnlineSalesInfo>(listingInfoList.size());
+        for(ListingStock listingStock : listingInfoList){
+            if(listingStock instanceof OnlineSalesInfo){
+                infoList.add((OnlineSalesInfo) listingStock);
+            }
+        }
         FileInputStream fileInputStream = new FileInputStream(file);
         try (XSSFWorkbook workbook = new XSSFWorkbook(fileInputStream)) {
             Sheet sheet = workbook.getSheetAt(0);

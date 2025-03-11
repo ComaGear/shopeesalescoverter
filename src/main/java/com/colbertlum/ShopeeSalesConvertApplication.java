@@ -38,11 +38,13 @@ import com.colbertlum.Controller.StockImputingController;
 import com.colbertlum.Exception.OnlineSalesInfoException;
 import com.colbertlum.Imputer.MeasImputer;
 import com.colbertlum.Imputer.StockImputer;
+import com.colbertlum.Imputer.Utils.OnlineSalesInfoFactory;
 import com.colbertlum.contentHandler.BigSellerReportContentHandler;
 import com.colbertlum.contentHandler.MeasContentHandler;
 import com.colbertlum.contentHandler.ShopeeOrderReportContentHandler;
 import com.colbertlum.contentHandler.StockReportContentReader;
 import com.colbertlum.contentHandler.uomContentHandler;
+import com.colbertlum.entity.ListingStock;
 import com.colbertlum.entity.Meas;
 import com.colbertlum.entity.MoveOut;
 import com.colbertlum.entity.OnlineSalesInfo;
@@ -259,9 +261,10 @@ public class ShopeeSalesConvertApplication extends Application {
                 return;
             }
 
-            List<OnlineSalesInfo> onlineSalesInfoList;
+            List<ListingStock> onlineSalesInfoList;
             try {
-                onlineSalesInfoList = stockImputer.getOnlineSalesInfoList(new File(getProperty(ONLINE_SALES_PATH)));
+                onlineSalesInfoList = new ArrayList<ListingStock>(
+                    OnlineSalesInfoFactory.getOnlineSalesInfoList(new File(getProperty(ONLINE_SALES_PATH))));
             } catch (IOException e1) {
                 Alert alert = new Alert(AlertType.ERROR);
                 alert.setContentText(e1.getMessage());
@@ -300,7 +303,8 @@ public class ShopeeSalesConvertApplication extends Application {
                 // });
             }
             try {
-                StockImputer.saveOutputToFile(onlineSalesInfoList, new File(getProperty(ONLINE_SALES_PATH)));
+                
+                OnlineSalesInfoFactory.saveOutputToFile(onlineSalesInfoList, new File(getProperty(ONLINE_SALES_PATH)));
                 new Alert(AlertType.INFORMATION, "Online Sales Info Updated", ButtonType.OK).show();
             } catch (IOException e2) {
                 Alert alert = new Alert(AlertType.ERROR);
