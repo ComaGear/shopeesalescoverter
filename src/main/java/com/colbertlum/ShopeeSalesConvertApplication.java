@@ -36,7 +36,7 @@ import com.colbertlum.Controller.HandleReturnController;
 import com.colbertlum.Controller.MeasImputingController;
 import com.colbertlum.Controller.SalesImputingController;
 import com.colbertlum.Controller.StockImputingController;
-import com.colbertlum.Exception.OnlineSalesInfoException;
+import com.colbertlum.Exception.ListingStockException;
 import com.colbertlum.Imputer.MeasImputer;
 import com.colbertlum.Imputer.StockImputer;
 import com.colbertlum.Imputer.Utils.OnlineSalesInfoFactory;
@@ -87,8 +87,10 @@ import javafx.stage.WindowEvent;
 public class ShopeeSalesConvertApplication extends Application {
 
 
-    public static final String BIG_SELLER = "Big Seller";
-    public static final String SHOPEE_ORDER = "Shopee Order";
+    private static final String BIG_SELLER = "Big Seller";
+    private static final String SHOPEE_ORDER = "Shopee Order";
+    private static final String SHOPEE = "Shopee";
+
     public static final String DATA_SOURCE_TYPE = "data-source-type";
     public static final String OUTPUT_PATH = "output-path";
     public static final String MEAS = "meas";
@@ -102,6 +104,9 @@ public class ShopeeSalesConvertApplication extends Application {
     public static final String ORDER_REPOSITORY_PATH = "order_repository_path";
     public static final String OLD_VERSION_CUTOFF_DATE = "old_version_cutoff_date";
     public static final String ORDER_REPOSITORY_REMAIN_AFTER_DATE = "order_repository_remain_after_date";
+    public static final String BIG_SELLER_STOCK_COUNTING_EXPORT_FILE_PATH = "big_seller_stock_counting_export_file_path";
+    public static final String BIG_SELLER_STOCK_COUNTING_IMPORT_FILE_PATH = "big_seller_stock_counting_import_file_path";
+    public static final String STOCK_IMPUTING_MODE = "stock_imputing_mode";
 
     private List<UOM> uoms;
 
@@ -111,8 +116,6 @@ public class ShopeeSalesConvertApplication extends Application {
     private MeasImputer measImputer;
     private Stage dialogStage;
     private StockImputingController stockImputingController;
-    private LocalDate startDate;
-    private LocalDate endDate;
     public static void main(String[] args){
         Application.launch(args);
     }
@@ -156,16 +159,16 @@ public class ShopeeSalesConvertApplication extends Application {
         HBox reportBarBox = new HBox(reportPathHeaderText, reportPathText, reportBarSpacer, selectSalesReportButton);
         reportBarBox.setPadding(new Insets(5));
         
-        DatePicker startDatePicker = new DatePicker(LocalDate.now());
-        DatePicker endDatePicker = new DatePicker(LocalDate.now());
-        startDatePicker.setPrefWidth(120);
-        endDatePicker.setPrefWidth(120);
-        startDatePicker.setOnAction(e ->{
-            startDate = startDatePicker.getValue();
-        });
-        endDatePicker.setOnAction(e ->{
-            endDate = endDatePicker.getValue();
-        });
+        // DatePicker startDatePicker = new DatePicker(LocalDate.now());
+        // DatePicker endDatePicker = new DatePicker(LocalDate.now());
+        // startDatePicker.setPrefWidth(120);
+        // endDatePicker.setPrefWidth(120);
+        // startDatePicker.setOnAction(e ->{
+        //     startDate = startDatePicker.getValue();
+        // });
+        // endDatePicker.setOnAction(e ->{
+        //     endDate = endDatePicker.getValue();
+        // });
 
         // Text startText = new Text("Start Date : ");
         // Text endText = new Text("End Date : ");
@@ -212,7 +215,9 @@ public class ShopeeSalesConvertApplication extends Application {
         });
         Button imputeStockButton = new Button("Impute Stock");
         imputeStockButton.setPrefWidth(400);
-        imputeStockButton.setOnAction(handleImputeAction());
+        imputeStockButton.setOnAction((event) -> {
+            handleStockImputeAction();
+        });
         
         Region onlineMassUpdateBarSpacer = new Region();
         HBox.setHgrow(onlineMassUpdateBarSpacer, Priority.ALWAYS);
@@ -244,76 +249,74 @@ public class ShopeeSalesConvertApplication extends Application {
         });
     }
 
-    private EventHandler<ActionEvent> handleImputeAction() {
-        return e -> {
-            StockImputer stockImputer = null;
-            try {
-                List<ProductStock> stockReport = StockReportContentReader.getStockReport();
-                OrderService orderService = new OrderService(new OrderRepository(true));
-                orderService.reduceStockMap(stockReport, orderService.getReservedDamagedStockQuantity());
-                Map<String, Double> pendingOrderStockMap = orderService.calculatePendingOrderStockRequirement(getMoveOuts());
-                orderService.reduceStockMap(stockReport, pendingOrderStockMap);
+    private void handleStockImputeAction() {
+        StockImputer stockImputer = null;
+        try {
+            List<ProductStock> stockReport = StockReportContentReader.getStockReport();
+            OrderService orderService = new OrderService(new OrderRepository(true));
+            orderService.reduceStockMap(stockReport, orderService.getReservedDamagedStockQuantity());
+            Map<String, Double> pendingOrderStockMap = orderService.calculatePendingOrderStockRequirement(getMoveOuts());
+            orderService.reduceStockMap(stockReport, pendingOrderStockMap);
 
-                stockImputer = new StockImputer(stockReport, getMeasList());
-            } catch (IOException e1) {
-                Alert alert = new Alert(AlertType.ERROR);
-                alert.setContentText("you must select valid Stock Report File \n that generate from biztory");
-                alert.showAndWait();
-                return;
-            }
+            stockImputer = new StockImputer(stockReport, getMeasList());
+        } catch (IOException e1) {
+            Alert alert = new Alert(AlertType.ERROR);
+            alert.setContentText("you must select valid Stock Report File \n that generate from biztory");
+            alert.showAndWait();
+            return;
+        }
 
-            List<ListingStock> onlineSalesInfoList;
-            try {
-                onlineSalesInfoList = new ArrayList<ListingStock>(
-                    OnlineSalesInfoFactory.getOnlineSalesInfoList(new File(getProperty(ONLINE_SALES_PATH))));
-            } catch (IOException e1) {
-                Alert alert = new Alert(AlertType.ERROR);
-                alert.setContentText(e1.getMessage());
-                alert.showAndWait();
-                return;
-            }
+        List<ListingStock> listingStocks;
+        try {
+            if(getProperty(STOCK_IMPUTING_MODE))
+            listingStocks = new ArrayList<ListingStock>(
+                OnlineSalesInfoFactory.getOnlineSalesInfoList(new File(getProperty(ONLINE_SALES_PATH))));
+        } catch (IOException e1) {
+            Alert alert = new Alert(AlertType.ERROR);
+            alert.setContentText(e1.getMessage());
+            alert.showAndWait();
+            return;
+        }
 
-            try {
-                stockImputer.figureStock(onlineSalesInfoList);
-            } catch (OnlineSalesInfoException e1) {
-                Stage imputerStage = new Stage();
-                imputerStage.setX(priStage.getX() + 5);
-                imputerStage.setY(priStage.getY() + 5);
-                stockImputingController = new StockImputingController(imputerStage, e1.getOnlineSalesInfoStatusList());
-                stockImputingController.initStage();
-                stockImputingController.getStage().showAndWait();
+        try {
+            stockImputer.figureStock(listingStocks);
+        } catch (ListingStockException e1) {
+            Stage imputerStage = new Stage();
+            imputerStage.setX(priStage.getX() + 5);
+            imputerStage.setY(priStage.getY() + 5);
+            stockImputingController = new StockImputingController(imputerStage, e1.getListingStockStatusList());
+            stockImputingController.initStage();
+            stockImputingController.getStage().showAndWait();
 
-                // imputerStage.setOnCloseRequest(new EventHandler<WindowEvent>(){
+            // imputerStage.setOnCloseRequest(new EventHandler<WindowEvent>(){
 
-                //     @Override
-                //     public void handle(WindowEvent event) {
-                //         List<OnlineSalesInfo> fixedOnlineInfo = stockImputingController.getFixedOnlineInfo();
-                //         StockImputer stockImputer2 = null;
-                //         try {
-                //             stockImputer2 = new StockImputer(StockReportContentReader.getStockReport(), getMeasList());
-                //         } catch (IOException e) {
-                //             Alert alert = new Alert(AlertType.ERROR);
-                //             alert.setContentText(e.getMessage());
-                //             alert.showAndWait();
-                //         }
-                //         for(OnlineSalesInfo info : fixedOnlineInfo){
-                //             stockImputer2.updateOnlineSalesInfo(info, onlineSalesInfoList);
-                //         }
-                //         new Alert(AlertType.INFORMATION, Integer.toString(fixedOnlineInfo.get(0).getQuantity()), ButtonType.OK).show();
-                //     }
-                // });
-            }
-            try {
-                
-                OnlineSalesInfoFactory.saveOutputToFile(onlineSalesInfoList, new File(getProperty(ONLINE_SALES_PATH)));
-                new Alert(AlertType.INFORMATION, "Online Sales Info Updated", ButtonType.OK).show();
-            } catch (IOException e2) {
-                Alert alert = new Alert(AlertType.ERROR);
-                alert.setContentText(e2.getMessage());
-                alert.showAndWait();
-            }
+            //     @Override
+            //     public void handle(WindowEvent event) {
+            //         List<OnlineSalesInfo> fixedOnlineInfo = stockImputingController.getFixedOnlineInfo();
+            //         StockImputer stockImputer2 = null;
+            //         try {
+            //             stockImputer2 = new StockImputer(StockReportContentReader.getStockReport(), getMeasList());
+            //         } catch (IOException e) {
+            //             Alert alert = new Alert(AlertType.ERROR);
+            //             alert.setContentText(e.getMessage());
+            //             alert.showAndWait();
+            //         }
+            //         for(OnlineSalesInfo info : fixedOnlineInfo){
+            //             stockImputer2.updateOnlineSalesInfo(info, onlineSalesInfoList);
+            //         }
+            //         new Alert(AlertType.INFORMATION, Integer.toString(fixedOnlineInfo.get(0).getQuantity()), ButtonType.OK).show();
+            //     }
+            // });
+        }
+        try {
             
-        };
+            OnlineSalesInfoFactory.saveOutputToFile(listingStocks, new File(getProperty(ONLINE_SALES_PATH)));
+            new Alert(AlertType.INFORMATION, "Online Sales Info Updated", ButtonType.OK).show();
+        } catch (IOException e2) {
+            Alert alert = new Alert(AlertType.ERROR);
+            alert.setContentText(e2.getMessage());
+            alert.showAndWait();
+        }
     }
 
     private List<MoveOut> cutoffBeforeDate(List<MoveOut> moveOuts, LocalDate localDate) {
@@ -525,7 +528,14 @@ public class ShopeeSalesConvertApplication extends Application {
         massUpdateBigSellerStockCountingMenuItem.setOnAction(e -> {
             BigSellerDragMassUpdateStockCountingController controller = new BigSellerDragMassUpdateStockCountingController();
             controller.openBigSellerMassUpdateStockCountingDragStage(new Stage(), priStage);
-            Map<String, String>  = controller.getResult();
+            Map<String, String> results = controller.getResult();
+            if(results.containsKey(BigSellerDragMassUpdateStockCountingController.EXPORT_FILE)
+                && results.containsKey(BigSellerDragMassUpdateStockCountingController.IMPORT_FILE)){
+                saveProperty(BIG_SELLER_STOCK_COUNTING_EXPORT_FILE_PATH, results.get(BigSellerDragMassUpdateStockCountingController.EXPORT_FILE));
+                saveProperty(BIG_SELLER_STOCK_COUNTING_IMPORT_FILE_PATH, results.get(BigSellerDragMassUpdateStockCountingController.IMPORT_FILE));
+
+                handleStockImputeAction();
+            }
         });
 
         MenuItem handleReturnMenuItem = new MenuItem("handle returning");
@@ -621,6 +631,7 @@ public class ShopeeSalesConvertApplication extends Application {
         oldVersionCutOffDateText.setFont(font);
         Text orderRepositoryRemainAfterDateText = new Text("remaining order in repository after date :" + getProperty(ORDER_REPOSITORY_REMAIN_AFTER_DATE));
         orderRepositoryRemainAfterDateText.setFont(font);
+        Text massUpdateListingModeText = new Text("mass update listing stock by " + getProperty(STOCK_IMPUTING_MODE));
         
         FileChooser xlsxFileChooser = new FileChooser();
         xlsxFileChooser.getExtensionFilters().add(new FileChooser.ExtensionFilter("excel File", "*.xlsx"));
@@ -744,6 +755,21 @@ public class ShopeeSalesConvertApplication extends Application {
         DatePicker orderRemainAfterDatePicker = new DatePicker(LocalDate.parse(getProperty(ORDER_REPOSITORY_REMAIN_AFTER_DATE)
             , DateTimeFormatter.ofPattern("yyyy-mm-dd")));
 
+        MenuButton massUpdateModeMenuButton = new MenuButton("Mass Update Listing");
+        massUpdateModeMenuButton.setPrefWidth(buttonWidth);
+        MenuItem bigSellerStockCountingItem = new MenuItem(BIG_SELLER);
+        MenuItem shopeeMapUpdateItem = new MenuItem(SHOPEE);
+        bigSellerStockCountingItem.setOnAction(e ->{
+            saveProperty(STOCK_IMPUTING_MODE, BIG_SELLER);
+            massUpdateListingModeText.setText("mass update listing stock by Big Seller");
+        });
+        shopeeMapUpdateItem.setOnAction(e ->{
+            saveProperty(STOCK_IMPUTING_MODE, SHOPEE);
+            massUpdateListingModeText.setText("pmass update listing stock by Shopee");
+        });
+        massUpdateModeMenuButton.getItems().add(bigSellerStockCountingItem);
+        massUpdateModeMenuButton.getItems().add(shopeeMapUpdateItem);
+
         VBox vBox = new VBox(backButton, 
             measPathText, selectMeasButton,
             uomPathText, selectUomButton, 
@@ -755,7 +781,8 @@ public class ShopeeSalesConvertApplication extends Application {
             creditNotePathText, selectCreditNoteReportFolderPathButton,
             orderRepositoryPathText, selectOrderRepositoryFileButton, generateOrderRepositoryFileButton,
             oldVersionCutOffDateText, cutoffDatePicker,
-            orderRepositoryRemainAfterDateText, orderRemainAfterDatePicker);
+            orderRepositoryRemainAfterDateText, orderRemainAfterDatePicker,
+            massUpdateListingModeText, massUpdateModeMenuButton);
 
         return new Scene(vBox, 600, 400);
     }

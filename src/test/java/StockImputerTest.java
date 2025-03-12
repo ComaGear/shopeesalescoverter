@@ -20,7 +20,7 @@ import org.xml.sax.SAXException;
 import org.xml.sax.XMLReader;
 
 import com.colbertlum.ShopeeSalesConvertApplication;
-import com.colbertlum.Exception.OnlineSalesInfoException;
+import com.colbertlum.Exception.ListingStockException;
 import com.colbertlum.Imputer.StockImputer;
 import com.colbertlum.contentHandler.OnlineSalesInfoContentHandler;
 import com.colbertlum.contentHandler.StockReportContentReader;
@@ -46,8 +46,8 @@ public class StockImputerTest {
         StockImputer stockImputer = new StockImputer(StockReportContentReader.getStockReport(), ShopeeSalesConvertApplication.getMeasList());
         try {
             stockImputer.figureStock(onlineSalesInfoList);
-        } catch (OnlineSalesInfoException e) {
-            List<ListingStockReason> onlineSalesInfoStatusList = e.getOnlineSalesInfoStatusList();
+        } catch (ListingStockException e) {
+            List<ListingStockReason> onlineSalesInfoStatusList = e.getListingStockStatusList();
             for(ListingStockReason status : onlineSalesInfoStatusList){
                 OnlineSalesInfo onlineSalesInfo = status.getOnlineSalesInfo();
                 // onlineSalesInfo.setQuantity(0);
@@ -108,8 +108,8 @@ public class StockImputerTest {
         
         try {
             stockImputer.figureStock(onlineSalesInfoList);
-        } catch (OnlineSalesInfoException e) {
-            List<ListingStockReason> onlineSalesInfoStatusList = e.getOnlineSalesInfoStatusList();
+        } catch (ListingStockException e) {
+            List<ListingStockReason> onlineSalesInfoStatusList = e.getListingStockStatusList();
             for(ListingStockReason status : onlineSalesInfoStatusList){
                 assertNotNull(status.getStatus());
                 assertNotNull(status.getOnlineSalesInfo());

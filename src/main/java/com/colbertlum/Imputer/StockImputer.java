@@ -29,7 +29,7 @@ import org.xml.sax.InputSource;
 import org.xml.sax.SAXException;
 import org.xml.sax.XMLReader;
 
-import com.colbertlum.Exception.OnlineSalesInfoException;
+import com.colbertlum.Exception.ListingStockException;
 import com.colbertlum.contentHandler.OnlineSalesInfoContentHandler;
 import com.colbertlum.entity.Meas;
 import com.colbertlum.entity.OnlineSalesInfo;
@@ -54,7 +54,7 @@ public class StockImputer {
     private List<Meas> measList;
     private List<ListingStockReason> infoStatusList;
     
-    public List<ListingStock> figureStock(List<ListingStock> listingStocks) throws OnlineSalesInfoException{
+    public List<ListingStock> figureStock(List<ListingStock> listingStocks) throws ListingStockException{
         
         if(infoStatusList == null) infoStatusList = new ArrayList<ListingStockReason>();
         
@@ -99,7 +99,7 @@ public class StockImputer {
         }
 
         if(!infoStatusList.isEmpty()){
-            throw new OnlineSalesInfoException(infoStatusList);
+            throw new ListingStockException(infoStatusList);
         }
 
         return listingStocks;
