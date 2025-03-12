@@ -27,20 +27,18 @@ public class ListingStockReasonCellFactory implements Callback<ListView<ListingS
     public ListCell<ListingStockReason> call(ListView<ListingStockReason> param) {
         return new ListCell<>(){
             private DecimalFormat decimalFormat = new DecimalFormat("##.00");
-            private ListingStockReason listStockInfoReason;
 
             @Override
             public void updateItem(ListingStockReason listStockInfoReason, boolean empty){
 
-                ListingStock listingStock = listStockInfoReason.getOnlineSalesInfo();
                 
                 super.updateItem(listStockInfoReason, empty);
-
                 if(listStockInfoReason == null || empty){
                     setText("");
                     setGraphic(null);
                 } else {
-
+                    
+                    ListingStock listingStock = listStockInfoReason.getOnlineSalesInfo();
 
                     CheckBox checkBox = new CheckBox();
                     if(selectOnlineSalesList.contains(listStockInfoReason)) checkBox.setSelected(true);

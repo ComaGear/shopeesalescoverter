@@ -6,17 +6,16 @@ import java.util.Map;
 
 import com.colbertlum.ShopeeSalesConvertApplication;
 
-import javafx.event.EventHandler;
 import javafx.geometry.Pos;
 import javafx.scene.Scene;
 import javafx.scene.control.Button;
-import javafx.scene.input.DragEvent;
 import javafx.scene.input.TransferMode;
 import javafx.scene.layout.HBox;
 import javafx.scene.layout.Pane;
 import javafx.scene.layout.VBox;
 import javafx.scene.text.Font;
 import javafx.scene.text.Text;
+import javafx.scene.text.TextAlignment;
 import javafx.stage.Stage;
 
 public class BigSellerDragMassUpdateStockCountingController {
@@ -30,10 +29,10 @@ public class BigSellerDragMassUpdateStockCountingController {
 
         stage.setWidth(600);
         stage.setHeight(400);
-        stage.setX((prStage.getX() + (prStage.getWidth() / 2)) - (stage.getWidth()));
-        stage.setY((prStage.getY() + (prStage.getHeight() / 2)) - (stage.getHeight()));
+        stage.setX((prStage.getX() + (prStage.getWidth() / 2)) - (stage.getWidth() / 2));
+        stage.setY((prStage.getY() + (prStage.getHeight() / 2)) - (stage.getHeight() / 2));
 
-        Font font = new Font(8);
+        Font font = new Font(12);
 
         
         Text exportFileHeader = new Text("Please drag exported file from Big Seller's stock counting.");
@@ -42,6 +41,12 @@ public class BigSellerDragMassUpdateStockCountingController {
         Text exportFilePathText = new Text(exportFilePath);
         exportFilePathText.setFont(font);
         VBox exportFileVBox = new VBox(exportFileHeader, exportFilePathText);
+        exportFileHeader.setWrappingWidth(240);
+        exportFileHeader.setTextAlignment(TextAlignment.CENTER);
+        exportFileVBox.setPrefWidth(300);
+        exportFileVBox.setPrefHeight(300);
+        exportFilePathText.setWrappingWidth(240);
+        exportFilePathText.setTextAlignment(TextAlignment.CENTER);
         exportFileVBox.setAlignment(Pos.CENTER);
 
         Pane exportFilePane = new Pane(exportFileVBox);
@@ -73,9 +78,15 @@ public class BigSellerDragMassUpdateStockCountingController {
         Text importFilePathText = new Text(importFilePath);
         importFilePathText.setFont(font);
         VBox importFileVBox = new VBox(importFileHeader, importFilePathText);
+        importFileVBox.setPrefWidth(300);
+        importFileVBox.setPrefHeight(300);
+        importFileHeader.setWrappingWidth(240);
+        importFileHeader.setTextAlignment(TextAlignment.CENTER);
+        importFilePathText.setWrappingWidth(240);
+        importFilePathText.setTextAlignment(TextAlignment.CENTER);
         importFileVBox.setAlignment(Pos.CENTER);
 
-        Pane importFilePane = new Pane(exportFileVBox);
+        Pane importFilePane = new Pane(importFileVBox);
         importFilePane.setPrefWidth(300);
         importFilePane.setPrefHeight(300);
         importFilePane.setStyle("-fx-border-color: gray; -fx-border-width: 2; -fx-padding: 20;");

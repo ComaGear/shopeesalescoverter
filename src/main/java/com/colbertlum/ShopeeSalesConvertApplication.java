@@ -39,6 +39,7 @@ import com.colbertlum.Controller.StockImputingController;
 import com.colbertlum.Exception.ListingStockException;
 import com.colbertlum.Imputer.MeasImputer;
 import com.colbertlum.Imputer.StockImputer;
+import com.colbertlum.Imputer.Utils.BigSellerStockCountingFactory;
 import com.colbertlum.Imputer.Utils.OnlineSalesInfoFactory;
 import com.colbertlum.contentHandler.BigSellerReportContentHandler;
 import com.colbertlum.contentHandler.MeasContentHandler;
@@ -87,9 +88,9 @@ import javafx.stage.WindowEvent;
 public class ShopeeSalesConvertApplication extends Application {
 
 
-    private static final String BIG_SELLER = "Big Seller";
-    private static final String SHOPEE_ORDER = "Shopee Order";
-    private static final String SHOPEE = "Shopee";
+    public static final String BIG_SELLER = "Big Seller";
+    public static final String SHOPEE_ORDER = "Shopee Order";
+    public static final String SHOPEE = "Shopee";
 
     public static final String DATA_SOURCE_TYPE = "data-source-type";
     public static final String OUTPUT_PATH = "output-path";
@@ -266,11 +267,15 @@ public class ShopeeSalesConvertApplication extends Application {
             return;
         }
 
-        List<ListingStock> listingStocks;
+        List<ListingStock> listingStocks = null;
         try {
-            if(getProperty(STOCK_IMPUTING_MODE))
-            listingStocks = new ArrayList<ListingStock>(
-                OnlineSalesInfoFactory.getOnlineSalesInfoList(new File(getProperty(ONLINE_SALES_PATH))));
+            if(getProperty(STOCK_IMPUTING_MODE).equals(SHOPEE)) {
+                listingStocks = new ArrayList<ListingStock>(
+                    OnlineSalesInfoFactory.getOnlineSalesInfoList(new File(getProperty(ONLINE_SALES_PATH))));
+            } else if(getProperty(STOCK_IMPUTING_MODE).equals(BIG_SELLER)) {
+                listingStocks = new ArrayList<ListingStock>(
+                    BigSellerStockCountingFactory.getBigSellerStockCountingList(new File(getProperty(BIG_SELLER_STOCK_COUNTING_EXPORT_FILE_PATH))));
+            }
         } catch (IOException e1) {
             Alert alert = new Alert(AlertType.ERROR);
             alert.setContentText(e1.getMessage());
@@ -278,9 +283,12 @@ public class ShopeeSalesConvertApplication extends Application {
             return;
         }
 
+        if(listingStocks == null) return;
+
         try {
             stockImputer.figureStock(listingStocks);
         } catch (ListingStockException e1) {
+
             Stage imputerStage = new Stage();
             imputerStage.setX(priStage.getX() + 5);
             imputerStage.setY(priStage.getY() + 5);
@@ -309,9 +317,13 @@ public class ShopeeSalesConvertApplication extends Application {
             // });
         }
         try {
-            
-            OnlineSalesInfoFactory.saveOutputToFile(listingStocks, new File(getProperty(ONLINE_SALES_PATH)));
-            new Alert(AlertType.INFORMATION, "Online Sales Info Updated", ButtonType.OK).show();
+            if(getProperty(STOCK_IMPUTING_MODE).equals(SHOPEE)) {
+                OnlineSalesInfoFactory.saveOutputToFile(listingStocks, new File(getProperty(ONLINE_SALES_PATH)));
+                new Alert(AlertType.INFORMATION, "Online Sales Info Updated", ButtonType.OK).show();
+            } else if(getProperty(STOCK_IMPUTING_MODE).equals(BIG_SELLER)){
+                BigSellerStockCountingFactory.saveOutputToFile(listingStocks, new File(getProperty(BIG_SELLER_STOCK_COUNTING_IMPORT_FILE_PATH)));
+                new Alert(AlertType.INFORMATION, "Big Seller Stock Counting Updated", ButtonType.OK).show();
+            }
         } catch (IOException e2) {
             Alert alert = new Alert(AlertType.ERROR);
             alert.setContentText(e2.getMessage());

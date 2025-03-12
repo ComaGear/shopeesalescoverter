@@ -113,22 +113,22 @@ public class BigSellerStockCountingFactory {
                 rowNum++;
 
                 Cell skuCell = row.createCell(0);
-                if(info.getSku() != null || !info.getSku().isEmpty()) {
+                if(info.getSku() != null && !info.getSku().isEmpty()) {
                     skuCell.setCellValue(info.getSku());
                 }
 
                 Cell titleCell = row.createCell(1);
-                if(info.getName() != null || !info.getName().isEmpty()) {
+                if(info.getName() != null && !info.getName().isEmpty()) {
                     titleCell.setCellValue(info.getName());
                 }
 
                 Cell warehouseCell = row.createCell(2);
-                if(info.getWarehouse() != null || !info.getWarehouse().isEmpty()) {
+                if(info.getWarehouse() != null && !info.getWarehouse().isEmpty()) {
                     warehouseCell.setCellValue(info.getWarehouse());
                 }
 
                 Cell shelfCell = row.createCell(3);
-                if(info.getShelf() != null || !info.getShelf().isEmpty()) {
+                if(info.getShelf() != null && !info.getShelf().isEmpty()) {
                     shelfCell.setCellValue(info.getShelf());
                 }
 
@@ -141,7 +141,7 @@ public class BigSellerStockCountingFactory {
                 countCell.setCellValue(info.getStock());
 
                 Cell noteCell = row.createCell(7);
-                if(info.getNote() != null || !info.getNote().isEmpty()) {
+                if(info.getNote() != null && !info.getNote().isEmpty()) {
                     noteCell.setCellValue(info.getNote());
                 }
             }
