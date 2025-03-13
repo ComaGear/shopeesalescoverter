@@ -100,6 +100,7 @@ public class ShopeeOrderReportContentHandler extends ContentHandler {
                 order.setOrderCreationDate(LocalDateTime.parse(value, DateTimeFormatter.ofPattern(DATE_PATTERN)).toLocalDate());
                 break;
             case ORDER_COMPLETED_TIME:
+                if(value.isEmpty()) break;
                 order.setOrderCompleteDate(LocalDateTime.parse(value, DateTimeFormatter.ofPattern(DATE_PATTERN)).toLocalDate());
                 break;
             case TRACKING_NUMBER:
