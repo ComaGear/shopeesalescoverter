@@ -81,8 +81,10 @@ public class SalesConverter {
         for(MoveOut moveOut : moveOuts){
             if(moveOut.getSku() == null || moveOut.getSku().isEmpty()){
                 Meas meas = search(moveOut.getProductName(), moveOut.getVariationName(), measList);
-                moveOut.setSku(meas.getRelativeId());
-                advanceFill.add(moveOut);
+                if(meas != null) {
+                    moveOut.setSku(meas.getRelativeId());
+                    advanceFill.add(moveOut);
+                }
             }
         }
 
@@ -145,11 +147,15 @@ public class SalesConverter {
 
         while(lo <= hi) {
             int mid = lo + (hi-lo) / 2;
-            if(measList.get(mid).getOnlineProductName().compareTo(productName) > 0) hi = mid-1; 
-            else if(measList.get(mid).getOnlineProductName().compareTo(productName) < 0) lo = mid+1;
+            String midProductName = measList.get(mid).getOnlineProductName();
+            String midVariationName = measList.get(mid).getOnlineVariationName();
+            if(midProductName == null) midProductName = "";
+            if(midVariationName == null) midVariationName = "";
+            if(midProductName.compareTo(productName) > 0) hi = mid-1; 
+            else if(midProductName.compareTo(productName) < 0) lo = mid+1;
             else{
-                if(measList.get(mid).getOnlineVariationName().compareTo(variationName) > 0) hi = mid-1; 
-                else if(measList.get(mid).getOnlineVariationName().compareTo(variationName) < 0) lo = mid+1;
+                if(midVariationName.compareTo(variationName) > 0) hi = mid-1; 
+                else if(midVariationName.compareTo(variationName) < 0) lo = mid+1;
                 else return measList.get(mid);
             }
         }
