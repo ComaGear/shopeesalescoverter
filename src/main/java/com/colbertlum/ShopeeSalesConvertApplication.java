@@ -18,6 +18,7 @@ import java.util.Map;
 import java.util.Properties;
 import java.util.Stack;
 
+import javax.swing.text.DateFormatter;
 import javax.xml.parsers.ParserConfigurationException;
 
 import org.apache.poi.openxml4j.exceptions.OpenXML4JException;
@@ -342,7 +343,7 @@ public class ShopeeSalesConvertApplication extends Application {
     }
 
     private void processSales() {
-        LocalDate cutoffLocalDate = LocalDate.parse(ShopeeSalesConvertApplication.getProperty(OLD_VERSION_CUTOFF_DATE), DateTimeFormatter.ofPattern("yyyy-mm-dd"));
+        LocalDate cutoffLocalDate = LocalDate.parse(ShopeeSalesConvertApplication.getProperty(OLD_VERSION_CUTOFF_DATE), DateTimeFormatter.ofPattern("yyyy-MM-dd"));
         List<MoveOut> moveOuts = cutoffBeforeDate(getMoveOuts(), cutoffLocalDate);
         
 
