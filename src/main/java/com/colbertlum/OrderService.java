@@ -120,19 +120,16 @@ public class OrderService {
                 shippingMoveOuts.add(moveOut.get());
             }
         }
-        System.out.println(shippingMoveOuts.size());
         for(Order order : shippingOrders){
             for(SoftReference<MoveOut> moveOut : order.getMoveOutList()){
                 shippingMoveOuts.add(moveOut.get());
             }
         }
-        System.out.println(shippingMoveOuts.size());
         for(Order order : newDeliveredOrders) {
             for(SoftReference<MoveOut> moveOut : order.getMoveOutList()) {
                 shippingMoveOuts.add(moveOut.get());
             }
         }
-        System.out.println(shippingMoveOuts.size());
         File tempMovementFile = new File(ShopeeSalesConvertApplication.getProperty(ShopeeSalesConvertApplication.TEMP_MOVEMENT_FILE_PATH));
         TempMovementReporting.reporting(tempMovementFile, new ArrayList<MoveOut>(shippingMoveOuts));
         // save on shipping and delivered order to repository

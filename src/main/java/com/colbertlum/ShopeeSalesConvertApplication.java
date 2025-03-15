@@ -8,26 +8,19 @@ import java.io.FileWriter;
 import java.io.IOException;
 import java.io.InputStream;
 import java.time.LocalDate;
-import java.time.LocalDateTime;
 import java.time.format.DateTimeFormatter;
 import java.util.ArrayList;
-import java.util.Comparator;
-import java.util.HashMap;
 import java.util.List;
 import java.util.Map;
 import java.util.Properties;
 import java.util.Stack;
 
-import javax.swing.text.DateFormatter;
 import javax.xml.parsers.ParserConfigurationException;
 
 import org.apache.poi.openxml4j.exceptions.OpenXML4JException;
 import org.apache.poi.openxml4j.opc.OPCPackage;
 import org.apache.poi.util.XMLHelper;
 import org.apache.poi.xssf.eventusermodel.XSSFReader;
-import org.apache.poi.xssf.usermodel.XSSFRow;
-import org.apache.poi.xssf.usermodel.XSSFSheet;
-import org.apache.poi.xssf.usermodel.XSSFWorkbook;
 import org.xml.sax.InputSource;
 import org.xml.sax.SAXException;
 import org.xml.sax.XMLReader;
@@ -50,25 +43,18 @@ import com.colbertlum.contentHandler.uomContentHandler;
 import com.colbertlum.entity.ListingStock;
 import com.colbertlum.entity.Meas;
 import com.colbertlum.entity.MoveOut;
-import com.colbertlum.entity.OnlineSalesInfo;
-import com.colbertlum.entity.Order;
 import com.colbertlum.entity.ProductStock;
-import com.colbertlum.entity.SummaryOrder;
 import com.colbertlum.entity.UOM;
 
 import javafx.application.Application;
-import javafx.event.ActionEvent;
 import javafx.event.EventHandler;
 import javafx.geometry.Insets;
-import javafx.geometry.Pos;
-import javafx.geometry.Rectangle2D;
 import javafx.scene.Scene;
 import javafx.scene.control.Alert;
 import javafx.scene.control.Alert.AlertType;
 import javafx.scene.control.Button;
 import javafx.scene.control.ButtonType;
 import javafx.scene.control.DatePicker;
-import javafx.scene.control.ListView;
 import javafx.scene.control.Menu;
 import javafx.scene.control.MenuBar;
 import javafx.scene.control.MenuButton;
@@ -111,7 +97,7 @@ public class ShopeeSalesConvertApplication extends Application {
     public static final String BIG_SELLER_STOCK_COUNTING_IMPORT_FILE_PATH = "big_seller_stock_counting_import_file_path";
     public static final String STOCK_IMPUTING_MODE = "stock_imputing_mode";
 
-    private List<UOM> uoms;
+    // private List<UOM> uoms;
 
     private String reportPath = "";
     private Stack<Scene> sceneStack;
@@ -158,11 +144,6 @@ public class ShopeeSalesConvertApplication extends Application {
         });
         selectSalesReportButton.setPrefWidth(100);
         
-        Region reportBarSpacer = new Region();
-        HBox.setHgrow(reportBarSpacer, Priority.ALWAYS);
-        HBox reportBarBox = new HBox(reportPathHeaderText, reportPathText, reportBarSpacer, selectSalesReportButton);
-        reportBarBox.setPadding(new Insets(5));
-        
         // DatePicker startDatePicker = new DatePicker(LocalDate.now());
         // DatePicker endDatePicker = new DatePicker(LocalDate.now());
         // startDatePicker.setPrefWidth(120);
@@ -181,13 +162,13 @@ public class ShopeeSalesConvertApplication extends Application {
         // HBox datePickerHBox = new HBox(startText, startDatePicker, endText, endDatePicker);
         // datePickerHBox.setPadding(new Insets(5));
 
-        TextField outputFileNameTextField = new TextField();
-        LocalDate now = LocalDate.now();
-        String date = now.getYear() + "." + now.getMonthValue() + "." + now.getDayOfMonth();
-        Text outputPathText = new Text(getProperty(OUTPUT_PATH));
-        outputPathText.setFont(font);
-        outputFileNameTextField.setPrefWidth(200);
-        outputFileNameTextField.setText("onlineSalesReport_" + date);
+        // TextField outputFileNameTextField = new TextField();
+        // LocalDate now = LocalDate.now();
+        // String date = now.getYear() + "." + now.getMonthValue() + "." + now.getDayOfMonth();
+        // Text outputPathText = new Text(getProperty(OUTPUT_PATH));
+        // outputPathText.setFont(font);
+        // outputFileNameTextField.setPrefWidth(200);
+        // outputFileNameTextField.setText("onlineSalesReport_" + date);
 
         Button processButton = new Button("PROCESS");
         processButton.setPrefWidth(100);
@@ -198,11 +179,19 @@ public class ShopeeSalesConvertApplication extends Application {
             // if(this.uoms == null) uoms = getIrsUoms();
             // saveOutputToFile(processedMoveOuts, uoms, outputFilePath);
         });
+
+        Region reportBarSpacer = new Region();
+        HBox.setHgrow(reportBarSpacer, Priority.ALWAYS);
+        HBox reportBarBox = new HBox(reportPathHeaderText, reportPathText, reportBarSpacer, selectSalesReportButton, processButton);
+        reportBarBox.setPadding(new Insets(5));
+        reportBarBox.getChildren().forEach((children) -> {
+            HBox.setMargin(children, new Insets(0, 2, 0, 2));
+        });
         
-        Region processBarSpacer = new Region();
-        HBox.setHgrow(processBarSpacer, Priority.ALWAYS);
-        HBox processBarBox = new HBox(outputPathText, outputFileNameTextField, processBarSpacer, processButton);
-        processBarBox.setPadding(new Insets(5));
+        // Region processBarSpacer = new Region();
+        // HBox.setHgrow(processBarSpacer, Priority.ALWAYS);
+        // HBox processBarBox = new HBox(outputPathText, outputFileNameTextField, processBarSpacer, processButton);
+        // processBarBox.setPadding(new Insets(5));
 
         Separator separator = new Separator();
         
@@ -229,12 +218,17 @@ public class ShopeeSalesConvertApplication extends Application {
             new HBox(selectOnlineSalesInfoButton, onlineMassUpdateBarSpacer, imputeStockButton));
         massUpdateBox.setPadding(new Insets(5));
 
+        // performance box
+        // HBox pickerBox = new HBox(startDatePicker, endDatePicker);
+        // HBox performanceBox = new HBox(estimatedProfitText, pendingIncomingText, actualProfitText, actualIncomeText, totalIncomeText);
+        // new VBox(pickerBox);
+
         VBox vBox;
         if(getProperty(DATA_SOURCE_TYPE).equals(SHOPEE_ORDER)) {
             // vBox = new VBox(menuBar, reportBarBox, datePickerHBox, processBarBox, separator, massUpdateBox);
-            vBox = new VBox(menuBar, reportBarBox, processBarBox, separator, massUpdateBox);
+            vBox = new VBox(menuBar, reportBarBox, separator, massUpdateBox);
         } else {
-            vBox = new VBox(menuBar, reportBarBox, processBarBox, separator, massUpdateBox);
+            vBox = new VBox(menuBar, reportBarBox, separator, massUpdateBox);
         }
         Scene scene = new Scene(vBox, 1000, 500);
         

@@ -130,4 +130,12 @@ public class Order {
         this.shippingFee = shippingFee;
     }
 
+    public Order(){
+
+    }
+
+    public Order(String id) {
+        this.setId(id);
+    }
+
 }

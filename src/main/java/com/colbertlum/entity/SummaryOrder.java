@@ -7,6 +7,15 @@ public class SummaryOrder {
     private double profit;
     private double totalAmount;
     private LocalDate shipOutDate;
+    private String status;
+
+    public String getStatus() {
+        return status;
+    }
+
+    public void setStatus(String status) {
+        this.status = status;
+    }
 
     public LocalDate getShipOutDate() {
         return shipOutDate;

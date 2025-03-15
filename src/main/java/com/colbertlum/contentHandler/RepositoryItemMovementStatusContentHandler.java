@@ -9,7 +9,7 @@ import com.colbertlum.entity.MoveOut;
 
 public class RepositoryItemMovementStatusContentHandler extends ContentHandler{
 
-    private static final String ORDER_ID = "Order ID";
+    private static final String ORDER_ID = "Order Id";
     private static final String SKU = "SKU";
     private static final String QUANTITY = "Quantity";
     private static final String PRODUCT_NAME = "Product Name";

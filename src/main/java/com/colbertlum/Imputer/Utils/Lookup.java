@@ -1,5 +1,7 @@
 package com.colbertlum.Imputer.Utils;
 
+import java.util.Collections;
+import java.util.Comparator;
 import java.util.List;
 
 import com.colbertlum.entity.Meas;
@@ -11,13 +13,23 @@ import com.colbertlum.entity.ReturnOrder;
 public class Lookup {
 
     public static Order lookupOrder(List<Order> list, String orderId){
+
+        // int index = Collections.binarySearch(list, new Order(orderId), Comparator.comparing(Order::getId));
+        // return index >= 0 ? list.get(index) : null;
+
+        String o2lo = orderId.toLowerCase();
+
         int mid = 0;
         int lo = 0;
         int hi = list.size()-1;
         while(lo <= hi){
             mid = lo + (hi-lo) / 2;
-            if(list.get(mid).getId().compareTo(orderId) > 0) hi = mid-1;
-            else if(list.get(mid).getId().compareTo(orderId) < 0) lo = mid+1;
+
+            String o1lo = list.get(mid).getId().toLowerCase();
+
+
+            if(o1lo.compareTo(o2lo) > 0) hi = mid-1;
+            else if(o1lo.compareTo(o2lo) < 0) lo = mid+1;
             else {
                 return list.get(mid);
             }

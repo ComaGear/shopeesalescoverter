@@ -179,9 +179,10 @@ public class TempMovementReporting {
         XSSFRow orderDetailHeaderRow = orderDetailSheet.createRow(0);
         orderDetailHeaderRow.createCell(0).setCellValue("Order ID");
         orderDetailHeaderRow.createCell(1).setCellValue("Order Shipout Date");
-        orderDetailHeaderRow.createCell(2).setCellValue("Total Amount");
-        orderDetailHeaderRow.createCell(3).setCellValue("Profit");
-        orderDetailHeaderRow.createCell(4).setCellValue("Profit Rate");
+        orderDetailHeaderRow.createCell(2).setCellValue("Order Status");
+        orderDetailHeaderRow.createCell(3).setCellValue("Total Amount");
+        orderDetailHeaderRow.createCell(4).setCellValue("Profit");
+        orderDetailHeaderRow.createCell(5).setCellValue("Profit Rate");
 
         moveOuts.sort(new Comparator<MoveOut>() {
 
@@ -230,6 +231,7 @@ public class TempMovementReporting {
                 lastOrder.setProfit(moveOutProfit);
                 lastOrder.setShipOutDate(moveOut.getOrder().getShipOutDate());
                 lastOrder.setTotalAmount(moveOut.getProductSubTotal());
+                lastOrder.setStatus(moveOut.getOrder().getStatus());
                 summaryOrders.add(lastOrder);
             }
             
@@ -240,9 +242,10 @@ public class TempMovementReporting {
             XSSFRow row = orderDetailSheet.createRow(index);
             row.createCell(0).setCellValue(order.getId());
             row.createCell(1).setCellValue(DateTimeFormatter.ofPattern(DATE_PATTERN).format(order.getShipOutDate()));
-            row.createCell(2).setCellValue(order.getTotalAmount());
-            row.createCell(3).setCellValue(order.getProfit());
-            row.createCell(4).setCellValue(order.getProfit() / order.getTotalAmount());
+            row.createCell(2).setCellValue(order.getStatus());
+            row.createCell(3).setCellValue(order.getTotalAmount());
+            row.createCell(4).setCellValue(order.getProfit());
+            row.createCell(5).setCellValue(order.getProfit() / order.getTotalAmount());
             index++;
         }
     }

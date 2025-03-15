@@ -124,7 +124,7 @@ public class OrderRepository {
                         xmlReader.setContentHandler(contentHandler);
                         xmlReader.parse(new InputSource(inputStream));
 
-                    } else if(sheetName.equals("Movement")) {
+                    } else if(sheetName.equals("Movements")) {
 
                         RepositoryItemMovementStatusContentHandler contentHandler = new RepositoryItemMovementStatusContentHandler(xssfReader.getSharedStringsTable(), xssfReader.getStylesTable(), moveOutList);
                         xmlReader.setContentHandler(contentHandler);
@@ -151,19 +151,38 @@ public class OrderRepository {
             e.printStackTrace();
         }
 
-        orders.sort((o1, o2) -> {
-            return o1.getId().compareTo(o2.getId());
-        });
+        HashMap<String, List<SoftReference<MoveOut>>> orderIdMap = new HashMap<String, List<SoftReference<MoveOut>>>();
         for(MoveOut moveOut : moveOutList){
-            SoftReference<MoveOut> softMoveOut = new SoftReference<MoveOut>(moveOut);
-            Order lookupOrder = Lookup.lookupOrder(orders, moveOut.getOrderId());
-            if(lookupOrder != null && lookupOrder.getMoveOutList() != null){
-                lookupOrder.getMoveOutList().add(softMoveOut);
-            } else if(lookupOrder != null){
-                lookupOrder.setMoveOutList(new ArrayList<SoftReference<MoveOut>>());
-                lookupOrder.getMoveOutList().add(softMoveOut);
+            if(orderIdMap.containsKey(moveOut.getOrderId())){
+                orderIdMap.get(moveOut.getOrderId()).add(new SoftReference<MoveOut>(moveOut));
+            } else {
+                List<SoftReference<MoveOut>> list = new ArrayList<SoftReference<MoveOut>>();
+                list.add(new SoftReference<MoveOut>(moveOut));
+                orderIdMap.put(moveOut.getOrderId(), list);
             }
         }
+        for(Order order : orders){
+            order.setMoveOutList(orderIdMap.get(order.getId()));
+            for(SoftReference<MoveOut> softMoveOut : order.getMoveOutList()){
+                softMoveOut.get().setOrder(order);
+            }
+        }
+
+        // orders.sort((o1, o2) -> {
+        //     return o1.getId().compareTo(o2.getId());
+        // });
+        
+        // for(MoveOut moveOut : moveOutList){
+        //     SoftReference<MoveOut> softMoveOut = new SoftReference<MoveOut>(moveOut);
+        //     // System.out.println("searching " + moveOut.getOrderId());
+        //     Order lookupOrder = Lookup.lookupOrder(orders, moveOut.getOrderId());
+        //     if(lookupOrder != null && lookupOrder.getMoveOutList() != null){
+        //         if(lookupOrder.getMoveOutList() == null) lookupOrder.setMoveOutList(new ArrayList<SoftReference<MoveOut>>());
+        //         lookupOrder.getMoveOutList().add(softMoveOut);
+        //     } else {
+        //         // System.out.println("not found");
+        //     }
+        // }
         for(Order order : orders){
             if(order.getStatus().equals(OrderService.STATUS_SHIPPING)){
                 shippingOrders.add(order);
@@ -198,10 +217,6 @@ public class OrderRepository {
             returnOrder.setReturnMoveOutList(returnOrderIdMap.get(returnOrder.getId()));
             returnOrders.add(returnOrder);
         }
-
-        if(returnOrderIdMap.isEmpty()) System.out.println("not contained!!");
-        if(orders.isEmpty()) System.out.println("not contained orders!!");
-        
     }
 
     public void createRepositoryFile() throws IOException{
@@ -601,6 +616,13 @@ public class OrderRepository {
     public void addCompletedOrders(List<Order> newCompletedOrders){
         orders.addAll(newCompletedOrders);
         completedOrders.addAll(newCompletedOrders);
+        for(Order order : newCompletedOrders){
+            List<SoftReference<MoveOut>> moveOuts = order.getMoveOutList();
+            for(SoftReference<MoveOut> softMoveOut : moveOuts){
+                MoveOut moveOut = softMoveOut.get();
+                moveOutList.add(moveOut);
+            }
+        }
     }
 
     public void addReturnAfterCompletedOrder(List<Order> newReturnAfterCompletedOrder) {
@@ -669,10 +691,7 @@ public class OrderRepository {
             ReturnMoveOut returnMoveOut = softReturnMoveOut.get();
             toAdd.add(returnMoveOut);
         }
-        System.out.println("toAdd size : " + toAdd.size());
-        System.out.println("returnMoveOuts size : " + returnMoveOuts.size());
         returnMoveOuts.addAll(toAdd);
-        System.out.println("returnMoveOuts size : " + returnMoveOuts.size());
     }
 
     public void removeReturnMoveOutsAsSortReference(List<SoftReference<ReturnMoveOut>> returnMoveOutList) {

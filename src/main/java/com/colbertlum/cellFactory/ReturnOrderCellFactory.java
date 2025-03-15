@@ -1,12 +1,9 @@
 package com.colbertlum.cellFactory;
 
-import java.time.LocalDateTime;
 import java.time.format.DateTimeFormatter;
 import java.util.List;
 
 import com.colbertlum.HandleOpenOrderFormListener;
-import com.colbertlum.Controller.HandleReturnController;
-import com.colbertlum.Imputer.Utils.Lookup;
 import com.colbertlum.entity.Order;
 import com.colbertlum.entity.ReturnMoveOut;
 import com.colbertlum.entity.ReturnOrder;
@@ -24,7 +21,6 @@ import javafx.util.Callback;
 
 public class ReturnOrderCellFactory implements Callback<ListView<ReturnOrder>, ListCell<ReturnOrder>> {
 
-    private List<ReturnMoveOut> returnMoveOuts;
     private HandleOpenOrderFormListener handler;
 
     private static final String DATE_PATTERN = "yyyy-MM-dd";
