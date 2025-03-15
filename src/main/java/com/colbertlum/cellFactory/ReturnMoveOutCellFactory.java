@@ -47,6 +47,7 @@ public class ReturnMoveOutCellFactory implements Callback<ListView<ReturnMoveOut
                 productDescriptionText.setWrappingWidth(250);
                 skuText.setWrappingWidth(120);
                 quantityText.setWrappingWidth(50);
+                returnStatus.setPrefWidth(120);
                 returnQuantityTextFileField.setPrefWidth(50);
 
                 returnStatus.getItems().add(returningMenuItem);

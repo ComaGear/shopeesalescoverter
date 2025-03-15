@@ -333,14 +333,13 @@ public class HandleReturnController implements HandleOpenOrderFormListener {
         Text productDescriptionHeaderText = new Text("Description");
         Text skuHeaderText = new Text("SKU");
         Text quantityHeaderText = new Text("Quantity");
-
         Text returnTypeHeaderText = new Text("Return Type");
         Text returnQuantityHeaderText = new Text("to Return QTY");
         productDescriptionHeaderText.setWrappingWidth(250);
         HBox.setMargin(productDescriptionHeaderText, new Insets(0, 0,0, 17));
         skuHeaderText.setWrappingWidth(120);
         quantityHeaderText.setWrappingWidth(50);
-        returnTypeHeaderText.setWrappingWidth(0);
+        returnTypeHeaderText.setWrappingWidth(120);
         returnQuantityHeaderText.setWrappingWidth(100);
         
         HBox listViewHeaderHBox = new HBox(productDescriptionHeaderText, skuHeaderText, quantityHeaderText, returnTypeHeaderText, returnQuantityHeaderText);
