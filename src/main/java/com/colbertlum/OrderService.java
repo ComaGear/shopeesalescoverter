@@ -171,16 +171,14 @@ public class OrderService {
     private List<Order> lookupOrderNotYetOnCompletedInRepository(List<Order> orders, OrderRepository orderRepository){
         ArrayList<Order> previousNotyetOnCompleted = new ArrayList<Order>();
 
-        List<Order> completedOrders = new ArrayList<Order>(orderRepository.getShippingOrders());
+        List<Order> completedOrders = new ArrayList<Order>(orderRepository.getCompletedOrders());
         completedOrders.sort((o1, o2) ->{
             return o1.getId().compareTo(o2.getId());
         });
         for(Order order : orders){
             Order lookupOrder = Lookup.lookupOrder(completedOrders, order.getId());
             if(lookupOrder == null){
-                previousNotyetOnCompleted.add(lookupOrder);
-            } else if (STATUS_SHIPPING.equals(lookupOrder.getStatus())){
-                previousNotyetOnCompleted.add(lookupOrder);
+                previousNotyetOnCompleted.add(order);
             }
         }
 
@@ -198,7 +196,7 @@ public class OrderService {
         for(Order order : orders){
             Order lookupOrder = Lookup.lookupOrder(shippingOrders, order.getId());
             if(lookupOrder == null){
-                previousNotYetOnShippingOrder.add(lookupOrder);
+                previousNotYetOnShippingOrder.add(order);
             } else if (STATUS_SHIPPING.equals(lookupOrder.getStatus())){
                 previousNotYetOnShippingOrder.add(lookupOrder);
             }
@@ -227,7 +225,7 @@ public class OrderService {
         ArrayList<Order> newReceivedOrders = new ArrayList<Order>();
         for(int i = 0; i < beingReceivedOrderList.size(); i++){
             Order lookupOrder = Lookup.lookupOrder(completedOrdersInRepository, beingReceivedOrderList.get(i).getId());
-            if(lookupOrder == null){
+            if(lookupOrder == null && beingReceivedOrderList.get(i) != null){
                 newReceivedOrders.add(beingReceivedOrderList.get(i));
             }
         }
@@ -292,7 +290,7 @@ public class OrderService {
 
     private List<Order> figureOutNewInReturnAfterCompletedOrder(OrderRepository orderRepository) {
 
-        if(beingReturningAfterCompleteOrderList == null) return new ArrayList<>();
+        // if(beingReturningAfterCompleteOrderList == null) return new ArrayList<>();
 
         ArrayList<Order> newInReturnAfterCompletedOrder = new ArrayList<Order>();
        
@@ -309,7 +307,7 @@ public class OrderService {
         beingReturningAfterCompleteOrderList.sort(comparator);
         for(Order order : beingReturningAfterCompleteOrderList){
             Order lookupOrder = Lookup.lookupOrder(repositoryReturnAfterCompletedOrders, order.getId());
-            if(lookupOrder != null){
+            if(lookupOrder == null){
                 newInReturnAfterCompletedOrder.add(order);
             }
         }
@@ -367,7 +365,7 @@ public class OrderService {
         // int repositoryIndex = 0;
         for(int i = 0; i < beingCompleteOrderList.size(); i++){
             Order lookupOrder = Lookup.lookupOrder(completedOrdersInRepository, beingCompleteOrderList.get(i).getId());
-            if(lookupOrder == null){
+            if(lookupOrder == null && beingCompleteOrderList.get(i) != null){
                 newCompletedOrders.add(beingCompleteOrderList.get(i));
             }
         }
@@ -483,6 +481,8 @@ public class OrderService {
         this.beingShippingOrderList = new ArrayList<Order>();
         this.beingReturningAfterShippingOrderList = new ArrayList<Order>();
         this.beingReturningAfterCompleteOrderList = new ArrayList<Order>();
+        this.beingReceivedOrderList = new ArrayList<Order>();
+        this.beingDeliveredOrderList = new ArrayList<Order>();
         this.beingPendingOrderList = new ArrayList<Order>();
 
         this.orderRepository = orderRepository;

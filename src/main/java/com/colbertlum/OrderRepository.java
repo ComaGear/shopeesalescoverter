@@ -79,9 +79,7 @@ public class OrderRepository {
         return returnAfterCompletedOrders;
     }
 
-    public void addCompletedOrders(List<Order> newCompletedOrders){
-        completedOrders.addAll(newCompletedOrders);
-    }
+
     
     public List<Order> getShippingOrders() {
         return shippingOrders;
@@ -94,6 +92,7 @@ public class OrderRepository {
 
         File file = new File(ShopeeSalesConvertApplication.getProperty(ShopeeSalesConvertApplication.ORDER_REPOSITORY_PATH));
         
+        
         orders = new ArrayList<Order>();
         shippingOrders = new ArrayList<Order>();
         completedOrders = new ArrayList<Order>();
@@ -105,18 +104,23 @@ public class OrderRepository {
         returnOrders = new ArrayList<ReturnOrder>();
 
         try {
+            if(!file.exists()) {
+                createRepositoryFile();
+            }
+
             XSSFReader xssfReader = new XSSFReader(OPCPackage.open(file));
             // MeasContentHandler contentHandler = new MeasContentHandler(xssfReader.getSharedStringsTable(), xssfReader.getStylesTable(),
             //     measList);
-            XMLReader xmlReader = XMLHelper.newXMLReader();
             // xmlReader.setContentHandler(contentHandler);
             Iterator<InputStream> inputIterator = xssfReader.getSheetsData();
             if(inputIterator instanceof XSSFReader.SheetIterator){
-                XSSFReader.SheetIterator sheetIterator = (SheetIterator) inputIterator;
+
+                XSSFReader.SheetIterator sheetIterator = (XSSFReader.SheetIterator) inputIterator;
                 while (sheetIterator.hasNext()) {
                     InputStream inputStream = sheetIterator.next();
                     String sheetName = sheetIterator.getSheetName();
-                    if(sheetName.equals("Order Status")){
+                    XMLReader xmlReader = XMLHelper.newXMLReader();
+                    if(sheetName.equals("Orders")){
 
                         RepositoryOrderStatusContentHandler contentHandler = new RepositoryOrderStatusContentHandler(xssfReader.getSharedStringsTable(), xssfReader.getStylesTable(), orders);
                         xmlReader.setContentHandler(contentHandler);
@@ -128,13 +132,14 @@ public class OrderRepository {
                         xmlReader.setContentHandler(contentHandler);
                         xmlReader.parse(new InputSource(inputStream));
 
-                    } else if(sheetName.equals("Return Movement")){
+                    } else if(sheetName.equals("Return Movements")){
 
                         RepositoryReturnMovementContentHandler contentHandler = new RepositoryReturnMovementContentHandler(xssfReader.getSharedStringsTable(), xssfReader.getStylesTable(), returnMoveOuts);
                         xmlReader.setContentHandler(contentHandler);
                         xmlReader.parse(new InputSource(inputStream));
-                        
+                                                
                     }
+                    inputStream.close();
                 }
             }
         } catch (IOException | OpenXML4JException e) {
@@ -195,6 +200,9 @@ public class OrderRepository {
             returnOrder.setReturnMoveOutList(returnOrderIdMap.get(returnOrder.getId()));
             returnOrders.add(returnOrder);
         }
+
+        if(returnOrderIdMap.isEmpty()) System.out.println("not contained!!");
+        if(orders.isEmpty()) System.out.println("not contained orders!!");
         
     }
 
@@ -342,6 +350,9 @@ public class OrderRepository {
         }
 
         File file = new File(ShopeeSalesConvertApplication.getProperty(ShopeeSalesConvertApplication.ORDER_REPOSITORY_PATH));
+
+        if(!file.exists()) createRepositoryFile();
+
         FileInputStream fileInputStream = new FileInputStream(file);
         XSSFWorkbook workbook = (XSSFWorkbook) WorkbookFactory.create(fileInputStream);
         XSSFSheet orderSheet = workbook.getSheetAt(0);
@@ -559,6 +570,11 @@ public class OrderRepository {
         }
         returnMoveOuts.addAll(returningMoveOuts);
         this.moveOutList.addAll(moveOuts);
+    }
+
+    public void addCompletedOrders(List<Order> newCompletedOrders){
+        orders.addAll(newCompletedOrders);
+        completedOrders.addAll(newCompletedOrders);
     }
 
     public void addReturnAfterCompletedOrder(List<Order> newReturnAfterCompletedOrder) {

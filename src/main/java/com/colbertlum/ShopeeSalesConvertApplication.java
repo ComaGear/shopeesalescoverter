@@ -73,6 +73,7 @@ import javafx.scene.control.Menu;
 import javafx.scene.control.MenuBar;
 import javafx.scene.control.MenuButton;
 import javafx.scene.control.MenuItem;
+import javafx.scene.control.ScrollPane;
 import javafx.scene.control.Separator;
 import javafx.scene.control.TextField;
 import javafx.scene.layout.HBox;
@@ -118,6 +119,7 @@ public class ShopeeSalesConvertApplication extends Application {
     private MeasImputer measImputer;
     private Stage dialogStage;
     private StockImputingController stockImputingController;
+    private String DATE_PATTERN = "yyyy-MM-dd";
     public static void main(String[] args){
         Application.launch(args);
     }
@@ -757,16 +759,16 @@ public class ShopeeSalesConvertApplication extends Application {
         });
 
         if(getProperty(OLD_VERSION_CUTOFF_DATE) == null || getProperty(OLD_VERSION_CUTOFF_DATE).isEmpty()){
-            saveProperty(OLD_VERSION_CUTOFF_DATE, LocalDate.now().format(DateTimeFormatter.ofPattern("yyyy-mm-dd")));
+            saveProperty(OLD_VERSION_CUTOFF_DATE, LocalDate.now().format(DateTimeFormatter.ofPattern(DATE_PATTERN)));
         }
         DatePicker cutoffDatePicker = new DatePicker(LocalDate.parse(getProperty(OLD_VERSION_CUTOFF_DATE)
-            , DateTimeFormatter.ofPattern("yyyy-mm-dd")));
+            , DateTimeFormatter.ofPattern(DATE_PATTERN)));
 
         if(getProperty(ORDER_REPOSITORY_REMAIN_AFTER_DATE) == null || getProperty(ORDER_REPOSITORY_REMAIN_AFTER_DATE).isEmpty()){
-                saveProperty(ORDER_REPOSITORY_REMAIN_AFTER_DATE, LocalDate.now().format(DateTimeFormatter.ofPattern("yyyy-mm-dd")));
+                saveProperty(ORDER_REPOSITORY_REMAIN_AFTER_DATE, LocalDate.now().format(DateTimeFormatter.ofPattern(DATE_PATTERN)));
             }
         DatePicker orderRemainAfterDatePicker = new DatePicker(LocalDate.parse(getProperty(ORDER_REPOSITORY_REMAIN_AFTER_DATE)
-            , DateTimeFormatter.ofPattern("yyyy-mm-dd")));
+            , DateTimeFormatter.ofPattern(DATE_PATTERN)));
 
         MenuButton massUpdateModeMenuButton = new MenuButton("Mass Update Listing");
         massUpdateModeMenuButton.setPrefWidth(buttonWidth);
@@ -797,7 +799,7 @@ public class ShopeeSalesConvertApplication extends Application {
             orderRepositoryRemainAfterDateText, orderRemainAfterDatePicker,
             massUpdateListingModeText, massUpdateModeMenuButton);
 
-        return new Scene(vBox, 600, 400);
+        return new Scene(new ScrollPane(vBox), 600, 400);
     }
 
     // private void saveOutputToFile(List<MoveOut> moveOuts, List<UOM> uoms, String outputFilePath){

@@ -39,7 +39,7 @@ import javafx.scene.text.Text;
 import javafx.stage.Stage;
 import javafx.stage.WindowEvent;
 
-public class HandleReturnController {
+public class HandleReturnController implements HandleOpenOrderFormListener {
     
     private static final String FILTED_BY_ALL = "All";
     private static final String FILTED_BY_RETURN_REFUND = "Return/Refund";
@@ -59,15 +59,18 @@ public class HandleReturnController {
     private Scene generatePanel(){
 
         TextField scaningSearchBar = new TextField();
+        HBox.setMargin(scaningSearchBar, new Insets(5));
 
         MenuButton filterOrderMenuButton = new MenuButton("filter by All");
         filterOrderMenuButton.setPrefWidth(100);
+        HBox.setMargin(filterOrderMenuButton, new Insets(5));
         MenuItem filterByAllItem = new MenuItem(FILTED_BY_ALL);
         MenuItem filteringRequestReturnRefundMenuItem = new MenuItem(FILTED_BY_RETURN_REFUND);
         MenuItem filteringByIncompletedMenuItem = new MenuItem(INCOMPLETED_RETURN);
         filterOrderMenuButton.getItems().add(filterByAllItem);
         filterOrderMenuButton.getItems().add(filteringRequestReturnRefundMenuItem);
         filterOrderMenuButton.getItems().add(filteringByIncompletedMenuItem);
+        filterMode = FILTED_BY_ALL;
         filterByAllItem.setOnAction((e) -> {
             filterOrderMenuButton.setText("filter by All");
             filterMode = FILTED_BY_ALL;
@@ -113,18 +116,23 @@ public class HandleReturnController {
 
         HBox headerPanel = new HBox(filterOrderMenuButton, scaningSearchBar);
 
+        Text orderIdColumnHeader = new Text("Order ID");
+        orderIdColumnHeader.setWrappingWidth(155);
+        Text shipOutDateColumnHeader = new Text("Ship Out Date");
+        shipOutDateColumnHeader.setWrappingWidth(100);
+        Text completedDateColumnHeader = new Text("Completed Date");
+        completedDateColumnHeader.setWrappingWidth(100);
+        Text reasonColumnHeader = new Text("Reason");
+        reasonColumnHeader.setWrappingWidth(150);
+        HBox listViewHeader = new HBox(orderIdColumnHeader, shipOutDateColumnHeader, completedDateColumnHeader, reasonColumnHeader);
+        listViewHeader.getChildren().forEach((child) -> HBox.setMargin(child, new Insets(5)));
+
         returnOrderListView = new ListView<ReturnOrder>();
-        ReturnOrderCellFactory returnOrderCellFactory = new ReturnOrderCellFactory(new HandleOpenOrderFormListener() {
-            @Override
-            public void handleOrder(String orderId){
-                ReturnOrder order = imputer.getOrder(orderId);
-                if(order != null) openReturnMovementHandleScene(order);
-            }
-        });
+        ReturnOrderCellFactory returnOrderCellFactory = new ReturnOrderCellFactory(this);
         returnOrderListView.setCellFactory(returnOrderCellFactory);
         refillOrderListView(imputer.getReturnOrderList());
 
-        Scene mainScene = new Scene(new VBox(headerPanel, returnOrderListView));
+        Scene mainScene = new Scene(new VBox(headerPanel, listViewHeader, returnOrderListView));
 
         return mainScene;
     }
@@ -163,6 +171,10 @@ public class HandleReturnController {
 
 
     private void openReturnMovementHandleScene(ReturnOrder returnOrder){
+
+        System.out.println("open return movement");
+
+        this.observableReturnMoveOutList = FXCollections.observableArrayList();
         
         ArrayList<ReturnMoveOut> returnMoveOuts = new ArrayList<ReturnMoveOut>();
         ReturnOrder cloneReturnOrder = returnOrder.clone(returnMoveOuts);
@@ -316,22 +328,26 @@ public class HandleReturnController {
         HBox.setHgrow(spacer, Priority.ALWAYS);
 
         HBox headerPanel = new HBox(orderIdText, scaningSearchBar, spacer, backButton, saveButton);
-        headerPanel.setPadding(new Insets(10, 10, 10, 10));
+        headerPanel.setPadding(new Insets(5, 5, 5, 5));
 
         Text productDescriptionHeaderText = new Text("Description");
         Text skuHeaderText = new Text("SKU");
         Text quantityHeaderText = new Text("Quantity");
+
+        Text returnTypeHeaderText = new Text("Return Type");
         Text returnQuantityHeaderText = new Text("to Return QTY");
-        productDescriptionHeaderText.setWrappingWidth(137);
-        skuHeaderText.setWrappingWidth(90);
-        quantityHeaderText.setWrappingWidth(30);
-        returnQuantityHeaderText.setWrappingWidth(50);
+        productDescriptionHeaderText.setWrappingWidth(250);
+        HBox.setMargin(productDescriptionHeaderText, new Insets(0, 0,0, 17));
+        skuHeaderText.setWrappingWidth(120);
+        quantityHeaderText.setWrappingWidth(50);
+        returnTypeHeaderText.setWrappingWidth(0);
+        returnQuantityHeaderText.setWrappingWidth(100);
         
-        HBox listViewHeaderHBox = new HBox(productDescriptionHeaderText, skuHeaderText, quantityHeaderText, returnQuantityHeaderText);
+        HBox listViewHeaderHBox = new HBox(productDescriptionHeaderText, skuHeaderText, quantityHeaderText, returnTypeHeaderText, returnQuantityHeaderText);
 
         
         Scene subScene = new Scene(new VBox(headerPanel, listViewHeaderHBox, returnMovementListView, saveButton));
-        subScene.getStylesheets().add(getClass().getResource("copiable-text.css").toExternalForm());
+        subScene.getStylesheets().add(getClass().getResource("/copiable-text.css").toExternalForm());
         
         subScene.addEventFilter(KeyEvent.KEY_PRESSED, new EventHandler<KeyEvent>() {
             final KeyCombination saveKeyCombination = new KeyCodeCombination(KeyCode.S, KeyCombination.CONTROL_ANY);
@@ -473,5 +489,12 @@ public class HandleReturnController {
 
     public HandleReturnController(){
         this.imputer = new HandleReturnImputer();
+    }
+
+    @Override
+    public void handleOrder(String orderId) {
+        System.out.println("handling!!  " + orderId);
+        ReturnOrder order = imputer.getOrder(orderId);
+        if(order != null) openReturnMovementHandleScene(order);
     }
 }

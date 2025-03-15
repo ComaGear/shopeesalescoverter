@@ -1,6 +1,6 @@
 package com.colbertlum.contentHandler;
 
-import java.time.LocalDateTime;
+import java.time.LocalDate;
 import java.time.format.DateTimeFormatter;
 import java.util.List;
 
@@ -11,9 +11,9 @@ import com.colbertlum.entity.Order;
 
 public class RepositoryOrderStatusContentHandler extends ContentHandler {
 
-    private static final String DATE_PATTERN = "yyyy-MM-dd HH:mm";
+    private static final String DATE_PATTERN = "yyyy-MM-dd";
 
-    private static final String ORDER_ID = "Order ID";
+    private static final String ORDER_ID = "Order Id";
     private static final String TRACKING_NUMBER = "Tracking Number";
     private static final String CREATION_DATE = "Creation Date";
     private static final String SHIP_OUT_DATE = "ShipOut Date";
@@ -28,8 +28,6 @@ public class RepositoryOrderStatusContentHandler extends ContentHandler {
     private static final String SHOPEE_VOUCHER = "Shopee Voucher";
     private static final String SHIPPING_FEE = "Shipping Fee";
     private static final String SHIPPING_REBATE = "Shipping Rebate";
-    
-
 
     private List<Order> orders;
 
@@ -53,13 +51,13 @@ public class RepositoryOrderStatusContentHandler extends ContentHandler {
                 order.setTrackingNumber(value);
                 break;
             case CREATION_DATE:
-                order.setOrderCreationDate(LocalDateTime.parse(value, DateTimeFormatter.ofPattern(DATE_PATTERN)).toLocalDate());
+                order.setOrderCreationDate(LocalDate.parse(value, DateTimeFormatter.ofPattern(DATE_PATTERN)));
                 break;
             case SHIP_OUT_DATE:
-                order.setShipOutDate(LocalDateTime.parse(value, DateTimeFormatter.ofPattern(DATE_PATTERN)).toLocalDate());
+                order.setShipOutDate(LocalDate.parse(value, DateTimeFormatter.ofPattern(DATE_PATTERN)));
                 break;
             case COMPLETED_DATE:
-                order.setOrderCompleteDate(LocalDateTime.parse(value, DateTimeFormatter.ofPattern(DATE_PATTERN)).toLocalDate());
+                order.setOrderCompleteDate(LocalDate.parse(value, DateTimeFormatter.ofPattern(DATE_PATTERN)));
                 break;
             case REQUEST_RETURN_REFUND:
                 order.setRequestApproved(value.equals("Request Approved"));

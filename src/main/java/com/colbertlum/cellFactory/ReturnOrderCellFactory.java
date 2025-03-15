@@ -13,6 +13,7 @@ import com.colbertlum.entity.ReturnOrder;
 
 import javafx.event.ActionEvent;
 import javafx.event.EventHandler;
+import javafx.geometry.Insets;
 import javafx.scene.control.Button;
 import javafx.scene.control.ListCell;
 import javafx.scene.control.ListView;
@@ -26,7 +27,7 @@ public class ReturnOrderCellFactory implements Callback<ListView<ReturnOrder>, L
     private List<ReturnMoveOut> returnMoveOuts;
     private HandleOpenOrderFormListener handler;
 
-    private static final String DATE_PATTERN = "yyyy-MM-dd HH:mm";
+    private static final String DATE_PATTERN = "yyyy-MM-dd";
 
     @Override
     public ListCell<ReturnOrder> call(ListView<ReturnOrder> param) {
@@ -37,12 +38,16 @@ public class ReturnOrderCellFactory implements Callback<ListView<ReturnOrder>, L
             private Text orderShipOutDate = new Text();
             private Text orderCompletedDate = new Text();
             private Text returnType = new Text();
-            private Button openReturnButton = new Button();
+            private Button openReturnButton = new Button("open movement");
 
             {
                 orderIdText.setEditable(false);
                 orderIdText.getStyleClass().add("copiable-text");
 
+                orderIdText.setPrefWidth(150);
+                orderShipOutDate.setWrappingWidth(100);
+                orderCompletedDate.setWrappingWidth(100);
+                returnType.setWrappingWidth(100);
             }
 
             @Override
@@ -52,7 +57,11 @@ public class ReturnOrderCellFactory implements Callback<ListView<ReturnOrder>, L
                 
                 orderIdText.setText(returnOrder.getId());
                 orderShipOutDate.setText(returnOrder.getShipOutDate().format(DateTimeFormatter.ofPattern(DATE_PATTERN)));
-                orderCompletedDate.setText(returnOrder.getOrderCompleteDate().format(DateTimeFormatter.ofPattern(DATE_PATTERN)));
+                if(returnOrder.getOrderCompleteDate() != null) {
+                    orderCompletedDate.setText(returnOrder.getOrderCompleteDate().format(DateTimeFormatter.ofPattern(DATE_PATTERN)));
+                } else {
+                    orderCompletedDate.setText("");
+                }
                 if(returnOrder.getStatus().equals(Order.STATUS_COMPLETED) && returnOrder.isRequestApproved()){
                     returnType.setText("Return After Completed");
                 } else {
@@ -63,11 +72,14 @@ public class ReturnOrderCellFactory implements Callback<ListView<ReturnOrder>, L
                     @Override
                     public void handle(ActionEvent event) {
                         handler.handleOrder(returnOrder.getId());
+                        event.consume();
                     }
                                 
                 });
 
-                setGraphic(new HBox(orderIdText, orderShipOutDate, orderCompletedDate, returnType, openReturnButton));
+                HBox hbox = new HBox(orderIdText, orderShipOutDate, orderCompletedDate, returnType, openReturnButton);
+                hbox.getChildren().forEach((child) -> HBox.setMargin(child, new Insets(5)));
+                setGraphic(hbox);
             }
         };
     }

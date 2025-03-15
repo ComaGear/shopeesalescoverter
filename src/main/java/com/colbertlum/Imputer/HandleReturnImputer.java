@@ -46,7 +46,7 @@ public class HandleReturnImputer {
 
         @Override
         public int compare(ReturnOrder o1, ReturnOrder o2) {
-            return o1.getTrackingNumber().compareTo(o2.getTrackingNumber());
+            return o1.getId().compareTo(o2.getId());
         }
         
     };
@@ -55,18 +55,20 @@ public class HandleReturnImputer {
         return returnOrderList;
     }
     
-    public ReturnOrder getOrder(String text) {
-        if(text == null || text.isEmpty() || text.equals("")) return null;
+    public ReturnOrder getOrder(String orderId) {
+        if(orderId == null || orderId.isEmpty() || orderId.equals("")) return null;
         
         ReturnOrder order = null;
 
         returnOrderList.sort(orderIdComparator);
-        order = Lookup.lookupReturnOrder(returnOrderList, text);
-        if(order != null) return order;
+        order = Lookup.lookupReturnOrder(returnOrderList, orderId);
+        if(order != null) 
+            return order;
 
         returnOrderList.sort(trackingNumberComparator);
-        order = Lookup.lookupReturnOrderByTrackingNumber(returnOrderList, text);
+        order = Lookup.lookupReturnOrderByTrackingNumber(returnOrderList, orderId);
         if(order != null) return order;
+        System.out.println("re");
         return null;
     }
     

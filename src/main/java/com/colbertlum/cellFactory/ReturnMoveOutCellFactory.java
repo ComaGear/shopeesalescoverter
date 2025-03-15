@@ -4,6 +4,7 @@ import java.text.DecimalFormat;
 import java.text.NumberFormat;
 import com.colbertlum.entity.ReturnMoveOut;
 
+import javafx.geometry.Insets;
 import javafx.scene.control.CheckBox;
 import javafx.scene.control.ListCell;
 import javafx.scene.control.ListView;
@@ -43,9 +44,9 @@ public class ReturnMoveOutCellFactory implements Callback<ListView<ReturnMoveOut
 
 
             {
-                productDescriptionText.setWrappingWidth(120);
-                skuText.setWrappingWidth(90);
-                quantityText.setWrappingWidth(30);
+                productDescriptionText.setWrappingWidth(250);
+                skuText.setWrappingWidth(120);
+                quantityText.setWrappingWidth(50);
                 returnQuantityTextFileField.setPrefWidth(50);
 
                 returnStatus.getItems().add(returningMenuItem);
@@ -117,8 +118,9 @@ public class ReturnMoveOutCellFactory implements Callback<ListView<ReturnMoveOut
                         iReturnMoveOut.setStatusQuantity(Integer.parseInt(newValue));
                     }
                 });
-                    
-                setGraphic(new HBox(checkBox, productDescriptionText, quantityText, returnStatus, returnQuantityTextFileField));
+                HBox hBox = new HBox(checkBox, productDescriptionText, skuText, quantityText, returnStatus, returnQuantityTextFileField);
+                hBox.getChildren().forEach((child) -> HBox.setMargin(child, new Insets(2)));
+                setGraphic(hBox);
             }
         };
     }

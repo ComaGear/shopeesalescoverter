@@ -44,7 +44,7 @@ public class SalesImputingController {
         this.stage = stage;
         
         stage.setTitle("sales Imputer");
-        stage.setWidth(2000);
+        stage.setWidth(1500);
         stage.setHeight(600);
         stage.setX((prStage.getX() + (prStage.getWidth() / 2)) - (stage.getWidth() / 2));
         stage.setY((prStage.getY() + (prStage.getHeight() / 2)) - (stage.getHeight() / 2));
