@@ -17,7 +17,7 @@ import javafx.util.Callback;
 
 public class ReturnMoveOutCellFactory implements Callback<ListView<ReturnMoveOut>, ListCell<ReturnMoveOut>> {
 
-    NumberFormat formater = new DecimalFormat("#0.00");
+    NumberFormat formater = new DecimalFormat("#");
 
     private ReturnMoveOut selectedReturnMoveOut = null;
     private boolean selecting = false;
@@ -26,14 +26,16 @@ public class ReturnMoveOutCellFactory implements Callback<ListView<ReturnMoveOut
     public ListCell<ReturnMoveOut> call(ListView<ReturnMoveOut> param) {
         return new ListCell<>() {
 
-            private CheckBox checkBox = new CheckBox();
+            private final CheckBox checkBox = new CheckBox();
 
-            private Text productDescriptionText = new Text();
-            private Text skuText = new Text();
-            private Text quantityText = new Text();
-            private TextField returnQuantityTextFileField = new TextField();
+            private final Text productDescriptionText = new Text();
+            private final Text skuText = new Text();
+            private final Text quantityText = new Text();
+            private final TextField returnQuantityTextFileField = new TextField();
+            private final HBox hBox;
+
             private ReturnMoveOut iReturnMoveOut;
-
+            
             private MenuButton returnStatus = new MenuButton();
             private MenuItem returningMenuItem = new MenuItem(ReturnMoveOut.RETURNING);
             private MenuItem damagedMenuItem = new MenuItem(ReturnMoveOut.DAMAGED);
@@ -44,42 +46,21 @@ public class ReturnMoveOutCellFactory implements Callback<ListView<ReturnMoveOut
 
 
             {
-                productDescriptionText.setWrappingWidth(250);
+                productDescriptionText.setWrappingWidth(400);
                 skuText.setWrappingWidth(120);
                 quantityText.setWrappingWidth(50);
                 returnStatus.setPrefWidth(120);
                 returnQuantityTextFileField.setPrefWidth(50);
 
-                returnStatus.getItems().add(returningMenuItem);
-                returningMenuItem.setOnAction((e) ->{
-                    if(iReturnMoveOut == null) return;
-                    iReturnMoveOut.setReturnStatus(ReturnMoveOut.RETURNING);
-                });
-                returnStatus.getItems().add(damagedMenuItem);
-                damagedMenuItem.setOnAction((e) ->{
-                    if(iReturnMoveOut == null) return;
-                    iReturnMoveOut.setReturnStatus(ReturnMoveOut.DAMAGED);
-                });
-                returnStatus.getItems().add(lostMenuItem);
-                lostMenuItem.setOnAction((e) ->{
-                    if(iReturnMoveOut == null) return;
-                    iReturnMoveOut.setReturnStatus(ReturnMoveOut.LOST);
-                });
-                returnStatus.getItems().add(particularReceivedMenuItem);
-                particularReceivedMenuItem.setOnAction((e) ->{
-                    if(iReturnMoveOut == null) return;
-                    iReturnMoveOut.setReturnStatus(ReturnMoveOut.PARTICULAR_RECEIVED);
-                });
-                returnStatus.getItems().add(receivedMenuItem);
-                receivedMenuItem.setOnAction((e) ->{
-                    if(iReturnMoveOut == null) return;
-                    iReturnMoveOut.setReturnStatus(ReturnMoveOut.RECEIVED);
-                });
-                returnStatus.getItems().add(noneMenuItem);
-                noneMenuItem.setOnAction((e) ->{
-                    if(iReturnMoveOut == null) return;
-                    iReturnMoveOut.setReturnStatus(ReturnMoveOut.NONE);
-                });
+                returnStatus.getItems().addAll(returningMenuItem, damagedMenuItem, lostMenuItem, particularReceivedMenuItem, receivedMenuItem, noneMenuItem);
+
+                returnStatus.getItems().forEach((item) -> item.setOnAction(event ->{
+                    if(iReturnMoveOut != null) {
+                        iReturnMoveOut.setReturnStatus(item.getText());
+                        returnStatus.setText(item.getText());
+                    }
+                }));
+
                 checkBox.setOnAction((e)-> {
                     if(checkBox.isSelected()) {
                         selectedReturnMoveOut = iReturnMoveOut;
@@ -87,10 +68,15 @@ public class ReturnMoveOutCellFactory implements Callback<ListView<ReturnMoveOut
                         selectedReturnMoveOut = null;
                     }
                 });
+
+                hBox = new HBox(checkBox, productDescriptionText, skuText, quantityText, returnStatus, returnQuantityTextFileField);
+                hBox.getChildren().forEach((child) -> HBox.setMargin(child, new Insets(2)));
             }
 
             @Override
             public void updateItem(ReturnMoveOut returnMoveOut, boolean empty){
+
+                super.updateItem(returnMoveOut, empty);
                 
                 if(returnMoveOut == null) {
                     setText("");
@@ -105,7 +91,8 @@ public class ReturnMoveOutCellFactory implements Callback<ListView<ReturnMoveOut
 
                 productDescriptionText.setText(returnMoveOut.getProductName() + " : " + returnMoveOut.getVariationName());
                 skuText.setText(returnMoveOut.getSku());
-                quantityText.setText(formater.format(returnMoveOut.getQuantity()));
+                if(returnMoveOut.getQuantity() == 0) quantityText.setText("");
+                else quantityText.setText(formater.format(returnMoveOut.getQuantity()));
                 returnStatus.setText(returnMoveOut.getReturnStatus());
                 
                 returnQuantityTextFileField.setText(formater.format(returnMoveOut.getStatusQuantity()));
@@ -119,8 +106,9 @@ public class ReturnMoveOutCellFactory implements Callback<ListView<ReturnMoveOut
                         iReturnMoveOut.setStatusQuantity(Integer.parseInt(newValue));
                     }
                 });
-                HBox hBox = new HBox(checkBox, productDescriptionText, skuText, quantityText, returnStatus, returnQuantityTextFileField);
-                hBox.getChildren().forEach((child) -> HBox.setMargin(child, new Insets(2)));
+
+                checkBox.setDisable(!selecting);
+                
                 setGraphic(hBox);
             }
         };

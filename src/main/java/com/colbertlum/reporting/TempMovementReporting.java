@@ -8,6 +8,7 @@ import java.util.ArrayList;
 import java.util.Comparator;
 import java.util.List;
 
+import org.apache.poi.ss.usermodel.Row;
 import org.apache.poi.xssf.usermodel.XSSFRow;
 import org.apache.poi.xssf.usermodel.XSSFSheet;
 import org.apache.poi.xssf.usermodel.XSSFWorkbook;
@@ -47,6 +48,16 @@ public class TempMovementReporting {
     }
 
     private static void writeBiztoryMoveOutSheet(XSSFSheet biztorySheet, List<MoveOut> moveOuts){
+
+        // clean
+        int lastRowNum = biztorySheet.getLastRowNum();
+        for (int i = lastRowNum; i >= 0; i--) {
+            Row row = biztorySheet.getRow(i);
+            if (row != null) {
+                biztorySheet.removeRow(row);
+            }
+        }
+
         int rowCount = 0;
         XSSFRow headerRow = biztorySheet.createRow(rowCount++);
         headerRow.createCell(0).setCellValue("Code");
@@ -76,6 +87,16 @@ public class TempMovementReporting {
     }
 
         private static void writeProductProfitSummarySheet(XSSFSheet movementDetailSheet, List<MoveOut> moveOuts) {
+
+
+        // clean
+        int lastRowNum = movementDetailSheet.getLastRowNum();
+        for (int i = lastRowNum; i >= 0; i--) {
+            Row row = movementDetailSheet.getRow(i);
+            if (row != null) {
+                movementDetailSheet.removeRow(row);
+            }
+        }
 
         List<UOM> uoms = ShopeeSalesConvertApplication.getIrsUoms();
 
@@ -143,6 +164,15 @@ public class TempMovementReporting {
     }
 
     private static void writeOrderSummarySheet(XSSFSheet orderDetailSheet, List<MoveOut> moveOuts) {
+
+        // clean
+        int lastRowNum = orderDetailSheet.getLastRowNum();
+        for (int i = lastRowNum; i >= 0; i--) {
+            Row row = orderDetailSheet.getRow(i);
+            if (row != null) {
+                orderDetailSheet.removeRow(row);
+            }
+        }
 
         List<UOM> uoms = ShopeeSalesConvertApplication.getIrsUoms();
 

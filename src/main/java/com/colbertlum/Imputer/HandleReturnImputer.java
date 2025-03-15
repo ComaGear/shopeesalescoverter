@@ -87,6 +87,8 @@ public class HandleReturnImputer {
         }
     
     public void saveTransaction() {
+        if(this.updatedReturnOrders == null) return;
+        
         orderRepository.submitTransaction();
         
         try{
@@ -164,10 +166,10 @@ public class HandleReturnImputer {
         XSSFSheet summarySheet = workbook.createSheet("Summary");
 
         if(damagedSheet != null && !damagedItemMoveOuts.isEmpty()){
-            writeDamagedSheet(summarySheet, damagedItemMoveOuts);
+            writeDamagedSheet(damagedSheet, damagedItemMoveOuts);
         }
         if(returnedSheet != null && !returnedItemMoveOuts.isEmpty()){
-            writeReturnedSheet(summarySheet, returnedItemMoveOuts);
+            writeReturnedSheet(returnedSheet, returnedItemMoveOuts);
         }
 
         workbook.write(fileOutputStream);
@@ -258,5 +260,12 @@ public class HandleReturnImputer {
         orderRepository = new OrderRepository(true);
         this.returnOrderList = orderRepository.getReturnOrders();
         this.returnMoveOutList = orderRepository.getReturnMoveOuts();
+    }
+
+    public void updateOrder(ReturnOrder returnOrder, ReturnOrder cloneReturnOrder) {
+        
+        orderRepository.removeReturnMoveOutsAsSortReference(returnOrder.getReturnMoveOutList());
+        orderRepository.addReturnMoveOutsAsSortReference(cloneReturnOrder.getReturnMoveOutList());
+        returnOrder.update(cloneReturnOrder);
     }
 }

@@ -16,7 +16,6 @@ import java.util.Optional;
 
 import javax.xml.parsers.ParserConfigurationException;
 
-import org.apache.poi.openxml4j.exceptions.InvalidOperationException;
 import org.apache.poi.openxml4j.exceptions.OpenXML4JException;
 import org.apache.poi.openxml4j.opc.OPCPackage;
 import org.apache.poi.ss.usermodel.Cell;
@@ -25,7 +24,6 @@ import org.apache.poi.ss.usermodel.Sheet;
 import org.apache.poi.ss.usermodel.WorkbookFactory;
 import org.apache.poi.util.XMLHelper;
 import org.apache.poi.xssf.eventusermodel.XSSFReader;
-import org.apache.poi.xssf.eventusermodel.XSSFReader.SheetIterator;
 import org.apache.poi.xssf.usermodel.XSSFRow;
 import org.apache.poi.xssf.usermodel.XSSFSheet;
 import org.apache.poi.xssf.usermodel.XSSFWorkbook;
@@ -372,6 +370,15 @@ public class OrderRepository {
 
     private void writeReturnMovementSheetCell(Sheet returnMovementSheet, List<ReturnMoveOut> returnMoveOuts) {
 
+        // clean
+        int lastRowNum = returnMovementSheet.getLastRowNum();
+        for (int i = lastRowNum; i >= 1; i--) {
+            Row row = returnMovementSheet.getRow(i);
+            if (row != null) {
+                returnMovementSheet.removeRow(row);
+            }
+        }
+
         int index = 1;
         if(returnMoveOuts == null) return;
         for(ReturnMoveOut returnMoveOut : returnMoveOuts){
@@ -419,6 +426,15 @@ public class OrderRepository {
 
     private void writeMovementSheetCell(Sheet movementSheet, List<MoveOut> moveOuts) {
 
+        // clean
+        int lastRowNum = movementSheet.getLastRowNum();
+        for (int i = lastRowNum; i >= 1; i--) {
+            Row row = movementSheet.getRow(i);
+            if (row != null) {
+                movementSheet.removeRow(row);
+            }
+        }
+
         int index = 1;
         if(moveOuts == null) return;
         for(MoveOut moveOut : moveOuts){
@@ -457,6 +473,16 @@ public class OrderRepository {
     }
 
     private void writeOrderSheetCell(XSSFSheet orderSheet, List<Order> orders) {
+
+        // clean
+        int lastRowNum = orderSheet.getLastRowNum();
+        for (int i = lastRowNum; i >= 1; i--) {
+            Row row = orderSheet.getRow(i);
+            if (row != null) {
+                orderSheet.removeRow(row);
+            }
+        }
+
         int index = 1;
         if(orders == null) return;
         for(Order order : orders){
@@ -614,7 +640,7 @@ public class OrderRepository {
 
     public void addShippingOrders(List<Order> newShippingOrders){
         orders.addAll(newShippingOrders);
-        shippingOrders.addAll(orders);
+        shippingOrders.addAll(newShippingOrders);
         for(Order order : newShippingOrders){
             List<SoftReference<MoveOut>> moveOuts = order.getMoveOutList();
             for(SoftReference<MoveOut> softMoveOut : moveOuts){
@@ -635,5 +661,26 @@ public class OrderRepository {
 
     public void addOrders(List<Order> newOrders) {
         orders.addAll(newOrders);
+    }
+
+    public void addReturnMoveOutsAsSortReference(List<SoftReference<ReturnMoveOut>> returnMoveOutList) {
+        ArrayList<ReturnMoveOut> toAdd = new ArrayList<ReturnMoveOut>();
+        for(SoftReference<ReturnMoveOut> softReturnMoveOut : returnMoveOutList) {
+            ReturnMoveOut returnMoveOut = softReturnMoveOut.get();
+            toAdd.add(returnMoveOut);
+        }
+        System.out.println("toAdd size : " + toAdd.size());
+        System.out.println("returnMoveOuts size : " + returnMoveOuts.size());
+        returnMoveOuts.addAll(toAdd);
+        System.out.println("returnMoveOuts size : " + returnMoveOuts.size());
+    }
+
+    public void removeReturnMoveOutsAsSortReference(List<SoftReference<ReturnMoveOut>> returnMoveOutList) {
+        List<ReturnMoveOut> toRemove = new ArrayList<ReturnMoveOut>();
+        for(SoftReference<ReturnMoveOut> softReturnMoveOut : returnMoveOutList) {
+            ReturnMoveOut returnMoveOut = softReturnMoveOut.get();
+            toRemove.add(returnMoveOut);
+        }
+        returnMoveOuts.removeAll(toRemove);
     }
 }

@@ -103,8 +103,12 @@ public class HandleReturnController implements HandleOpenOrderFormListener {
         scaningSearchBar.textProperty().addListener((observe, oldValue, newValue) -> {
             ArrayList<ReturnOrder> orders = new ArrayList<ReturnOrder>();
             for(ReturnOrder order : imputer.getReturnOrderList()){
-                if(order.getId().toLowerCase().contains(newValue.toLowerCase())) orders.add(order);
-                if(order.getTrackingNumber().toLowerCase().contains(newValue.toLowerCase())) orders.add(order);
+                if(order.getId().toLowerCase().contains(newValue.toLowerCase()) && !orders.contains(order)) {
+                    orders.add(order);
+                }
+                if(order.getTrackingNumber().toLowerCase().contains(newValue.toLowerCase())  && !orders.contains(order)) {
+                    orders.add(order);
+                }
             }
             refillOrderListView(orders);
         });
@@ -315,7 +319,8 @@ public class HandleReturnController implements HandleOpenOrderFormListener {
             }
             cloneReturnOrder.setReturnMoveOutList(list);
 
-            returnOrder.update(cloneReturnOrder);
+            // returnOrder.update(cloneReturnOrder);
+            imputer.updateOrder(returnOrder, cloneReturnOrder);
             imputer.setUpdated(returnOrder);
             cleanHandleReturnMovementScene();
         });
@@ -333,17 +338,18 @@ public class HandleReturnController implements HandleOpenOrderFormListener {
         Text productDescriptionHeaderText = new Text("Description");
         Text skuHeaderText = new Text("SKU");
         Text quantityHeaderText = new Text("Quantity");
+
         Text returnTypeHeaderText = new Text("Return Type");
         Text returnQuantityHeaderText = new Text("to Return QTY");
-        productDescriptionHeaderText.setWrappingWidth(250);
-        HBox.setMargin(productDescriptionHeaderText, new Insets(0, 0,0, 17));
+        productDescriptionHeaderText.setWrappingWidth(400);
         skuHeaderText.setWrappingWidth(120);
-        quantityHeaderText.setWrappingWidth(50);
         returnTypeHeaderText.setWrappingWidth(120);
+        quantityHeaderText.setWrappingWidth(50);
         returnQuantityHeaderText.setWrappingWidth(100);
         
         HBox listViewHeaderHBox = new HBox(productDescriptionHeaderText, skuHeaderText, quantityHeaderText, returnTypeHeaderText, returnQuantityHeaderText);
-
+        listViewHeaderHBox.getChildren().forEach((child) -> HBox.setMargin(child, new Insets(2)));
+        HBox.setMargin(productDescriptionHeaderText, new Insets(0, 0,0, 30));
         
         Scene subScene = new Scene(new VBox(headerPanel, listViewHeaderHBox, returnMovementListView, saveButton));
         subScene.getStylesheets().add(getClass().getResource("/copiable-text.css").toExternalForm());
@@ -465,7 +471,7 @@ public class HandleReturnController implements HandleOpenOrderFormListener {
             }
         });
 
-        stage.setScene(generatePanel());
+        pushScene(generatePanel());
         
     }
 
@@ -492,7 +498,6 @@ public class HandleReturnController implements HandleOpenOrderFormListener {
 
     @Override
     public void handleOrder(String orderId) {
-        System.out.println("handling!!  " + orderId);
         ReturnOrder order = imputer.getOrder(orderId);
         if(order != null) openReturnMovementHandleScene(order);
     }

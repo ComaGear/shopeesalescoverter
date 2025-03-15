@@ -24,7 +24,7 @@ public class OrderService {
     public static final String STATUS_TO_SHIP = "To ship";
     public static final String STATUS_UNPAID = "Unpaid";
     public static final String STATUS_SHIPPING = "Shipping";
-    public static final String STATUS_DELIVERED = "Delivery";
+    public static final String STATUS_DELIVERED = "Delivered";
     public static final String STATUS_RECEIVED = "Order Received";
 
 
@@ -114,26 +114,29 @@ public class OrderService {
         // ArrayList<Order> figureOutOrderInRepositoryOnlyOnShipping = figureOutOrderInRepositoryOnlyOnShipping(orderRepository);
         List<Order> shippingOrders = orderRepository.getShippingOrders();
         List<Order> newShippingOrders = figureOutNewShippingOrder(orderRepository);
-        orderRepository.addShippingOrders(newShippingOrders);
 
         for(Order order : newShippingOrders){
             for(SoftReference<MoveOut> moveOut : order.getMoveOutList()){
                 shippingMoveOuts.add(moveOut.get());
             }
         }
+        System.out.println(shippingMoveOuts.size());
         for(Order order : shippingOrders){
             for(SoftReference<MoveOut> moveOut : order.getMoveOutList()){
                 shippingMoveOuts.add(moveOut.get());
             }
         }
+        System.out.println(shippingMoveOuts.size());
         for(Order order : newDeliveredOrders) {
             for(SoftReference<MoveOut> moveOut : order.getMoveOutList()) {
                 shippingMoveOuts.add(moveOut.get());
             }
         }
+        System.out.println(shippingMoveOuts.size());
         File tempMovementFile = new File(ShopeeSalesConvertApplication.getProperty(ShopeeSalesConvertApplication.TEMP_MOVEMENT_FILE_PATH));
         TempMovementReporting.reporting(tempMovementFile, new ArrayList<MoveOut>(shippingMoveOuts));
         // save on shipping and delivered order to repository
+        orderRepository.addShippingOrders(newShippingOrders);
 
         
 
@@ -274,7 +277,10 @@ public class OrderService {
             }
             
         };
+
         List<Order> repositoryShippingOrders = new ArrayList<Order>(orderRepository.getShippingOrders());
+        System.out.println("repository's shipping orders got : " + repositoryShippingOrders.size());
+        System.out.println("beingShippingOrderList got : " + repositoryShippingOrders.size());
         repositoryShippingOrders.sort(comparator);
         beingShippingOrderList.sort(comparator);
         for(Order order : beingShippingOrderList){
@@ -283,6 +289,12 @@ public class OrderService {
                 newShippingOrders.add(order);
             }
         }
+
+        System.out.println("new shipping orders got : " + newShippingOrders.size());
+
+        // newShippingOrders.removeIf((order) -> {
+        //     order.status
+        // })
 
         return newShippingOrders;
     }

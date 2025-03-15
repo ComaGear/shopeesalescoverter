@@ -53,7 +53,13 @@ public class ReturnOrderCellFactory implements Callback<ListView<ReturnOrder>, L
             @Override
             public void updateItem(ReturnOrder returnOrder, boolean empty){
                 
-                if(returnOrder == null) return;
+                super.updateItem(returnOrder, empty);
+
+                if(returnOrder == null || empty) {
+                    setText("");
+                    setGraphic(null);
+                    return;
+                }
                 
                 orderIdText.setText(returnOrder.getId());
                 orderShipOutDate.setText(returnOrder.getShipOutDate().format(DateTimeFormatter.ofPattern(DATE_PATTERN)));

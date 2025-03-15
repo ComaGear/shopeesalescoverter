@@ -5,6 +5,7 @@ import java.util.List;
 import com.colbertlum.entity.Meas;
 import com.colbertlum.entity.Order;
 import com.colbertlum.entity.ProductStock;
+import com.colbertlum.entity.ReturnMoveOut;
 import com.colbertlum.entity.ReturnOrder;
 
 public class Lookup {
@@ -34,6 +35,32 @@ public class Lookup {
             else if(list.get(mid).getId().compareTo(orderId) < 0) lo = mid+1;
             else {
                 return list.get(mid);
+            }
+        }
+        return null;
+    }
+
+    public static ReturnMoveOut lookupReturnMoveOutByObjectAndSorting(List<ReturnMoveOut> returnMoveOuts, ReturnMoveOut returnMoveOut) {
+
+        returnMoveOuts.sort((o1, o2) -> {
+            String uqo1 = o1.getOrderId() + "-" + o1.getProductName() + "-" + o1.getVariationName() + "-" + o1.getReturnStatus() + "-" + o1.getStatusQuantity();
+            String uqo2 = o2.getOrderId() + "-" + o2.getProductName() + "-" + o2.getVariationName() + "-" + o2.getReturnStatus() + "-" + o2.getStatusQuantity();
+            return uqo1.compareTo(uqo2);
+        });
+        
+        String uqo2 = returnMoveOut.getOrderId() + "-" + returnMoveOut.getProductName() + "-" + returnMoveOut.getVariationName() + "-" + returnMoveOut.getReturnStatus() + "-" + returnMoveOut.getStatusQuantity();
+
+        int mid = 0;
+        int lo = 0;
+        int hi = returnMoveOuts.size()-1;
+        while(lo <= hi){
+            mid = lo + (hi-lo) / 2;
+            ReturnMoveOut o1 = returnMoveOuts.get(mid);
+            String uqo1 = o1.getOrderId() + "-" + o1.getProductName() + "-" + o1.getVariationName() + "-" + o1.getReturnStatus() + "-" + o1.getStatusQuantity();
+            if(uqo1.compareTo(uqo2) > 0) hi = mid-1;
+            else if(uqo1.compareTo(uqo2) < 0) lo = mid+1;
+            else {
+                return returnMoveOuts.get(mid);
             }
         }
         return null;
