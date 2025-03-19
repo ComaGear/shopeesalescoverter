@@ -31,10 +31,12 @@ import org.xml.sax.InputSource;
 import org.xml.sax.SAXException;
 import org.xml.sax.XMLReader;
 
+import com.colbertlum.Imputer.MeasImputer;
 import com.colbertlum.Imputer.Utils.Lookup;
 import com.colbertlum.contentHandler.RepositoryItemMovementStatusContentHandler;
 import com.colbertlum.contentHandler.RepositoryOrderStatusContentHandler;
 import com.colbertlum.contentHandler.RepositoryReturnMovementContentHandler;
+import com.colbertlum.entity.Meas;
 import com.colbertlum.entity.MoveOut;
 import com.colbertlum.entity.Order;
 import com.colbertlum.entity.ReturnMoveOut;
@@ -149,6 +151,13 @@ public class OrderRepository {
         } catch (ParserConfigurationException e) {
             // TODO Auto-generated catch block
             e.printStackTrace();
+        }
+
+        MeasImputer measImputer = new MeasImputer();
+        for(MoveOut moveOut : moveOutList) {
+            Meas meas = measImputer.getMeas(moveOut.getSku(), measImputer.getMeasList());
+            if(meas == null) continue;
+            moveOut.setId(meas.getId());
         }
 
         HashMap<String, List<SoftReference<MoveOut>>> orderIdMap = new HashMap<String, List<SoftReference<MoveOut>>>();

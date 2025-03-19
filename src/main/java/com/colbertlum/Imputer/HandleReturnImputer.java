@@ -106,14 +106,6 @@ public class HandleReturnImputer {
     }
 
     private void outputCreditNoteToXlsx(ArrayList<ReturnOrder> updatedReturnOrders) throws IOException{
-        // get output file location form ShopeeSalesConvertApplication
-        String location = ShopeeSalesConvertApplication.getProperty(ShopeeSalesConvertApplication.CREDIT_NOTE_PATH);
-        LocalDate now = LocalDate.now();
-        String creditNoteName = String.format("CreditNote_%d.%d.%d", now.getYear(), now.getMonthValue(), now.getDayOfMonth());        
-        String filePath = location + File.separator + creditNoteName + ".xlsx";
-        File file = new File(filePath);
-        file.createNewFile();
-        FileOutputStream fileOutputStream = new FileOutputStream(file);
 
         // reprocess ReturnOrders to ReturnMove list, easily parse to xlsx.
         List<ReturnMoveOut> damagedItemMoveOuts = new ArrayList<ReturnMoveOut>();
@@ -159,6 +151,17 @@ public class HandleReturnImputer {
             moveOut.setId(measImputer.getMeas(moveOut.getSku(), measList).getId());
         }
 
+        // only damaged and completed order's returned can reporting
+
+        // get output file location form ShopeeSalesConvertApplication
+        String location = ShopeeSalesConvertApplication.getProperty(ShopeeSalesConvertApplication.CREDIT_NOTE_PATH);
+        LocalDate now = LocalDate.now();
+        String creditNoteName = String.format("CreditNote_%d.%d.%d", now.getYear(), now.getMonthValue(), now.getDayOfMonth());        
+        String filePath = location + File.separator + creditNoteName + ".xlsx";
+        File file = new File(filePath);
+        file.createNewFile();
+        FileOutputStream fileOutputStream = new FileOutputStream(file);
+
         // parse to xlsx.
         XSSFWorkbook workbook = new XSSFWorkbook();
         XSSFSheet damagedSheet = workbook.createSheet("Damaged Biztory");
@@ -171,6 +174,8 @@ public class HandleReturnImputer {
         if(returnedSheet != null && !returnedItemMoveOuts.isEmpty()){
             writeReturnedSheet(returnedSheet, returnedItemMoveOuts);
         }
+
+        
 
         workbook.write(fileOutputStream);
         workbook.close();
