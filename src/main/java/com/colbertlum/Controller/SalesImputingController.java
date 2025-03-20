@@ -6,10 +6,8 @@ import java.util.List;
 
 import com.colbertlum.Imputer.SalesImputer;
 import com.colbertlum.cellFactory.SalesCellFactory;
-import com.colbertlum.contentHandler.uomContentHandler;
 import com.colbertlum.entity.MoveOut;
 import com.colbertlum.entity.MoveOutReason;
-import com.colbertlum.entity.UOM;
 
 import javafx.collections.FXCollections;
 import javafx.collections.ObservableList;
@@ -39,6 +37,8 @@ public class SalesImputingController {
     private ArrayList<MoveOutReason> selectedMoveOutStatusList;
     private ObservableList<MoveOutReason> observableMoveOutStatusList;
     private String filterMode;
+
+    private boolean doApplySkuToSimilarly;
 
     public void initDialog(Stage stage, Stage prStage){    
         this.stage = stage;
@@ -150,8 +150,12 @@ public class SalesImputingController {
         filterMenuButton.setPrefWidth(120);
 
         Button applyButton = new Button("Apply To");
-        HBox moveOutsSearchHBox = new HBox(filterMenuButton, SearchByMenuButton, searchBar, applyButton);
+        
+        Button doApplySkuToSimilarlyButton = new Button("apply sku to similarly : on");
+        this.doApplySkuToSimilarly = true;
 
+        HBox moveOutsSearchHBox = new HBox(filterMenuButton, SearchByMenuButton, searchBar, applyButton, doApplySkuToSimilarlyButton);
+        
         Text skuHeaderText = new Text("SKU");
         skuHeaderText.setWrappingWidth(117);
         Text nameHeaderText = new Text(SalesImputer.NAME);
@@ -246,8 +250,10 @@ public class SalesImputingController {
                     moveOutStatus.getMoveOut().setSku("");
                 } else {
                     moveOutStatus.getMoveOut().setSku(selectedMeasSku);
-                    applySkuToSimilarlyMoveOut(observableMoveOutStatusList, moveOutStatus.getMoveOut().getProductName()
-                        , moveOutStatus.getMoveOut().getVariationName(), selectedMeasSku);
+                    if(this.doApplySkuToSimilarly) {
+                        applySkuToSimilarlyMoveOut(observableMoveOutStatusList, moveOutStatus.getMoveOut().getProductName()
+                            , moveOutStatus.getMoveOut().getVariationName(), selectedMeasSku);
+                    }
                 }
 
                 salesImputer.setMoveOutChanged(true);
@@ -257,6 +263,16 @@ public class SalesImputingController {
 
             refreshListView(moveOutListView, observableMoveOutStatusList);
             // refillMoveOutListView(moveOutListView, salesImputer.getMoveOutStatusList());
+        });
+
+        doApplySkuToSimilarlyButton.setOnAction(event -> {
+            if(this.doApplySkuToSimilarly == true) {
+                this.doApplySkuToSimilarly = false;
+                doApplySkuToSimilarlyButton.setText("apply sku to similarly : off");
+            } else {
+                this.doApplySkuToSimilarly = true;
+                doApplySkuToSimilarlyButton.setText("apply sku to similarly : on");
+            }
         });
 
         return new VBox(moveOutsSearchHBox, headerHBox, moveOutListView);
@@ -278,8 +294,6 @@ public class SalesImputingController {
             }
              
         });
-
-        System.out.println(list.get(0).getMoveOut().getProductName());
 
         for(MoveOutReason reason : list){
             String reasonProductName = reason.getMoveOut().getProductName();

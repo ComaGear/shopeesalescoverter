@@ -364,7 +364,6 @@ public class ShopeeSalesConvertApplication extends Application {
         Alert alert = new Alert(AlertType.INFORMATION);
         alert.setContentText("output file to : " + getProperty(OUTPUT_PATH));
         alert.show();
-        // return moveOuts;
 
         OrderService orderService = new OrderService(new OrderRepository(true));
         orderService.process(moveOuts);

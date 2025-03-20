@@ -77,13 +77,53 @@ public class OrderRepository {
         return returnAfterCompletedOrders;
     }
 
-
-    
     public List<Order> getShippingOrders() {
         return shippingOrders;
     }
     public List<Order> getCompletedOrders() {
         return completedOrders;
+    }
+
+    public List<Order> getCompletedOrdersByLocalDate(LocalDate localDate) {
+        if(localDate == null) return null;
+
+        completedOrders.sort((o1, o2) -> {
+            return o2.getOrderCompleteDate().compareTo(o1.getOrderCompleteDate());
+        });
+
+        List<Order> list = new ArrayList<Order>();
+        boolean inDateRange = false;
+        for(Order order : completedOrders) {
+            if(order.getOrderCompleteDate().equals(localDate)) {
+                list.add(order);
+                inDateRange = true;
+            } else if(inDateRange == true) {
+                return list;
+            }
+        }
+        if(list.isEmpty()) return null;
+        return list;
+    }
+
+    public List<Order> getReturnAfterCompletedOrdersByLocalDate(LocalDate localDate) {
+        if(localDate == null) return null;
+
+        returnAfterCompletedOrders.sort((o1, o2) -> {
+            return o2.getOrderCompleteDate().compareTo(o1.getOrderCompleteDate());
+        });
+
+        List<Order> list = new ArrayList<Order>();
+        boolean inDateRange = false;
+        for(Order order : returnAfterCompletedOrders) {
+            if(order.getOrderCompleteDate().equals(localDate)) {
+                list.add(order);
+                inDateRange = true;
+            } else if(inDateRange == true) {
+                return list;
+            }
+        }
+        if(list.isEmpty()) return null;
+        return list;
     }
 
     private void loadRepository(){
@@ -186,11 +226,15 @@ public class OrderRepository {
         for(Order order : orders){
             if(order.getStatus().equals(OrderService.STATUS_SHIPPING)){
                 shippingOrders.add(order);
+            } else if(order.getStatus().equals(OrderService.STATUS_DELIVERED)){
+                shippingOrders.add(order);
             } else if(order.getStatus().equals(OrderService.STATUS_COMPLETE) && order.isRequestApproved()){
                 returnAfterCompletedOrders.add(order);
             } else if(order.getStatus().equals(OrderService.STATUS_CANCEL) && order.getShipOutDate() != null){
                 returnAfterShippingOrders.add(order);
             } else if(order.getStatus().equals(OrderService.STATUS_COMPLETE)){
+                completedOrders.add(order);
+            } else if(order.getStatus().contains(OrderService.STATUS_RECEIVED)) {
                 completedOrders.add(order);
             }
         }
@@ -217,6 +261,11 @@ public class OrderRepository {
             returnOrder.setReturnMoveOutList(returnOrderIdMap.get(returnOrder.getId()));
             returnOrders.add(returnOrder);
         }
+
+        System.out.println("Repository Shipping Orders size : " + shippingOrders.size());
+        System.out.println("Repository Completed Orders size : " + completedOrders.size());
+        System.out.println("Repository returnAfterCompleted Orders size : " + returnAfterCompletedOrders.size());
+        System.out.println("Repository retrunAfterShipping Orders size : " + returnAfterShippingOrders.size());
     }
 
     public void createRepositoryFile() throws IOException{
@@ -354,10 +403,10 @@ public class OrderRepository {
                 Alert alert = new Alert(AlertType.CONFIRMATION);
                 alert.setContentText("Are you sure this process is valid and save which order to repository");
                 Optional<ButtonType> result = alert.showAndWait();
-                if(!result.isPresent() && result.get() != ButtonType.OK){
+                if(!result.isPresent() || result.get() != ButtonType.OK){
                     return;
                 }
-            } catch(ExceptionInInitializerError e){
+            } catch(RuntimeException e){
                 System.out.println(e.getMessage());
             }
         }

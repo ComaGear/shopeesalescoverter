@@ -18,6 +18,7 @@ public class Lookup {
         // return index >= 0 ? list.get(index) : null;
 
         String o2lo = orderId.toLowerCase();
+        o2lo.trim();
 
         int mid = 0;
         int lo = 0;
@@ -26,6 +27,7 @@ public class Lookup {
             mid = lo + (hi-lo) / 2;
 
             String o1lo = list.get(mid).getId().toLowerCase();
+            o1lo.trim();
 
 
             if(o1lo.compareTo(o2lo) > 0) hi = mid-1;

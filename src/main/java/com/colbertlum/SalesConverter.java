@@ -50,7 +50,7 @@ public class SalesConverter {
 
     public List<MoveOut> process(){
 
-        this.advanceFillMoveOuts = advanceFillEmptySku(moveOuts);
+        // this.advanceFillMoveOuts = advanceFillEmptySku(moveOuts);
         this.EmptySkuMoveOuts = this.cleanEmptySku(this.moveOuts); // getting out emptry sku moveOut
         this.calculateActualPrice(this.moveOuts);
         this.convertMeas();

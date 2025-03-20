@@ -9,6 +9,8 @@ import java.util.HashMap;
 import java.util.List;
 import java.util.Map;
 
+import javax.sound.midi.SysexMessage;
+
 import com.colbertlum.Imputer.Utils.Lookup;
 import com.colbertlum.entity.MoveOut;
 import com.colbertlum.entity.Order;
@@ -70,6 +72,8 @@ public class OrderService {
 
         // record completed order
         ArrayList<Order> newCompletedOrders = figureOutNewCompletedOrder(orderRepository);
+        System.out.println("Repository completed orders size : " + orderRepository.getCompletedOrders().size());
+        System.out.println("new completed orders size : " + newCompletedOrders.size());
         // save on completed order to repository
         orderRepository.addCompletedOrders(newCompletedOrders);
         orderRepository.removeShippingOrders(newCompletedOrders);
@@ -78,8 +82,9 @@ public class OrderService {
         List<Order> newReceivedOrders = figureOutNewReceivedOrder(orderRepository);
         orderRepository.addCompletedOrders(newReceivedOrders);
         orderRepository.removeShippingOrders(newReceivedOrders);
+        System.out.println("new received orders size : " + newReceivedOrders.size());
 
-        // figureOut toReport orders from newCompleted and newInReturnAfterCompleted order with not record in repository.
+        // figureOut toReport orders from newCompleted order with not record in repository.
         ArrayList<Order> toReportOrders = new ArrayList<Order>();
         if(!newCompletedOrders.isEmpty()) {
             toReportOrders.addAll(newCompletedOrders);
@@ -87,9 +92,7 @@ public class OrderService {
         if(!newReceivedOrders.isEmpty()) {
             toReportOrders.addAll(newReceivedOrders);
         }
-        if(!lookupOrderNotYetOnCompletedInRepository(figureOutNewInReturnAfterCompletedOrder(orderRepository), orderRepository).isEmpty()) {
-            toReportOrders.addAll(lookupOrderNotYetOnCompletedInRepository(figureOutNewInReturnAfterCompletedOrder(orderRepository), orderRepository));
-        }
+
         // toReportOrders.addAll(lookupOrderNotYetOnShipping(figureOutNewInReturnOrder(orderRepository), orderRepository));
         // toReportOrders.addAll(lookupOrderNotYetOnShipping(figureOutNewInReturnAfterCompletedOrder(orderRepository), orderRepository));
 
@@ -100,6 +103,10 @@ public class OrderService {
 
         //figure out new return order after buyer received order and request return or refund.
         List<Order> newReturnAfterCompletedOrder = figureOutNewInReturnAfterCompletedOrder(orderRepository);
+        // figureOut toReport orders from newInReturnAfterCompleted order with not record in repository.
+        if(!lookupOrderNotYetOnCompletedInRepository(newReturnAfterCompletedOrder, orderRepository).isEmpty()) {
+            toReportOrders.addAll(lookupOrderNotYetOnCompletedInRepository(newReturnAfterCompletedOrder, orderRepository));
+        }
         // save to repository
         orderRepository.removeCompletedOrders(newReturnAfterCompletedOrder);
         orderRepository.removeShippingOrders(newReturnAfterCompletedOrder);
@@ -147,21 +154,45 @@ public class OrderService {
                 }
                 
             });
-            HashMap<String, List<MoveOut>> dateDifferentMoveOuts = new HashMap<String, List<MoveOut>>();
+            HashMap<LocalDate, List<MoveOut>> dateDifferentMoveOuts = new HashMap<LocalDate, List<MoveOut>>();
             for(Order order : toReportOrders){
                 LocalDate orderCompleteDate = order.getOrderCompleteDate();
-                String fileName = String.format("SalesCompleted%d.%d.%d", orderCompleteDate.getYear(), orderCompleteDate.getMonthValue(), orderCompleteDate.getDayOfMonth());
-                if(!dateDifferentMoveOuts.containsKey(fileName)){
-                    dateDifferentMoveOuts.put(fileName, new ArrayList<MoveOut>());
+                // String fileName = String.format("SalesCompleted%d.%d.%d", orderCompleteDate.getYear(), orderCompleteDate.getMonthValue(), orderCompleteDate.getDayOfMonth());
+                if(!dateDifferentMoveOuts.containsKey(orderCompleteDate)){
+                    dateDifferentMoveOuts.put(orderCompleteDate, new ArrayList<MoveOut>());
                 }
                 for(SoftReference<MoveOut> softMoveOut : order.getMoveOutList()){
                     MoveOut moveOut = softMoveOut.get();
-                    dateDifferentMoveOuts.get(fileName).add(moveOut);
+                    dateDifferentMoveOuts.get(orderCompleteDate).add(moveOut);
                 }
             }
-            for(String fileName : dateDifferentMoveOuts.keySet()){
+            System.out.println("dateDifferentMoveOuts size : " + dateDifferentMoveOuts.size());
+            for(LocalDate localDate : dateDifferentMoveOuts.keySet()){
+                System.out.println("dateDifferentMoveOuts's date : " + localDate);
+                List<Order> repositoryCompletedOrders = orderRepository.getCompletedOrdersByLocalDate(localDate);
+                List<Order> repositoryReturnAfterCompletedOrders = orderRepository.getReturnAfterCompletedOrdersByLocalDate(localDate);
+
+                List<MoveOut> toReportMoveOuts = new ArrayList<MoveOut>();
+                // List<MoveOut> toReportMoveOuts = dateDifferentMoveOuts.get(localDate);
+
+                if(repositoryCompletedOrders != null) {
+                    for(Order order : repositoryCompletedOrders) {
+                        for(SoftReference<MoveOut> softMoveOut : order.getMoveOutList()) {
+                            toReportMoveOuts.add(softMoveOut.get());
+                        }
+                    } 
+                }
+                if(repositoryReturnAfterCompletedOrders != null) {
+                    for(Order order : repositoryReturnAfterCompletedOrders) {
+                        for(SoftReference<MoveOut> softMoveOut : order.getMoveOutList()) {
+                            toReportMoveOuts.add(softMoveOut.get());
+                        }
+                    } 
+                }
+
+                String fileName = String.format("SalesCompleted%d.%d.%d", localDate.getYear(), localDate.getMonthValue(), localDate.getDayOfMonth());
                 String filePath = ShopeeSalesConvertApplication.getProperty(ShopeeSalesConvertApplication.COMPLETE_ORDER_PATH) + File.separator + fileName + ".xlsx";
-                CompletedMovementReporting.reporting(new File(filePath), dateDifferentMoveOuts.get(fileName));
+                CompletedMovementReporting.reporting(new File(filePath), toReportMoveOuts);
             }
         }
 
@@ -277,7 +308,7 @@ public class OrderService {
 
         List<Order> repositoryShippingOrders = new ArrayList<Order>(orderRepository.getShippingOrders());
         System.out.println("repository's shipping orders got : " + repositoryShippingOrders.size());
-        System.out.println("beingShippingOrderList got : " + repositoryShippingOrders.size());
+        System.out.println("beingShippingOrderList got : " + beingShippingOrderList.size());
         repositoryShippingOrders.sort(comparator);
         beingShippingOrderList.sort(comparator);
         for(Order order : beingShippingOrderList){
