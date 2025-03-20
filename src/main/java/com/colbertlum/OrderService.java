@@ -463,7 +463,8 @@ public class OrderService {
         }
     }
 
-    public Map<String, Double> calculatePendingOrderStockRequirement(List<MoveOut> moveOuts){
+    public Map<String, Double> calculatePendingOrderStockRequirement(List<MoveOut> oriMoveOuts){
+        ArrayList<MoveOut> moveOuts = new ArrayList<>(oriMoveOuts);
 
         moveOuts.removeIf(moveOut -> {
             if(moveOut.getOrder().getStatus().equals(OrderService.STATUS_TO_SHIP)
@@ -493,8 +494,23 @@ public class OrderService {
         Map<String, Double> map = new HashMap<String, Double>();
         
         for(ReturnMoveOut returnMoveOut : returnMoveOuts){
-            if(returnMoveOut.getReturnStatus().eq)
-            map.put(returnMoveOut.getId(), returnMoveOut.getStatusQuantity());
+            if(returnMoveOut.getReturnStatus().equals(ReturnMoveOut.DAMAGED)
+            || returnMoveOut.getReturnStatus().equals(ReturnMoveOut.LOST)
+            || returnMoveOut.getReturnStatus().equals(ReturnMoveOut.PARTICULAR_RECEIVED)) {
+                map.put(returnMoveOut.getId(), returnMoveOut.getStatusQuantity());
+            }
+        }
+        return map;
+    }
+
+    public Map<String, Double> getReservedInReturningStockQuantity() {
+        List<ReturnMoveOut> returnMoveOuts = orderRepository.getReturnMoveOuts();
+        Map<String, Double> map = new HashMap<String, Double>();
+        
+        for(ReturnMoveOut returnMoveOut : returnMoveOuts){
+            if(returnMoveOut.getReturnStatus().equals(ReturnMoveOut.RETURNING)) {
+                map.put(returnMoveOut.getId(), returnMoveOut.getQuantity());
+            }
         }
         return map;
     }

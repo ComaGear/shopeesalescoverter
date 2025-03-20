@@ -253,6 +253,7 @@ public class ShopeeSalesConvertApplication extends Application {
             List<ProductStock> stockReport = StockReportContentReader.getStockReport();
             OrderService orderService = new OrderService(new OrderRepository(true));
             orderService.reduceStockMap(stockReport, orderService.getReservedDamagedStockQuantity());
+            orderService.reduceStockMap(stockReport, orderService.getReservedInReturningStockQuantity());
             Map<String, Double> pendingOrderStockMap = orderService.calculatePendingOrderStockRequirement(getMoveOuts());
             orderService.reduceStockMap(stockReport, pendingOrderStockMap);
 

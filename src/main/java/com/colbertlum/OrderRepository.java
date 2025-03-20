@@ -194,8 +194,15 @@ public class OrderRepository {
         }
 
         MeasImputer measImputer = new MeasImputer();
+        ArrayList<Meas> measList = measImputer.getMeasList();
+        measList.sort((o1, o2) -> o1.getRelativeId().compareTo(o2.getRelativeId()));
         for(MoveOut moveOut : moveOutList) {
-            Meas meas = measImputer.getMeas(moveOut.getSku(), measImputer.getMeasList());
+            Meas meas = measImputer.getMeas(moveOut.getSku(), measList);
+            if(meas == null) continue;
+            moveOut.setId(meas.getId());
+        }
+        for(ReturnMoveOut moveOut : returnMoveOuts) {
+            Meas meas = measImputer.getMeas(moveOut.getSku(), measList);
             if(meas == null) continue;
             moveOut.setId(meas.getId());
         }
