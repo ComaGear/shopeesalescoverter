@@ -11,6 +11,8 @@ public class ReturnMoveOut {
     private double statusQuantity;
     private String id;
 
+    private ReturnOrder returnOrder;
+
     
     public static final String RETURNING = "returning";
     public static final String PARTICULAR_RECEIVED = "particular received";
@@ -25,6 +27,8 @@ public class ReturnMoveOut {
     // - damaged
     // - lost
     // - none
+
+    
     
     public String getId() {
         return id;
@@ -115,7 +119,14 @@ public class ReturnMoveOut {
         clone.setReturnStatus(getReturnStatus());
         clone.setStatusQuantity(getStatusQuantity());
         clone.setId(getId());
+        clone.setReturnOrder(getReturnOrder());
 
         return clone;
+    }
+    public ReturnOrder getReturnOrder() {
+        return returnOrder;
+    }
+    public void setReturnOrder(ReturnOrder returnOrder) {
+        this.returnOrder = returnOrder;
     }
 }

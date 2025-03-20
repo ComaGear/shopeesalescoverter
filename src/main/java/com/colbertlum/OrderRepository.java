@@ -668,9 +668,18 @@ public class OrderRepository {
         ArrayList<ReturnMoveOut> returningMoveOuts = new ArrayList<ReturnMoveOut>();
         ArrayList<MoveOut> moveOuts = new ArrayList<MoveOut>();
         for(Order order : newReturnAfterShippingOrders){
+            ReturnOrder returnOrder = new ReturnOrder(order);
+            if(order.isRequestApproved() && order.getStatus().equals((OrderService.STATUS_COMPLETE))) {
+                returnOrder.setReturnType(ReturnOrder.REQUEST_RETURN_REFUND);
+            } else if(order.getStatus().equals(OrderService.STATUS_CANCEL) && order.getShipOutDate() != null) {
+                returnOrder.setReturnType(ReturnOrder.FAILED_DELIVERY_TYPE);
+            }
+            returnOrders.add(returnOrder);
             for(SoftReference<MoveOut> softMoveOut : order.getMoveOutList()){
                 MoveOut moveOut = softMoveOut.get();
-                returningMoveOuts.add(new ReturnMoveOut(moveOut));
+                ReturnMoveOut returnMoveOut = new ReturnMoveOut(moveOut);
+                returningMoveOuts.add(returnMoveOut);
+                returnMoveOut.setReturnOrder(returnOrder);
                 moveOuts.add(moveOut);
             }
         }
@@ -697,9 +706,17 @@ public class OrderRepository {
         ArrayList<ReturnMoveOut> returningMoveOuts = new ArrayList<ReturnMoveOut>();
         ArrayList<MoveOut> moveOuts = new ArrayList<MoveOut>();
         for(Order order : newReturnAfterCompletedOrder){
+            ReturnOrder returnOrder = new ReturnOrder(order);
+            if(order.isRequestApproved() && order.getStatus().equals((OrderService.STATUS_COMPLETE))) {
+                returnOrder.setReturnType(ReturnOrder.REQUEST_RETURN_REFUND);
+            } else if(order.getStatus().equals(OrderService.STATUS_CANCEL) && order.getShipOutDate() != null) {
+                returnOrder.setReturnType(ReturnOrder.FAILED_DELIVERY_TYPE);
+            }
             for(SoftReference<MoveOut> softMoveOut : order.getMoveOutList()){
                 MoveOut moveOut = softMoveOut.get();
-                returningMoveOuts.add(new ReturnMoveOut(moveOut));
+                ReturnMoveOut returnMoveOut = new ReturnMoveOut(moveOut);
+                returningMoveOuts.add(returnMoveOut);
+                returnMoveOut.setReturnOrder(returnOrder);
                 moveOuts.add(moveOut);
             }
         }

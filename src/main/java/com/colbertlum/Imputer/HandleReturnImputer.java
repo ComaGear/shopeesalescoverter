@@ -7,8 +7,11 @@ import java.lang.ref.SoftReference;
 import java.time.LocalDate;
 import java.util.ArrayList;
 import java.util.Comparator;
+import java.util.HashMap;
 import java.util.List;
+import java.util.Map;
 
+import org.apache.poi.ss.usermodel.Row;
 import org.apache.poi.xssf.usermodel.XSSFRow;
 import org.apache.poi.xssf.usermodel.XSSFSheet;
 import org.apache.poi.xssf.usermodel.XSSFWorkbook;
@@ -17,6 +20,7 @@ import com.colbertlum.OrderRepository;
 import com.colbertlum.ShopeeSalesConvertApplication;
 import com.colbertlum.Imputer.Utils.Lookup;
 import com.colbertlum.entity.Meas;
+import com.colbertlum.entity.Order;
 import com.colbertlum.entity.ReturnMoveOut;
 import com.colbertlum.entity.ReturnOrder;
 
@@ -105,37 +109,73 @@ public class HandleReturnImputer {
         }
     }
 
+    private void figureToPutLocalDate(ReturnMoveOut returnMoveOut, Map<LocalDate, List<ReturnMoveOut>> map) {
+        LocalDate orderCompleteDate = returnMoveOut.getReturnOrder().getOrderCompleteDate();
+        if(orderCompleteDate != null) {
+            if(map.containsKey(orderCompleteDate)) {
+                map.get(orderCompleteDate).add(returnMoveOut);
+            } else {
+                map.put(orderCompleteDate, new ArrayList<>());
+                map.get(orderCompleteDate).add(returnMoveOut);
+            }
+        } else {
+            LocalDate now = LocalDate.now();
+            if(map.containsKey(now)) {
+                map.get(now).add(returnMoveOut);
+            } else {
+                map.put(now, new ArrayList<>());
+                map.get(now).add(returnMoveOut);
+            }
+        }
+    }
+
     private void outputCreditNoteToXlsx(ArrayList<ReturnOrder> updatedReturnOrders) throws IOException{
 
         // reprocess ReturnOrders to ReturnMove list, easily parse to xlsx.
-        List<ReturnMoveOut> damagedItemMoveOuts = new ArrayList<ReturnMoveOut>();
-        List<ReturnMoveOut> returnedItemMoveOuts = new ArrayList<ReturnMoveOut>();
+        // List<ReturnMoveOut> damagedItemMoveOuts = new ArrayList<ReturnMoveOut>();
+        // List<ReturnMoveOut> returnedItemMoveOuts = new ArrayList<ReturnMoveOut>();
+        Map<LocalDate, List<ReturnMoveOut>> damagedItemMoveOutLocalDateMap = new HashMap<LocalDate, List<ReturnMoveOut>>();
+        Map<LocalDate, List<ReturnMoveOut>> returnedItemMoveOutsLocalDateMap = new HashMap<LocalDate, List<ReturnMoveOut>>();
         for(ReturnOrder returnOrder : updatedReturnOrders){
             for(SoftReference<ReturnMoveOut> softReturnMoveOut : returnOrder.getReturnMoveOutList()){
 
                 ReturnMoveOut returnMoveOut = softReturnMoveOut.get();
+                returnMoveOut.setReturnOrder(returnOrder);
                 switch (returnMoveOut.getReturnStatus()) {
                     case ReturnMoveOut.DAMAGED:
-                        damagedItemMoveOuts.add(returnMoveOut.clone());
+                        // damagedItemMoveOuts.add(returnMoveOut.clone());
+
+                        figureToPutLocalDate(returnMoveOut.clone(), damagedItemMoveOutLocalDateMap);
                         break;
                     case ReturnMoveOut.LOST:
                         returnMoveOut.setReturnStatus(ReturnMoveOut.DAMAGED);
-                        damagedItemMoveOuts.add(returnMoveOut.clone());
+                        // damagedItemMoveOuts.add(returnMoveOut.clone());
+                        figureToPutLocalDate(returnMoveOut.clone(), damagedItemMoveOutLocalDateMap);
                         break;
                     case ReturnMoveOut.NONE :
                         break;
                     case ReturnMoveOut.PARTICULAR_RECEIVED:
                         ReturnMoveOut returnedClone = returnMoveOut.clone();
                         returnedClone.setReturnStatus(ReturnMoveOut.RECEIVED);
-                        returnedItemMoveOuts.add(returnedClone);
+
+                        // only issue credit note when it was return after completed (has generated invoice)
+                        if(returnOrder.getStatus().equals(Order.STATUS_COMPLETED) && returnOrder.isRequestApproved()) {
+                            // returnedItemMoveOuts.add(returnedClone);
+                            figureToPutLocalDate(returnedClone, returnedItemMoveOutsLocalDateMap);
+                        }
 
                         ReturnMoveOut damagedClone = returnMoveOut.clone();
                         damagedClone.setReturnStatus(ReturnMoveOut.DAMAGED);
                         damagedClone.setStatusQuantity(damagedClone.getQuantity() - damagedClone.getStatusQuantity());
-                        damagedItemMoveOuts.add(damagedClone);
+                        // damagedItemMoveOuts.add(damagedClone);
+                        figureToPutLocalDate(damagedClone, damagedItemMoveOutLocalDateMap);
                         break;
                     case ReturnMoveOut.RECEIVED:
-                        returnedItemMoveOuts.add(returnMoveOut);
+                        // only issue credit note when it was return after completed (has generated invoice)
+                        if(returnOrder.getStatus().equals(Order.STATUS_COMPLETED) && returnOrder.isRequestApproved()) {
+                            // returnedItemMoveOuts.add(returnMoveOut);
+                            figureToPutLocalDate(returnMoveOut, returnedItemMoveOutsLocalDateMap);
+                        }
                         break;
                     default:
                         break;
@@ -144,45 +184,63 @@ public class HandleReturnImputer {
         }
 
         MeasImputer measImputer = new MeasImputer();
-        for(ReturnMoveOut moveOut : returnedItemMoveOuts) {
-            moveOut.setId(measImputer.getMeas(moveOut.getSku(), measList).getId());
-        }
-        for(ReturnMoveOut moveOut : damagedItemMoveOuts) {
-            moveOut.setId(measImputer.getMeas(moveOut.getSku(), measList).getId());
-        }
-
-        // only damaged and completed order's returned can reporting
-
         // get output file location form ShopeeSalesConvertApplication
         String location = ShopeeSalesConvertApplication.getProperty(ShopeeSalesConvertApplication.CREDIT_NOTE_PATH);
-        LocalDate now = LocalDate.now();
-        String creditNoteName = String.format("CreditNote_%d.%d.%d", now.getYear(), now.getMonthValue(), now.getDayOfMonth());        
-        String filePath = location + File.separator + creditNoteName + ".xlsx";
-        File file = new File(filePath);
-        file.createNewFile();
-        FileOutputStream fileOutputStream = new FileOutputStream(file);
+        ArrayList<LocalDate> dateList = new ArrayList<LocalDate>();
+        dateList.addAll(damagedItemMoveOutLocalDateMap.keySet());
+        dateList.addAll(returnedItemMoveOutsLocalDateMap.keySet());
+        for(LocalDate localDate : dateList) {
+            String creditNoteName = String.format("CreditNote_%d.%d.%d", localDate.getYear(), localDate.getMonthValue(), localDate.getDayOfMonth());        
+            String filePath = location + File.separator + creditNoteName + ".xlsx";
+            File file = new File(filePath);
+            file.createNewFile();
+            FileOutputStream fileOutputStream = new FileOutputStream(file);
 
-        // parse to xlsx.
-        XSSFWorkbook workbook = new XSSFWorkbook();
-        XSSFSheet damagedSheet = workbook.createSheet("Damaged Biztory");
-        XSSFSheet returnedSheet = workbook.createSheet("Returned Biztory");
-        XSSFSheet summarySheet = workbook.createSheet("Summary");
+            List<ReturnMoveOut> damagedItemMoveOuts = null;
+            List<ReturnMoveOut> returnedItemMoveOuts = null;
+            if(returnedItemMoveOutsLocalDateMap.containsKey(localDate)){
+                returnedItemMoveOuts = returnedItemMoveOutsLocalDateMap.get(localDate);
+                for(ReturnMoveOut moveOut : returnedItemMoveOuts) {
+                    moveOut.setId(measImputer.getMeas(moveOut.getSku(), measList).getId());
+                }
+            }
+            if(damagedItemMoveOutLocalDateMap.containsKey(localDate)){
+                damagedItemMoveOuts = damagedItemMoveOutLocalDateMap.get(localDate);
+                for(ReturnMoveOut moveOut : damagedItemMoveOuts) {
+                    moveOut.setId(measImputer.getMeas(moveOut.getSku(), measList).getId());
+                }
+            }
 
-        if(damagedSheet != null && !damagedItemMoveOuts.isEmpty()){
-            writeDamagedSheet(damagedSheet, damagedItemMoveOuts);
+            // parse to xlsx.
+            XSSFWorkbook workbook = new XSSFWorkbook();
+            XSSFSheet damagedSheet = workbook.createSheet("Damaged Biztory");
+            XSSFSheet returnedSheet = workbook.createSheet("Returned Biztory");
+            XSSFSheet summarySheet = workbook.createSheet("Summary");
+    
+            if(damagedSheet != null && damagedItemMoveOuts != null){
+                writeDamagedSheet(damagedSheet, damagedItemMoveOuts);
+            }
+            if(returnedSheet != null && returnedItemMoveOuts != null){
+                writeReturnedSheet(returnedSheet, returnedItemMoveOuts);
+            }
+
+            workbook.write(fileOutputStream);
+            workbook.close();
+            fileOutputStream.close();
         }
-        if(returnedSheet != null && !returnedItemMoveOuts.isEmpty()){
-            writeReturnedSheet(returnedSheet, returnedItemMoveOuts);
-        }
-
-        
-
-        workbook.write(fileOutputStream);
-        workbook.close();
-        fileOutputStream.close();
     }
 
     private void writeReturnedSheet(XSSFSheet biztorySheet, List<ReturnMoveOut> returnedMoveOuts){
+
+        // clean
+        int lastRowNum = biztorySheet.getLastRowNum();
+        for (int i = lastRowNum; i >= 1; i--) {
+            Row row = biztorySheet.getRow(i);
+            if (row != null) {
+                biztorySheet.removeRow(row);
+            }
+        }
+
         int rowCount = 0;
         XSSFRow headerRow = biztorySheet.createRow(rowCount++);
         headerRow.createCell(0).setCellValue("Code");
@@ -213,6 +271,16 @@ public class HandleReturnImputer {
     }
     
     private void writeDamagedSheet(XSSFSheet biztorySheet, List<ReturnMoveOut> damagedItemMoveOuts){
+
+        // clean
+        int lastRowNum = biztorySheet.getLastRowNum();
+        for (int i = lastRowNum; i >= 1; i--) {
+            Row row = biztorySheet.getRow(i);
+            if (row != null) {
+                biztorySheet.removeRow(row);
+            }
+        }
+
 
         int rowCount = 0;
         XSSFRow headerRow = biztorySheet.createRow(rowCount++);

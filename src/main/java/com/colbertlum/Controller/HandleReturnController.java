@@ -293,6 +293,9 @@ public class HandleReturnController implements HandleOpenOrderFormListener {
                 cloneReturnMoveOuts.add(firstReturnMoveOut);
                 cloneReturnMoveOuts.add(secondReturnMoveOut);
 
+                firstReturnMoveOut.setReturnOrder(returnOrder);
+                secondReturnMoveOut.setReturnOrder(returnOrder);
+
                 refillMovementListView(FXCollections.observableArrayList(cloneReturnMoveOuts));
             }
             
