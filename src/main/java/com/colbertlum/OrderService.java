@@ -465,6 +465,15 @@ public class OrderService {
 
     public Map<String, Double> calculatePendingOrderStockRequirement(List<MoveOut> moveOuts){
 
+        moveOuts.removeIf(moveOut -> {
+            if(moveOut.getOrder().getStatus().equals(OrderService.STATUS_TO_SHIP)
+                || moveOut.getOrder().getStatus().equals(OrderService.STATUS_UNPAID)){
+                return false;
+            } else {
+                return true;
+            }
+        });
+
         HashMap<String, Double> pendingStockReducingMap = new HashMap<String, Double>();
 
         for(MoveOut moveOut : moveOuts) {
@@ -484,6 +493,7 @@ public class OrderService {
         Map<String, Double> map = new HashMap<String, Double>();
         
         for(ReturnMoveOut returnMoveOut : returnMoveOuts){
+            if(returnMoveOut.getReturnStatus().eq)
             map.put(returnMoveOut.getId(), returnMoveOut.getStatusQuantity());
         }
         return map;
