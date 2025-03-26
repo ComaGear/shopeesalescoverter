@@ -432,7 +432,8 @@ public class OrderRepository {
         if(!file.exists()) createRepositoryFile();
 
         FileInputStream fileInputStream = new FileInputStream(file);
-        XSSFWorkbook workbook = (XSSFWorkbook) WorkbookFactory.create(fileInputStream);
+        // XSSFWorkbook workbook = (XSSFWorkbook) WorkbookFactory.create(fileInputStream);
+        XSSFWorkbook workbook = new XSSFWorkbook(fileInputStream);
         XSSFSheet orderSheet = workbook.getSheetAt(0);
         Sheet movementSheet = workbook.getSheetAt(1);
         Sheet returnMovementSheet = workbook.getSheetAt(2);
