@@ -742,14 +742,16 @@ public class ShopeeSalesConvertApplication extends Application {
         generateOrderRepositoryFileButton.setOnAction((e) -> {
             File folder = folderChooser.showDialog(priStage);
             if(folder == null || !folder.exists()) return;
-            File orderRepositoryFile = new File(folder.getPath() + File.pathSeparator + "OrderRepository.xlsx");
+            File orderRepositoryFile = new File(folder.getPath() + File.separator + "OrderRepository.xlsx");
             try {
-                orderRepositoryFile.createNewFile();
+                // orderRepositoryFile.createNewFile();
+                saveProperty(ORDER_REPOSITORY_PATH, orderRepositoryFile.getPath());
+                OrderRepository orderRepository = new OrderRepository(false);
+                orderRepository.createRepositoryFile();
             } catch (IOException e1) {
                 new Alert(AlertType.ERROR, e1.getStackTrace().toString(), ButtonType.CLOSE).showAndWait();
                 return;
             }
-            saveProperty(ORDER_REPOSITORY_PATH, orderRepositoryFile.getPath());
         });
 
         if(getProperty(OLD_VERSION_CUTOFF_DATE) == null || getProperty(OLD_VERSION_CUTOFF_DATE).isEmpty()){
