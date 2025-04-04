@@ -48,7 +48,7 @@ public class SalesCellFactory implements Callback<ListView<MoveOutReason>, ListC
                 variationText.setWrappingWidth(200);
                 Text foundRow = new Text(Integer.toString(moveOutStatus.getMoveOut().getFoundRow()));
                 foundRow.setWrappingWidth(100);
-                Text UOMName = new Text(moveOutStatus.getMoveOut().getId());
+                Text UOMName = new Text(moveOutStatus.getMoveOut().getProductId());
                 UOMName.setWrappingWidth(300);
                 Text status = new Text(moveOutStatus.getStatus());
                 status.setWrappingWidth(100);

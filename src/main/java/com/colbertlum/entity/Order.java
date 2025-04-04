@@ -29,7 +29,9 @@ public class Order {
 
     private List<SoftReference<MoveOut>> MoveOutList;
 
-    
+    public double getAdjustmentShippingFee(){
+        return 0;
+    }
     
     public List<SoftReference<MoveOut>> getMoveOutList() {
         return MoveOutList;
@@ -37,60 +39,70 @@ public class Order {
     public void setMoveOutList(List<SoftReference<MoveOut>> moveOutList) {
         MoveOutList = moveOutList;
     }
+
     public LocalDate getOrderCreationDate() {
         return orderCreationDate;
     }
     public void setOrderCreationDate(LocalDate orderCreationDate) {
         this.orderCreationDate = orderCreationDate;
     }
+
     public LocalDate getOrderCompleteDate() {
         return orderCompleteDate;
     }
     public void setOrderCompleteDate(LocalDate orderCompleteDate) {
         this.orderCompleteDate = orderCompleteDate;
     }
+
     public LocalDate getShipOutDate() {
         return shipOutDate;
     }
     public void setShipOutDate(LocalDate shipOutDate) {
         this.shipOutDate = shipOutDate;
     }
+
     public String getId() {
         return id;
     }
     public void setId(String id) {
         this.id = id;
     }
+
     public double getManagementFee() {
         return managementFee;
     }
     public void setManagementFee(double managementFee) {
         this.managementFee = managementFee;
     }
+
     public double getOrderTotalAmount() {
         return orderTotalAmount;
     }
     public void setOrderTotalAmount(double orderTotalAmount) {
         this.orderTotalAmount = orderTotalAmount;
     }
+
     public double getAdjustmentshipppingFee() {
         return adjustmentshipppingFee;
     }
     public void setAdjustmentshipppingFee(double adjustmentshipppingFee) {
         this.adjustmentshipppingFee = adjustmentshipppingFee;
     }
+
     public double getSellerRebate() {
         return sellerRebate;
     }
     public void setSellerRebate(double sellerRebate) {
         this.sellerRebate = sellerRebate;
     }
+
     public double getPlatformRebate() {
         return platformRebate;
     }
     public void setPlatformRebate(double platformRebate) {
         this.platformRebate = platformRebate;
     }
+
     public String getInternalStatus() {
         return internalStatus;
     }

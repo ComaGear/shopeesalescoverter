@@ -78,7 +78,7 @@ public class TempMovementReporting {
             productName = productName.replaceAll(characterFilter,"");
 
             XSSFRow row = biztorySheet.createRow(rowCount++);
-            row.createCell(0).setCellValue(moveOut.getId());
+            row.createCell(0).setCellValue(moveOut.getProductId());
             row.createCell(1).setCellValue(productName);
             row.createCell(2).setCellValue(moveOut.getQuantity());
             row.createCell(3).setCellValue("");
@@ -133,8 +133,8 @@ public class TempMovementReporting {
         for(MoveOut moveOut : moveOuts){
 
             UOM uom = null;
-            if(moveOut.getId() != null) {
-                uom = UOM.binarySearch(moveOut.getId(), uoms);
+            if(moveOut.getProductId() != null) {
+                uom = UOM.binarySearch(moveOut.getProductId(), uoms);
             } else {
                 uom = new UOM();
                 uom.setProductId("");
@@ -144,7 +144,7 @@ public class TempMovementReporting {
             XSSFRow row = movementDetailSheet.createRow(index);
             row.createCell(0).setCellValue(moveOut.getOrder().getId());
             row.createCell(1).setCellValue(DateTimeFormatter.ofPattern(DATE_PATTERN).format(moveOut.getOrder().getShipOutDate()));
-            row.createCell(2).setCellValue(moveOut.getId());
+            row.createCell(2).setCellValue(moveOut.getProductId());
             row.createCell(3).setCellValue(moveOut.getProductName() + "-" + moveOut.getVariationName());
             row.createCell(4).setCellValue(moveOut.getQuantity());
             row.createCell(5).setCellValue(uom.getCostPrice());
@@ -214,8 +214,8 @@ public class TempMovementReporting {
             }
             
             UOM uom = null;
-            if(moveOut.getId() != null) {
-                uom = UOM.binarySearch(moveOut.getId(), uoms);
+            if(moveOut.getProductId() != null) {
+                uom = UOM.binarySearch(moveOut.getProductId(), uoms);
             } else {
                 uom = new UOM();
                 uom.setProductId("");

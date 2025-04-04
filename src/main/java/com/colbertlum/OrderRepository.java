@@ -199,7 +199,7 @@ public class OrderRepository {
         for(MoveOut moveOut : moveOutList) {
             Meas meas = measImputer.getMeas(moveOut.getSku(), measList);
             if(meas == null) continue;
-            moveOut.setId(meas.getId());
+            moveOut.setProductId(meas.getId());
         }
         for(ReturnMoveOut moveOut : returnMoveOuts) {
             Meas meas = measImputer.getMeas(moveOut.getSku(), measList);

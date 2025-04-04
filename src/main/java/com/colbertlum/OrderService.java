@@ -478,11 +478,11 @@ public class OrderService {
         HashMap<String, Double> pendingStockReducingMap = new HashMap<String, Double>();
 
         for(MoveOut moveOut : moveOuts) {
-            if(!pendingStockReducingMap.containsKey(moveOut.getId())) {
-                pendingStockReducingMap.put(moveOut.getId(), moveOut.getQuantity());
+            if(!pendingStockReducingMap.containsKey(moveOut.getProductId())) {
+                pendingStockReducingMap.put(moveOut.getProductId(), moveOut.getQuantity());
             } else {
-                Double lastReduce = pendingStockReducingMap.get(moveOut.getId());
-                pendingStockReducingMap.put(moveOut.getId(), lastReduce);
+                Double lastReduce = pendingStockReducingMap.get(moveOut.getProductId());
+                pendingStockReducingMap.put(moveOut.getProductId(), lastReduce);
             }
         }
         

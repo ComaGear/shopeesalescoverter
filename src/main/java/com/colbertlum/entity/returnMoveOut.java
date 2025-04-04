@@ -99,7 +99,7 @@ public class ReturnMoveOut {
         setPrice(moveOut.getPrice());
         setOrderId(moveOut.getOrder().getId());
         setReturnStatus(RETURNING);
-        setId(moveOut.getId());
+        setId(moveOut.getProductId());
     }
 
     public ReturnMoveOut(){
