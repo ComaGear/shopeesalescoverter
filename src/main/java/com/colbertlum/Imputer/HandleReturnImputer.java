@@ -17,6 +17,7 @@ import org.apache.poi.xssf.usermodel.XSSFSheet;
 import org.apache.poi.xssf.usermodel.XSSFWorkbook;
 
 import com.colbertlum.OrderRepository;
+import com.colbertlum.OrderService;
 import com.colbertlum.ShopeeSalesConvertApplication;
 import com.colbertlum.Imputer.Utils.Lookup;
 import com.colbertlum.entity.Meas;
@@ -159,7 +160,7 @@ public class HandleReturnImputer {
                         returnedClone.setReturnStatus(ReturnMoveOut.RECEIVED);
 
                         // only issue credit note when it was return after completed (has generated invoice)
-                        if(returnOrder.getStatus().equals(Order.STATUS_COMPLETED) && returnOrder.isRequestApproved()) {
+                        if(returnOrder.getStatus().equals(OrderService.STATUS_COMPLETE) && returnOrder.isRequestApproved()) {
                             // returnedItemMoveOuts.add(returnedClone);
                             figureToPutLocalDate(returnedClone, returnedItemMoveOutsLocalDateMap);
                         }
@@ -172,7 +173,7 @@ public class HandleReturnImputer {
                         break;
                     case ReturnMoveOut.RECEIVED:
                         // only issue credit note when it was return after completed (has generated invoice)
-                        if(returnOrder.getStatus().equals(Order.STATUS_COMPLETED) && returnOrder.isRequestApproved()) {
+                        if(returnOrder.getStatus().equals(OrderService.STATUS_COMPLETE) && returnOrder.isRequestApproved()) {
                             // returnedItemMoveOuts.add(returnMoveOut);
                             figureToPutLocalDate(returnMoveOut, returnedItemMoveOutsLocalDateMap);
                         }

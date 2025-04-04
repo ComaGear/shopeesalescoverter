@@ -4,6 +4,7 @@ import java.time.format.DateTimeFormatter;
 import java.util.List;
 
 import com.colbertlum.HandleOpenOrderFormListener;
+import com.colbertlum.OrderService;
 import com.colbertlum.entity.Order;
 import com.colbertlum.entity.ReturnMoveOut;
 import com.colbertlum.entity.ReturnOrder;
@@ -64,7 +65,7 @@ public class ReturnOrderCellFactory implements Callback<ListView<ReturnOrder>, L
                 } else {
                     orderCompletedDate.setText("");
                 }
-                if(returnOrder.getStatus().equals(Order.STATUS_COMPLETED) && returnOrder.isRequestApproved()){
+                if(returnOrder.getStatus().equals(OrderService.STATUS_COMPLETE) && returnOrder.isRequestApproved()){
                     returnType.setText("Return After Completed");
                 } else {
                     returnType.setText("Failed Delivery");

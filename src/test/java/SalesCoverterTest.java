@@ -19,6 +19,7 @@ import org.xml.sax.InputSource;
 import org.xml.sax.SAXException;
 import org.xml.sax.XMLReader;
 
+import com.colbertlum.OrderService;
 import com.colbertlum.ShopeeSalesConvertApplication;
 import com.colbertlum.contentHandler.ShopeeOrderReportContentHandler;
 import com.colbertlum.entity.MoveOut;
@@ -79,7 +80,7 @@ public class SalesCoverterTest {
             LocalDate shipOutDate = moveOut.getOrder().getShipOutDate();
 
             String status = moveOut.getOrder().getStatus();
-            if(Order.STATUS_CANCEL.equals(status) || Order.STATUS_UNPAID.equals(status) || Order.STATUS_TO_SHIP.equals(status)){
+            if(OrderService.STATUS_CANCEL.equals(status) || OrderService.STATUS_UNPAID.equals(status) || OrderService.STATUS_TO_SHIP.equals(status)){
                 continue;
             }
 
