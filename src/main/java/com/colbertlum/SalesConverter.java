@@ -80,7 +80,7 @@ public class SalesConverter {
         
         for(MoveOut moveOut : moveOuts){
             if(moveOut.getSku() == null || moveOut.getSku().isEmpty()){
-                Meas meas = search(moveOut.getProductName(), moveOut.getVariationName(), measList);
+                Meas meas = search(moveOut.getName(), measList);
                 if(meas != null) {
                     moveOut.setSku(meas.getRelativeId());
                     advanceFill.add(moveOut);
@@ -136,12 +136,12 @@ public class SalesConverter {
             moveOut.setQuantity(meas.getMeasurement() * moveOut.getQuantity());
             moveOut.setPrice(moveOut.getPrice() / meas.getMeasurement());
 
-            meas.setOnlineProductName(moveOut.getProductName());
-            meas.setOnlineVariationName(moveOut.getVariationName());
+            // meas.setOnlineProductName(moveOut.getProductName());
+            // meas.setOnlineVariationName(moveOut.getVariationName());
         }
     }
 
-    private Meas search(String productName, String variationName, List<Meas> measList){
+    private Meas search(String name, List<Meas> measList){
         int lo = 0;
         int hi = measList.size()-1;
 

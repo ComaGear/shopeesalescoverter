@@ -5,9 +5,15 @@ public class ShopeeMoveOut extends MoveOut{
     private String productName;
     private String variationName;
     private String parentSku;
-    private int foundRow;
 
     private double productSubtotal;
+
+    
+
+    @Override
+    public String getName() {
+        return productName + "-" + variationName;
+    }
 
     @Override
     public double getFinalPrice() {
@@ -40,13 +46,7 @@ public class ShopeeMoveOut extends MoveOut{
     public void setParentSku(String parentSku) {
         this.parentSku = parentSku;
     }
-    public int getFoundRow() {
-        return foundRow;
-    }
-    public void setFoundRow(int foundRow) {
-        this.foundRow = foundRow;
-    }
-    
+
     @Override
     public String toString() {
         return new StringBuilder()

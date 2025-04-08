@@ -4,11 +4,15 @@ public class TiktokMoveOut extends MoveOut {
 
     private String productName;
     private String variationName;
-    private int foundRow;
 
     private double SKUsubtotalAfterDiscount;
     private double SKUplatformDiscount;
     private double quantity;
+
+    @Override
+    public String getName() {
+        return productName + "-" + variationName;
+    }
 
     @Override
     public double getFinalPrice() {
@@ -38,14 +42,6 @@ public class TiktokMoveOut extends MoveOut {
 
     public void setVariationName(String variationName) {
         this.variationName = variationName;
-    }
-
-    public int getFoundRow() {
-        return foundRow;
-    }
-
-    public void setFoundRow(int foundRow) {
-        this.foundRow = foundRow;
     }
 
     public double getSKUsubtotalAfterDiscount() {

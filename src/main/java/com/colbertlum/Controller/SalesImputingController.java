@@ -159,9 +159,7 @@ public class SalesImputingController {
         Text skuHeaderText = new Text("SKU");
         skuHeaderText.setWrappingWidth(117);
         Text nameHeaderText = new Text(SalesImputer.NAME);
-        nameHeaderText.setWrappingWidth(450);
-        Text variationHeaderText = new Text("VARIATION");
-        variationHeaderText.setWrappingWidth(200);
+        nameHeaderText.setWrappingWidth(650);
         Text foundRowHeader = new Text("ROW POSITION");
         foundRowHeader.setWrappingWidth(100);
         Text UOMNameHeader = new Text("UOM NAME");
@@ -169,7 +167,7 @@ public class SalesImputingController {
         Text statusHeader = new Text("STATUS");
         statusHeader.setWrappingWidth(100);
 
-        HBox headerHBox = new HBox(skuHeaderText, nameHeaderText, variationHeaderText, foundRowHeader, UOMNameHeader, statusHeader);
+        HBox headerHBox = new HBox(skuHeaderText, nameHeaderText, foundRowHeader, UOMNameHeader, statusHeader);
 
         ListView<MoveOutReason> moveOutListView = new ListView<MoveOutReason>();
         SalesCellFactory salesCellFactory = new SalesCellFactory(this.selectedMoveOutStatusList);
@@ -208,8 +206,8 @@ public class SalesImputingController {
                 String matchStr = null;
                 switch(this.moveOutSearchMode){
                     case SalesImputer.NAME: 
-                        if(moveOut.getProductName() == null) continue;
-                        matchStr = moveOut.getProductName().toLowerCase();
+                        if(moveOut.getName() == null) continue;
+                        matchStr = moveOut.getName().toLowerCase();
                         break;
                     case SalesImputer.SKU:
                         if(moveOut.getSku() == null) continue;
@@ -251,8 +249,8 @@ public class SalesImputingController {
                 } else {
                     moveOutStatus.getMoveOut().setSku(selectedMeasSku);
                     if(this.doApplySkuToSimilarly) {
-                        applySkuToSimilarlyMoveOut(observableMoveOutStatusList, moveOutStatus.getMoveOut().getProductName()
-                            , moveOutStatus.getMoveOut().getVariationName(), selectedMeasSku);
+                        applySkuToSimilarlyMoveOut(observableMoveOutStatusList, moveOutStatus.getMoveOut().getName()
+                            , selectedMeasSku);
                     }
                 }
 
@@ -278,7 +276,7 @@ public class SalesImputingController {
         return new VBox(moveOutsSearchHBox, headerHBox, moveOutListView);
     }
 
-    private void applySkuToSimilarlyMoveOut(List<MoveOutReason> reasons, String productName, String variationName, String sku){
+    private void applySkuToSimilarlyMoveOut(List<MoveOutReason> reasons, String name, String sku){
 
         ArrayList<MoveOutReason> list = new ArrayList<MoveOutReason>(reasons);
 
@@ -286,23 +284,14 @@ public class SalesImputingController {
 
             @Override
             public int compare(MoveOutReason o1, MoveOutReason o2) {
-                if(o1.getMoveOut().getProductName().compareTo(o2.getMoveOut().getProductName()) == 0){
-                    return o1.getMoveOut().getVariationName().compareTo(o2.getMoveOut().getVariationName());
-                } else {
-                    return o1.getMoveOut().getProductName().compareTo(o2.getMoveOut().getProductName());
-                }
+                return o1.getMoveOut().getName().compareTo(o2.getMoveOut().getName());
             }
              
         });
 
         for(MoveOutReason reason : list){
-            String reasonProductName = reason.getMoveOut().getProductName();
-            String reasonVariationName = reason.getMoveOut().getVariationName();
-            boolean pass = false;
-            if(variationName == null && reasonVariationName == null){
-                pass = true;
-            }
-            if(reasonProductName.equals(productName) && (pass || reasonVariationName.equals(variationName))){
+            String reasonName = reason.getMoveOut().getName();
+            if(reasonName.equals(name)) {
                 reason.getMoveOut().setSku(sku);
             }
         }

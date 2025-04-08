@@ -11,6 +11,8 @@ public class MoveOut {
     private String orderId;
     private String productId;
 
+    private int foundRow;
+
     // private String sku;
     // private String productName;
     // private String variationName;
@@ -116,6 +118,16 @@ public class MoveOut {
     // public int getFoundRow() {
     //     return this.foundRow;
     // }
+
+    public int getFoundRow() {
+        return foundRow;
+    }
+
+
+    public void setFoundRow(int foundRow) {
+        this.foundRow = foundRow;
+    }
+
 
     public double getFinalPrice(){
         return price;

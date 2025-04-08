@@ -42,10 +42,8 @@ public class SalesCellFactory implements Callback<ListView<MoveOutReason>, ListC
 
                 Text skuText = new Text(moveOutStatus.getMoveOut().getSku());
                 skuText.setWrappingWidth(90);
-                Text nameText = new Text(moveOutStatus.getMoveOut().getProductName());
-                nameText.setWrappingWidth(450);
-                Text variationText = new Text(moveOutStatus.getMoveOut().getVariationName());
-                variationText.setWrappingWidth(200);
+                Text nameText = new Text(moveOutStatus.getMoveOut().getName());
+                nameText.setWrappingWidth(650);
                 Text foundRow = new Text(Integer.toString(moveOutStatus.getMoveOut().getFoundRow()));
                 foundRow.setWrappingWidth(100);
                 Text UOMName = new Text(moveOutStatus.getMoveOut().getProductId());
@@ -53,7 +51,7 @@ public class SalesCellFactory implements Callback<ListView<MoveOutReason>, ListC
                 Text status = new Text(moveOutStatus.getStatus());
                 status.setWrappingWidth(100);
 
-                setGraphic(new HBox(checkBox, skuText, nameText, variationText, foundRow, status));
+                setGraphic(new HBox(checkBox, skuText, nameText, foundRow, status));
             }
         };
     }
