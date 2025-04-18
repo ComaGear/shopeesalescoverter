@@ -728,7 +728,7 @@ public class OrderRepository {
     public void removeShippingOrders(List<Order> removeOrders) {
 
         for(Order order : removeOrders){
-            Order lookupOrder = Lookup.lookupOrder(shippingOrders, order.getId());
+            Order lookupOrder = Lookup.dumpLookupOrder(shippingOrders, order.getId());
             if(lookupOrder != null) {
                 shippingOrders.remove(lookupOrder);
                 orders.remove(lookupOrder);

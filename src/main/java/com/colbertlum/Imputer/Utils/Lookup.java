@@ -39,6 +39,18 @@ public class Lookup {
         return null;
     }
 
+    public static Order dumpLookupOrder(List<Order> list, String orderId) {
+        if(orderId == null || orderId.isEmpty()) return null;
+        orderId = orderId.trim();
+        list.sort((o1, o2) -> o1.getOrderCreationDate().compareTo(o2.getOrderCreationDate()));
+
+        for(Order listOrder : list) {
+            String listOrderId = listOrder.getId().trim();
+            if(listOrderId.equals(orderId)) return listOrder;
+        }
+        return null;
+    }
+
     public static ReturnOrder lookupReturnOrder(List<ReturnOrder> list, String orderId){
         int mid = 0;
         int lo = 0;

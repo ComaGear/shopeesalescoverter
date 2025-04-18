@@ -9,8 +9,6 @@ import java.util.HashMap;
 import java.util.List;
 import java.util.Map;
 
-import javax.sound.midi.SysexMessage;
-
 import com.colbertlum.Imputer.Utils.Lookup;
 import com.colbertlum.entity.MoveOut;
 import com.colbertlum.entity.Order;
@@ -75,13 +73,13 @@ public class OrderService {
         System.out.println("Repository completed orders size : " + orderRepository.getCompletedOrders().size());
         System.out.println("new completed orders size : " + newCompletedOrders.size());
         // save on completed order to repository
-        orderRepository.addCompletedOrders(newCompletedOrders);
         orderRepository.removeShippingOrders(newCompletedOrders);
+        orderRepository.addCompletedOrders(newCompletedOrders);
 
         // record received order
         List<Order> newReceivedOrders = figureOutNewReceivedOrder(orderRepository);
-        orderRepository.addCompletedOrders(newReceivedOrders);
         orderRepository.removeShippingOrders(newReceivedOrders);
+        orderRepository.addCompletedOrders(newReceivedOrders);
         System.out.println("new received orders size : " + newReceivedOrders.size());
 
         // figureOut toReport orders from newCompleted order with not record in repository.
