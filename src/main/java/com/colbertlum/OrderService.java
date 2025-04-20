@@ -112,7 +112,6 @@ public class OrderService {
 
         // record delivered order
         List<Order> newDeliveredOrders = figureOutNewDeliveredOrders(orderRepository);
-        orderRepository.addShippingOrders(newDeliveredOrders);
 
         // reporting being Shipping and Delivered MoveOut.
         ArrayList<MoveOut> shippingMoveOuts = new ArrayList<MoveOut>();
@@ -139,7 +138,7 @@ public class OrderService {
         TempMovementReporting.reporting(tempMovementFile, new ArrayList<MoveOut>(shippingMoveOuts));
         // save on shipping and delivered order to repository
         orderRepository.addShippingOrders(newShippingOrders);
-
+        orderRepository.addShippingOrders(newDeliveredOrders);
         
 
         // reporting completed order by date.
