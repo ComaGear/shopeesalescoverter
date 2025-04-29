@@ -14,6 +14,7 @@ import org.apache.poi.xssf.usermodel.XSSFWorkbook;
 
 import com.colbertlum.ShopeeSalesConvertApplication;
 import com.colbertlum.entity.MoveOut;
+import com.colbertlum.entity.MoveOutFactory;
 import com.colbertlum.entity.SummaryOrder;
 import com.colbertlum.entity.UOM;
 
@@ -59,7 +60,7 @@ public class CompletedMovementReporting {
 
             if(moveOut.getQuantity() == 0) continue; 
 
-            String productName = moveOut.getProductName() + " - " + moveOut.getVariationName();
+            String productName = moveOut.getName();
 
             String characterFilter = "[^\\p{L}\\p{M}\\p{N}\\p{P}\\p{Z}\\p{Cf}\\p{Cs}\\s]";
             productName = productName.replaceAll(characterFilter,"");
@@ -69,7 +70,7 @@ public class CompletedMovementReporting {
             row.createCell(1).setCellValue(productName);
             row.createCell(2).setCellValue(moveOut.getQuantity());
             row.createCell(3).setCellValue("");
-            row.createCell(4).setCellValue(moveOut.getProductSubTotal() / moveOut.getQuantity());
+            row.createCell(4).setCellValue(MoveOutFactory.getFinalPrice(moveOut));
         }
     }
 
@@ -88,12 +89,9 @@ public class CompletedMovementReporting {
         orderDetailHeaderRow.createCell(7).setCellValue("SubCost");
         orderDetailHeaderRow.createCell(8).setCellValue("Profit");
         orderDetailHeaderRow.createCell(9).setCellValue("Profit Rate");
-        orderDetailHeaderRow.createCell(10).setCellValue("transaction Fee");
-        orderDetailHeaderRow.createCell(11).setCellValue("Service Fee");
-        orderDetailHeaderRow.createCell(12).setCellValue("Commission Fee");
-        orderDetailHeaderRow.createCell(13).setCellValue("Management Fee");
-        orderDetailHeaderRow.createCell(14).setCellValue("Grand Total");
-        orderDetailHeaderRow.createCell(15).setCellValue("Order Shipping Fee");
+        orderDetailHeaderRow.createCell(10).setCellValue("Management Fee");
+        orderDetailHeaderRow.createCell(11).setCellValue("Grand Total");
+        orderDetailHeaderRow.createCell(12).setCellValue("Adjustment Shipping Fee");
 
 
         moveOuts.sort(new Comparator<MoveOut>() {
@@ -115,26 +113,23 @@ public class CompletedMovementReporting {
             } else {
                 uom = new UOM();
                 uom.setProductId("");
-                uom.setCostPrice(moveOut.getProductSubTotal() / moveOut.getQuantity());
+                uom.setCostPrice(MoveOutFactory.getFinalPrice(moveOut));
             }
 
             XSSFRow row = movementDetailSheet.createRow(index);
             row.createCell(0).setCellValue(moveOut.getOrder().getId());
             row.createCell(1).setCellValue(DateTimeFormatter.ofPattern(DATE_PATTERN).format(moveOut.getOrder().getShipOutDate()));
             row.createCell(2).setCellValue(moveOut.getProductId());
-            row.createCell(3).setCellValue(moveOut.getProductName() + "-" + moveOut.getVariationName());
+            row.createCell(3).setCellValue(moveOut.getName());
             row.createCell(4).setCellValue(moveOut.getQuantity());
             row.createCell(5).setCellValue(uom.getCostPrice());
-            row.createCell(6).setCellValue(moveOut.getProductSubTotal());
+            row.createCell(6).setCellValue(MoveOutFactory.getSKUSubTotal(moveOut));
             row.createCell(7).setCellValue(uom.getCostPrice() * moveOut.getQuantity());
-            row.createCell(8).setCellValue(moveOut.getProductSubTotal() - (uom.getCostPrice() * moveOut.getQuantity()));
-            row.createCell(9).setCellValue(1 - ((uom.getCostPrice() * moveOut.getQuantity()) / moveOut.getProductSubTotal()));
-            row.createCell(10).setCellValue(moveOut.getOrder().getTransactionFee());
-            row.createCell(11).setCellValue(moveOut.getOrder().getCommissionFee());
-            row.createCell(12).setCellValue(moveOut.getOrder().getServiceFee());
-            row.createCell(13).setCellValue(moveOut.getOrder().getManagementFee());
-            row.createCell(14).setCellValue(moveOut.getOrder().getOrderTotalAmount());
-            row.createCell(15).setCellValue(moveOut.getOrder().getShippingFee());
+            row.createCell(8).setCellValue(MoveOutFactory.getSKUSubTotal(moveOut) - (uom.getCostPrice() * moveOut.getQuantity()));
+            row.createCell(9).setCellValue(1 - ((uom.getCostPrice() * moveOut.getQuantity()) / MoveOutFactory.getSKUSubTotal(moveOut)));
+            row.createCell(10).setCellValue(moveOut.getOrder().getManagementFee());
+            row.createCell(11).setCellValue(moveOut.getOrder().getOrderTotalAmount());
+            row.createCell(12).setCellValue(moveOut.getOrder().getAdjustmentShippingFee());
 
             index++;
         }
@@ -186,18 +181,18 @@ public class CompletedMovementReporting {
             } else {
                 uom = new UOM();
                 uom.setProductId("");
-                uom.setCostPrice(moveOut.getProductSubTotal() / moveOut.getQuantity());
+                uom.setCostPrice(MoveOutFactory.getSKUSubTotal(moveOut) / moveOut.getQuantity());
             }
-            double moveOutProfit = moveOut.getProductSubTotal() - (uom.getCostPrice() * moveOut.getQuantity());
+            double moveOutProfit = MoveOutFactory.getSKUSubTotal(moveOut) - (uom.getCostPrice() * moveOut.getQuantity());
             if(lastOrder.getId() != null && lastOrder.getId().equals(moveOut.getOrder().getId())) {
                lastOrder.setProfit(lastOrder.getProfit() + moveOutProfit);
-               lastOrder.setTotalAmount(lastOrder.getTotalAmount() + moveOut.getProductSubTotal());
+               lastOrder.setTotalAmount(lastOrder.getTotalAmount() + MoveOutFactory.getSKUSubTotal(moveOut));
             } else {
                 lastOrder = new SummaryOrder();
                 lastOrder.setId(moveOut.getOrder().getId());
                 lastOrder.setProfit(moveOutProfit);
                 lastOrder.setShipOutDate(moveOut.getOrder().getShipOutDate());
-                lastOrder.setTotalAmount(moveOut.getProductSubTotal());
+                lastOrder.setTotalAmount(MoveOutFactory.getSKUSubTotal(moveOut));
                 summaryOrders.add(lastOrder);
             }
             

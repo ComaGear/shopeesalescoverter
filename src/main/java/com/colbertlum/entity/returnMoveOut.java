@@ -2,16 +2,15 @@ package com.colbertlum.entity;
 
 public class ReturnMoveOut {
     private String sku;
-    private String productName;
-    private String variationName;
+    private String name;
     private double quantity;
     private double price;
     private String orderId;
     private String returnStatus;
     private double statusQuantity;
-    private String id;
-
+    private String productId;
     private ReturnOrder returnOrder;
+
 
     
     public static final String RETURNING = "returning";
@@ -27,14 +26,13 @@ public class ReturnMoveOut {
     // - damaged
     // - lost
     // - none
-
     
     
-    public String getId() {
-        return id;
+    public String getProductId() {
+        return productId;
     }
-    public void setId(String id) {
-        this.id = id;
+    public void setProductId(String id) {
+        this.productId = id;
     }
     public String getReturnStatus() {
         return returnStatus;
@@ -53,18 +51,6 @@ public class ReturnMoveOut {
     }
     public void setSku(String sku) {
         this.sku = sku;
-    }
-    public String getProductName() {
-        return productName;
-    }
-    public void setProductName(String productName) {
-        this.productName = productName;
-    }
-    public String getVariationName() {
-        return variationName;
-    }
-    public void setVariationName(String variationName) {
-        this.variationName = variationName;
     }
     public double getQuantity() {
         return quantity;
@@ -88,18 +74,13 @@ public class ReturnMoveOut {
     public ReturnMoveOut(MoveOut moveOut){
         super();
 
-        if(moveOut.getSku() != null){
-            setSku(moveOut.getSku());
-        } else {
-            setSku(moveOut.getParentSku());
-        }
-        setProductName(moveOut.getProductName());
-        setVariationName(moveOut.getVariationName());
+        setSku(moveOut.getSku());
+        setName(moveOut.getName());
         setQuantity(moveOut.getQuantity());
         setPrice(moveOut.getPrice());
         setOrderId(moveOut.getOrder().getId());
         setReturnStatus(RETURNING);
-        setId(moveOut.getProductId());
+        setProductId(moveOut.getProductId());
     }
 
     public ReturnMoveOut(){
@@ -110,15 +91,14 @@ public class ReturnMoveOut {
         ReturnMoveOut clone = new ReturnMoveOut();
 
         clone.setSku(getSku());
-        clone.setProductName(getProductName());
-        clone.setVariationName(getVariationName());
+        clone.setName(getName());
         clone.setQuantity(getQuantity());
         clone.setOrderId(getOrderId());
         clone.setPrice(getPrice());
         clone.setOrderId(getOrderId());
         clone.setReturnStatus(getReturnStatus());
         clone.setStatusQuantity(getStatusQuantity());
-        clone.setId(getId());
+        clone.setProductId(getProductId());
         clone.setReturnOrder(getReturnOrder());
 
         return clone;
@@ -128,5 +108,11 @@ public class ReturnMoveOut {
     }
     public void setReturnOrder(ReturnOrder returnOrder) {
         this.returnOrder = returnOrder;
+    }
+    public void setName(String name) {
+        this.name = name;
+    }
+    public String getName(){
+        return name;
     }
 }

@@ -7,8 +7,14 @@ public class ShopeeMoveOut extends MoveOut{
     private String parentSku;
 
     private double productSubtotal;
-
     
+    public double getProductSubtotal() {
+        return productSubtotal;
+    }
+
+    public void setProductSubtotal(double productSubtotal) {
+        this.productSubtotal = productSubtotal;
+    }
 
     @Override
     public String getName() {

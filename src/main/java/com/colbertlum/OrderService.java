@@ -497,7 +497,7 @@ public class OrderService {
             if(returnMoveOut.getReturnStatus().equals(ReturnMoveOut.DAMAGED)
             || returnMoveOut.getReturnStatus().equals(ReturnMoveOut.LOST)
             || returnMoveOut.getReturnStatus().equals(ReturnMoveOut.PARTICULAR_RECEIVED)) {
-                map.put(returnMoveOut.getId(), returnMoveOut.getStatusQuantity());
+                map.put(returnMoveOut.getProductId(), returnMoveOut.getStatusQuantity());
             }
         }
         return map;
@@ -509,7 +509,7 @@ public class OrderService {
         
         for(ReturnMoveOut returnMoveOut : returnMoveOuts){
             if(returnMoveOut.getReturnStatus().equals(ReturnMoveOut.RETURNING)) {
-                map.put(returnMoveOut.getId(), returnMoveOut.getQuantity());
+                map.put(returnMoveOut.getProductId(), returnMoveOut.getQuantity());
             }
         }
         return map;

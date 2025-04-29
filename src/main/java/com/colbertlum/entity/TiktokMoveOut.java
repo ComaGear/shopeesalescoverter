@@ -1,6 +1,6 @@
 package com.colbertlum.entity;
 
-public class TiktokMoveOut extends MoveOut {
+public class TikTokMoveOut extends MoveOut {
 
     private String productName;
     private String variationName;

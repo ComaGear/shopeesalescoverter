@@ -20,8 +20,10 @@ import com.colbertlum.OrderRepository;
 import com.colbertlum.OrderService;
 import com.colbertlum.ShopeeSalesConvertApplication;
 import com.colbertlum.Imputer.Utils.Lookup;
+import com.colbertlum.constants.OrderInternalStatus;
 import com.colbertlum.entity.Meas;
 import com.colbertlum.entity.Order;
+import com.colbertlum.entity.OrderFactory;
 import com.colbertlum.entity.ReturnMoveOut;
 import com.colbertlum.entity.ReturnOrder;
 
@@ -42,7 +44,8 @@ public class HandleReturnImputer {
 
         @Override
         public int compare(ReturnOrder o1, ReturnOrder o2) {
-            return o1.getTrackingNumber().compareTo(o2.getTrackingNumber());
+            
+            return OrderFactory.getTrackingNumber(o1).compareTo(OrderFactory.getTrackingNumber(o2));
         }
         
     };
@@ -160,7 +163,7 @@ public class HandleReturnImputer {
                         returnedClone.setReturnStatus(ReturnMoveOut.RECEIVED);
 
                         // only issue credit note when it was return after completed (has generated invoice)
-                        if(returnOrder.getStatus().equals(OrderService.STATUS_COMPLETE) && returnOrder.isRequestApproved()) {
+                        if(returnOrder.getInternalStatus().equals(OrderInternalStatus.AFTER_RETURN)) {
                             // returnedItemMoveOuts.add(returnedClone);
                             figureToPutLocalDate(returnedClone, returnedItemMoveOutsLocalDateMap);
                         }
@@ -173,7 +176,7 @@ public class HandleReturnImputer {
                         break;
                     case ReturnMoveOut.RECEIVED:
                         // only issue credit note when it was return after completed (has generated invoice)
-                        if(returnOrder.getStatus().equals(OrderService.STATUS_COMPLETE) && returnOrder.isRequestApproved()) {
+                        if(returnOrder.getInternalStatus().equals(OrderInternalStatus.AFTER_RETURN)) {
                             // returnedItemMoveOuts.add(returnMoveOut);
                             figureToPutLocalDate(returnMoveOut, returnedItemMoveOutsLocalDateMap);
                         }
@@ -202,13 +205,13 @@ public class HandleReturnImputer {
             if(returnedItemMoveOutsLocalDateMap.containsKey(localDate)){
                 returnedItemMoveOuts = returnedItemMoveOutsLocalDateMap.get(localDate);
                 for(ReturnMoveOut moveOut : returnedItemMoveOuts) {
-                    moveOut.setId(measImputer.getMeas(moveOut.getSku(), measList).getId());
+                    moveOut.setProductId(measImputer.getMeas(moveOut.getSku(), measList).getId());
                 }
             }
             if(damagedItemMoveOutLocalDateMap.containsKey(localDate)){
                 damagedItemMoveOuts = damagedItemMoveOutLocalDateMap.get(localDate);
                 for(ReturnMoveOut moveOut : damagedItemMoveOuts) {
-                    moveOut.setId(measImputer.getMeas(moveOut.getSku(), measList).getId());
+                    moveOut.setProductId(measImputer.getMeas(moveOut.getSku(), measList).getId());
                 }
             }
 
@@ -257,13 +260,13 @@ public class HandleReturnImputer {
         for(ReturnMoveOut returnMoveOut : returnedMoveOuts) {
             if(returnMoveOut.getStatusQuantity() == 0) continue; 
 
-            String productName = returnMoveOut.getProductName() + " - " + returnMoveOut.getVariationName();
+            String productName = returnMoveOut.getName();
 
             String characterFilter = "[^\\p{L}\\p{M}\\p{N}\\p{P}\\p{Z}\\p{Cf}\\p{Cs}\\s]";
             productName = productName.replaceAll(characterFilter,"");
 
             XSSFRow row = biztorySheet.createRow(rowCount++);
-            row.createCell(0).setCellValue(returnMoveOut.getId());
+            row.createCell(0).setCellValue(returnMoveOut.getProductId());
             row.createCell(1).setCellValue(productName);
             row.createCell(2).setCellValue(returnMoveOut.getStatusQuantity());
             row.createCell(3).setCellValue("");
@@ -298,13 +301,13 @@ public class HandleReturnImputer {
         for(ReturnMoveOut returnMoveOut : damagedItemMoveOuts) {
             if(returnMoveOut.getStatusQuantity() == 0) continue; 
 
-            String productName = returnMoveOut.getProductName() + " - " + returnMoveOut.getVariationName();
+            String productName = returnMoveOut.getName();
 
             String characterFilter = "[^\\p{L}\\p{M}\\p{N}\\p{P}\\p{Z}\\p{Cf}\\p{Cs}\\s]";
             productName = productName.replaceAll(characterFilter,"");
 
             XSSFRow row = biztorySheet.createRow(rowCount++);
-            row.createCell(0).setCellValue(returnMoveOut.getId());
+            row.createCell(0).setCellValue(returnMoveOut.getProductId());
             row.createCell(1).setCellValue(productName);
             row.createCell(2).setCellValue(returnMoveOut.getStatusQuantity());
             row.createCell(3).setCellValue("");

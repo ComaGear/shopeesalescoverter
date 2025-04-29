@@ -5,9 +5,9 @@ import java.util.List;
 import org.apache.poi.xssf.model.SharedStrings;
 import org.apache.poi.xssf.model.StylesTable;
 
-import com.colbertlum.entity.MoveOut;
+import com.colbertlum.entity.ShopeeMoveOut;
 
-public class RepositoryItemMovementStatusContentHandler extends ContentHandler{
+public class RepositoryShopeeItemMovementStatusContentHandler extends ContentHandler{
 
     private static final String ORDER_ID = "Order Id";
     private static final String SKU = "SKU";
@@ -16,8 +16,8 @@ public class RepositoryItemMovementStatusContentHandler extends ContentHandler{
     private static final String VARIATION_NAME = "Variation Name";
     private static final String PRICE = "Price";
 
-    private MoveOut moveOut;
-    private List<MoveOut> moveOuts;
+    private ShopeeMoveOut moveOut;
+    private List<ShopeeMoveOut> moveOuts;
 
     @Override
     protected void onCell(String header, int row, String value) {
@@ -57,15 +57,15 @@ public class RepositoryItemMovementStatusContentHandler extends ContentHandler{
 
         moveOuts.add(moveOut);
 
-        moveOut = new MoveOut();
+        moveOut = new ShopeeMoveOut();
     }
 
-    public RepositoryItemMovementStatusContentHandler(SharedStrings sharedStringsTable, StylesTable stylesTable,
-            List<MoveOut> moveOuts) {
+    public RepositoryShopeeItemMovementStatusContentHandler(SharedStrings sharedStringsTable, StylesTable stylesTable,
+            List<ShopeeMoveOut> moveOuts) {
         super(sharedStringsTable, stylesTable);
         this.moveOuts = moveOuts;
 
-        moveOut = new MoveOut();
+        moveOut = new ShopeeMoveOut();
     }
     
     
