@@ -2,7 +2,7 @@ package com.colbertlum.entity;
 
 public class ShopeeOrder extends Order {
     private double transactionFee;
-    private double commisionFee;
+    private double commissionFee;
     private double serviceFee;
 
     private double estimatedShippingFee;
@@ -21,7 +21,7 @@ public class ShopeeOrder extends Order {
 
     @Override
     public double getManagementFee(){
-        return transactionFee + commisionFee + serviceFee;
+        return transactionFee + commissionFee + serviceFee;
     }
 
     @Override
@@ -47,14 +47,14 @@ public class ShopeeOrder extends Order {
         this.transactionFee = transactionFee;
     }
 
-    public double getCommisionFee() {
-        return commisionFee;
+    public double getCommissionFee() {
+        return commissionFee;
     }
 
-    public void setCommisionFee(double commisionFee) {
-        this.commisionFee = commisionFee;
+    public void setCommissionFee(double commisionFee) {
+        this.commissionFee = commisionFee;
     }
-
+    
     public double getServiceFee() {
         return serviceFee;
     }
@@ -134,6 +134,4 @@ public class ShopeeOrder extends Order {
     public void setRequestApproved(boolean requestApproved) {
         this.requestApproved = requestApproved;
     }
-
-    
 }

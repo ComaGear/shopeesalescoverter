@@ -1,11 +1,10 @@
 package com.colbertlum.Imputer.Utils;
 
-import java.util.Collections;
-import java.util.Comparator;
 import java.util.List;
 
 import com.colbertlum.entity.Meas;
 import com.colbertlum.entity.Order;
+import com.colbertlum.entity.OrderFactory;
 import com.colbertlum.entity.ProductStock;
 import com.colbertlum.entity.ReturnMoveOut;
 import com.colbertlum.entity.ReturnOrder;
@@ -57,12 +56,12 @@ public class Lookup {
     public static ReturnMoveOut lookupReturnMoveOutByObjectAndSorting(List<ReturnMoveOut> returnMoveOuts, ReturnMoveOut returnMoveOut) {
 
         returnMoveOuts.sort((o1, o2) -> {
-            String uqo1 = o1.getOrderId() + "-" + o1.getProductName() + "-" + o1.getVariationName() + "-" + o1.getReturnStatus() + "-" + o1.getStatusQuantity();
-            String uqo2 = o2.getOrderId() + "-" + o2.getProductName() + "-" + o2.getVariationName() + "-" + o2.getReturnStatus() + "-" + o2.getStatusQuantity();
+            String uqo1 = o1.getOrderId() + "-" + o1.getName() + "-" + o1.getReturnStatus() + "-" + o1.getStatusQuantity();
+            String uqo2 = o2.getOrderId() + "-" + o2.getName() + "-" + o2.getReturnStatus() + "-" + o2.getStatusQuantity();
             return uqo1.compareTo(uqo2);
         });
         
-        String uqo2 = returnMoveOut.getOrderId() + "-" + returnMoveOut.getProductName() + "-" + returnMoveOut.getVariationName() + "-" + returnMoveOut.getReturnStatus() + "-" + returnMoveOut.getStatusQuantity();
+        String uqo2 = returnMoveOut.getOrderId() + "-" + returnMoveOut.getName() + "-" + returnMoveOut.getReturnStatus() + "-" + returnMoveOut.getStatusQuantity();
 
         int mid = 0;
         int lo = 0;
@@ -70,7 +69,7 @@ public class Lookup {
         while(lo <= hi){
             mid = lo + (hi-lo) / 2;
             ReturnMoveOut o1 = returnMoveOuts.get(mid);
-            String uqo1 = o1.getOrderId() + "-" + o1.getProductName() + "-" + o1.getVariationName() + "-" + o1.getReturnStatus() + "-" + o1.getStatusQuantity();
+            String uqo1 = o1.getOrderId() + "-" + o1.getName() + "-" + o1.getReturnStatus() + "-" + o1.getStatusQuantity();
             if(uqo1.compareTo(uqo2) > 0) hi = mid-1;
             else if(uqo1.compareTo(uqo2) < 0) lo = mid+1;
             else {
@@ -86,8 +85,8 @@ public class Lookup {
         int hi = list.size()-1;
         while(lo <= hi){
             mid = lo + (hi-lo) / 2;
-            if(list.get(mid).getTrackingNumber().compareTo(trackingNumber) > 0) hi = mid-1;
-            else if(list.get(mid).getTrackingNumber().compareTo(trackingNumber) < 0) lo = mid+1;
+            if(OrderFactory.getTrackingNumber(list.get(mid)).compareTo(trackingNumber) > 0) hi = mid-1;
+            else if(OrderFactory.getTrackingNumber(list.get(mid)).compareTo(trackingNumber) < 0) lo = mid+1;
             else {
                 return list.get(mid);
             }

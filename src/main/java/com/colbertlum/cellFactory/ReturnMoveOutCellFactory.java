@@ -89,7 +89,7 @@ public class ReturnMoveOutCellFactory implements Callback<ListView<ReturnMoveOut
                 
                 iReturnMoveOut = returnMoveOut;
 
-                productDescriptionText.setText(returnMoveOut.getProductName() + " : " + returnMoveOut.getVariationName());
+                productDescriptionText.setText(returnMoveOut.getName());
                 skuText.setText(returnMoveOut.getSku());
                 if(returnMoveOut.getQuantity() == 0) quantityText.setText("");
                 else quantityText.setText(formater.format(returnMoveOut.getQuantity()));

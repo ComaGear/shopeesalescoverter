@@ -12,6 +12,8 @@ import org.apache.poi.xssf.model.SharedStrings;
 import org.apache.poi.xssf.model.StylesTable;
 import com.colbertlum.entity.MoveOut;
 import com.colbertlum.entity.Order;
+import com.colbertlum.entity.ShopeeMoveOut;
+import com.colbertlum.entity.ShopeeOrder;
 
 public class ShopeeOrderReportContentHandler extends ContentHandler {
 
@@ -42,10 +44,10 @@ public class ShopeeOrderReportContentHandler extends ContentHandler {
 
     private static final String REQUEST_REFUND_APPROVED = "Request Approved";
 
-    private List<MoveOut> moveOuts;
-    private Map<String, Order> orderMap;
-    private MoveOut moveOut;
-    private Order order;
+    private List<ShopeeMoveOut> moveOuts;
+    private Map<String, ShopeeOrder> orderMap;
+    private ShopeeMoveOut moveOut;
+    private ShopeeOrder order;
 
     @Override
     protected void onCell(String header, int row, String value) {
@@ -66,7 +68,7 @@ public class ShopeeOrderReportContentHandler extends ContentHandler {
                 order.setTransactionFee(Double.parseDouble(value));
                 break;
             case SHIPPING_FEE:
-                order.setShippingFee(Double.parseDouble(value));
+                order.setEstimatedShippingFee(Double.parseDouble(value));
                 break;
             case SKU:
                 moveOut.setSku(value);
@@ -94,7 +96,7 @@ public class ShopeeOrderReportContentHandler extends ContentHandler {
                 order.setStatus(value);
                 break;
             case SHIPPING_REBATE_ESTIMATE:
-                order.setShippingRebateEstimate(Double.parseDouble(value));
+                order.setShippingRebateEstimated(Double.parseDouble(value));
                 break;
             case ORDER_CREATION_TIME:
                 order.setOrderCreationDate(LocalDateTime.parse(value, DateTimeFormatter.ofPattern(DATE_PATTERN)).toLocalDate());
@@ -128,30 +130,30 @@ public class ShopeeOrderReportContentHandler extends ContentHandler {
                     && (moveOut.getSku() == null || moveOut.getSku().isEmpty())) moveOut.setSku(moveOut.getParentSku());
             moveOuts.add(moveOut); 
 
-            this.moveOut = new MoveOut();
-            this.order = new Order();
+            this.moveOut = new ShopeeMoveOut();
+            this.order = new ShopeeOrder();
             this.order.setMoveOutList(new ArrayList<SoftReference<MoveOut>>());
         }
     }
 
-    public List<MoveOut> getMoveOuts(){
+    public List<ShopeeMoveOut> getMoveOuts(){
         return this.moveOuts;
     }
 
-    public List<Order> getOrders(){
+    public List<ShopeeOrder> getOrders(){
         return new ArrayList<>(orderMap.values());
     }
 
 
     public ShopeeOrderReportContentHandler(SharedStrings sharedStrings, StylesTable stylesTable,
-            List<MoveOut> moveOuts) {
+            List<ShopeeMoveOut> moveOuts) {
         super(sharedStrings, stylesTable);
 
         this.moveOuts = moveOuts;
-        this.orderMap = new HashMap<String, Order>();
+        this.orderMap = new HashMap<String, ShopeeOrder>();
 
-        this.order = new Order();
+        this.order = new ShopeeOrder();
         this.order.setMoveOutList(new ArrayList<SoftReference<MoveOut>>());
-        this.moveOut = new MoveOut();
+        this.moveOut = new ShopeeMoveOut();
     }
 }

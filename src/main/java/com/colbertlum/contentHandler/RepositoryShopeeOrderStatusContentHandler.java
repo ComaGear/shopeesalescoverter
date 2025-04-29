@@ -8,8 +8,9 @@ import org.apache.poi.xssf.model.SharedStrings;
 import org.apache.poi.xssf.model.StylesTable;
 
 import com.colbertlum.entity.Order;
+import com.colbertlum.entity.ShopeeOrder;
 
-public class RepositoryOrderStatusContentHandler extends ContentHandler {
+public class RepositoryShopeeOrderStatusContentHandler extends ContentHandler {
 
     private static final String DATE_PATTERN = "yyyy-MM-dd";
 
@@ -29,16 +30,16 @@ public class RepositoryOrderStatusContentHandler extends ContentHandler {
     private static final String SHIPPING_FEE = "Shipping Fee";
     private static final String SHIPPING_REBATE = "Shipping Rebate";
 
-    private List<Order> orders;
+    private List<ShopeeOrder> orders;
+    private ShopeeOrder order;
 
-    private Order order;
     @Override
     protected void onRow(int row) {
 
         if(order.getId() != null){
             orders.add(order);
         }
-        order = new Order();
+        order = new ShopeeOrder();
     }
 
     @Override
@@ -87,16 +88,16 @@ public class RepositoryOrderStatusContentHandler extends ContentHandler {
                 order.setShippingFee(Double.parseDouble(value));
                 break;
             case SHIPPING_REBATE:
-                order.setShippingRebateEstimate(Double.parseDouble(value));
+                order.setShippingRebateEstimated(Double.parseDouble(value));
                 break;
             default:
                 break;
         }
     }
 
-    public RepositoryOrderStatusContentHandler(SharedStrings sharedStrings, StylesTable stylesTable,  List<Order> orders) {
+    public RepositoryShopeeOrderStatusContentHandler(SharedStrings sharedStrings, StylesTable stylesTable,  List<ShopeeOrder> orders) {
         super(sharedStrings, stylesTable);
-        this.order = new Order();
+        this.order = new ShopeeOrder();
         this.orders = orders;
     }
     

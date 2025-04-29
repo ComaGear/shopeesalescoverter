@@ -10,7 +10,8 @@ import com.colbertlum.HandleOpenOrderFormListener;
 import com.colbertlum.Imputer.HandleReturnImputer;
 import com.colbertlum.cellFactory.ReturnMoveOutCellFactory;
 import com.colbertlum.cellFactory.ReturnOrderCellFactory;
-import com.colbertlum.entity.MoveOut;
+import com.colbertlum.entity.MoveOutFactory;
+import com.colbertlum.entity.OrderFactory;
 import com.colbertlum.entity.ReturnMoveOut;
 import com.colbertlum.entity.ReturnOrder;
 
@@ -106,7 +107,7 @@ public class HandleReturnController implements HandleOpenOrderFormListener {
                 if(order.getId().toLowerCase().contains(newValue.toLowerCase()) && !orders.contains(order)) {
                     orders.add(order);
                 }
-                if(order.getTrackingNumber().toLowerCase().contains(newValue.toLowerCase())  && !orders.contains(order)) {
+                if(OrderFactory.getTrackingNumber(order).toLowerCase().contains(newValue.toLowerCase())  && !orders.contains(order)) {
                     orders.add(order);
                 }
             }
@@ -233,10 +234,8 @@ public class HandleReturnController implements HandleOpenOrderFormListener {
             }
             // filter returnMoveOut contains newValue from searchBar
             for(ReturnMoveOut returnMoveOut : cloneReturnMoveOuts){
-                if(returnMoveOut.getProductName().contains(newValue)) {
+                if(returnMoveOut.getName().contains(newValue)) {
                     newReturnMoveOutList.add(returnMoveOut);
-                } else if(returnMoveOut.getVariationName().contains(newValue)){
-                    newReturnMoveOutList.add(returnMoveOut); 
                 }
             }
             refillMovementListView(FXCollections.observableArrayList(newReturnMoveOutList));
@@ -255,7 +254,6 @@ public class HandleReturnController implements HandleOpenOrderFormListener {
             
             // do split ReturnMoveOut UI ingretation and core.
             if(returnMovementSelecting && returnMovementCellFactory.getSelected() != null){
-                // TODO progress for #let user split return moveOuts into different status
                 ReturnMoveOut selectedReturnMoveOut = returnMovementCellFactory.getSelected();
                 
                 List<Double> splitResult = openSplitMovementScene(selectedReturnMoveOut.getQuantity(), stage);
@@ -271,21 +269,22 @@ public class HandleReturnController implements HandleOpenOrderFormListener {
                 // distribute SelectReturnMoveOut's quantity to each splitted by spiltRatio
                 firstReturnMoveOut.setOrderId(selectedReturnMoveOut.getOrderId());
                 firstReturnMoveOut.setPrice(selectedReturnMoveOut.getPrice());
-                firstReturnMoveOut.setId(selectedReturnMoveOut.getId());
-                firstReturnMoveOut.setProductName(selectedReturnMoveOut.getProductName());
+                firstReturnMoveOut.setProductId(selectedReturnMoveOut.getProductId());
+                MoveOutFactory.setProductName(firstReturnMoveOut, MoveOutFactory.getProductName(selectedReturnMoveOut));
+
                 firstReturnMoveOut.setReturnStatus(selectedReturnMoveOut.getReturnStatus());
                 firstReturnMoveOut.setSku(selectedReturnMoveOut.getSku());
-                firstReturnMoveOut.setVariationName(selectedReturnMoveOut.getVariationName());
+                MoveOutFactory.setVariationName(firstReturnMoveOut, MoveOutFactory.getVariationName(selectedReturnMoveOut));
                 firstReturnMoveOut.setQuantity(selectedReturnMoveOut.getQuantity() * splitRatio);
                 firstReturnMoveOut.setStatusQuantity(selectedReturnMoveOut.getStatusQuantity() * splitRatio);
 
                 secondReturnMoveOut.setOrderId(selectedReturnMoveOut.getOrderId());
                 secondReturnMoveOut.setPrice(selectedReturnMoveOut.getPrice());
-                secondReturnMoveOut.setId(selectedReturnMoveOut.getId());
-                secondReturnMoveOut.setProductName(selectedReturnMoveOut.getProductName());
+                secondReturnMoveOut.setProductId(selectedReturnMoveOut.getProductId());
+                MoveOutFactory.setProductName(secondReturnMoveOut, MoveOutFactory.getProductName(selectedReturnMoveOut));
                 secondReturnMoveOut.setReturnStatus(selectedReturnMoveOut.getReturnStatus());
                 secondReturnMoveOut.setSku(selectedReturnMoveOut.getSku());
-                secondReturnMoveOut.setVariationName(selectedReturnMoveOut.getVariationName());
+                MoveOutFactory.setVariationName(secondReturnMoveOut, MoveOutFactory.getVariationName(selectedReturnMoveOut));
                 secondReturnMoveOut.setQuantity(selectedReturnMoveOut.getQuantity() * (1 - splitRatio));
                 secondReturnMoveOut.setStatusQuantity(selectedReturnMoveOut.getStatusQuantity() * (1 - splitRatio));
 

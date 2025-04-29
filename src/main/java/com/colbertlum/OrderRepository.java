@@ -33,8 +33,8 @@ import org.xml.sax.XMLReader;
 
 import com.colbertlum.Imputer.MeasImputer;
 import com.colbertlum.Imputer.Utils.Lookup;
-import com.colbertlum.contentHandler.RepositoryItemMovementStatusContentHandler;
-import com.colbertlum.contentHandler.RepositoryOrderStatusContentHandler;
+import com.colbertlum.contentHandler.RepositoryShopeeItemMovementStatusContentHandler;
+import com.colbertlum.contentHandler.RepositoryShopeeOrderStatusContentHandler;
 import com.colbertlum.contentHandler.RepositoryReturnMovementContentHandler;
 import com.colbertlum.entity.Meas;
 import com.colbertlum.entity.MoveOut;
@@ -162,13 +162,13 @@ public class OrderRepository {
                     XMLReader xmlReader = XMLHelper.newXMLReader();
                     if(sheetName.equals("Orders")){
 
-                        RepositoryOrderStatusContentHandler contentHandler = new RepositoryOrderStatusContentHandler(xssfReader.getSharedStringsTable(), xssfReader.getStylesTable(), orders);
+                        RepositoryShopeeOrderStatusContentHandler contentHandler = new RepositoryShopeeOrderStatusContentHandler(xssfReader.getSharedStringsTable(), xssfReader.getStylesTable(), orders);
                         xmlReader.setContentHandler(contentHandler);
                         xmlReader.parse(new InputSource(inputStream));
 
                     } else if(sheetName.equals("Movements")) {
 
-                        RepositoryItemMovementStatusContentHandler contentHandler = new RepositoryItemMovementStatusContentHandler(xssfReader.getSharedStringsTable(), xssfReader.getStylesTable(), moveOutList);
+                        RepositoryShopeeItemMovementStatusContentHandler contentHandler = new RepositoryShopeeItemMovementStatusContentHandler(xssfReader.getSharedStringsTable(), xssfReader.getStylesTable(), moveOutList);
                         xmlReader.setContentHandler(contentHandler);
                         xmlReader.parse(new InputSource(inputStream));
 
@@ -204,7 +204,7 @@ public class OrderRepository {
         for(ReturnMoveOut moveOut : returnMoveOuts) {
             Meas meas = measImputer.getMeas(moveOut.getSku(), measList);
             if(meas == null) continue;
-            moveOut.setId(meas.getId());
+            moveOut.setProductId(meas.getId());
         }
 
         HashMap<String, List<SoftReference<MoveOut>>> orderIdMap = new HashMap<String, List<SoftReference<MoveOut>>>();
