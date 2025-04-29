@@ -107,4 +107,16 @@ public class MoveOutFactory {
         }
         return 0d;
     }
+
+    public static String getPlatformOrderStatus(MoveOut moveOut) {
+        if(moveOut instanceof ShopeeMoveOut) {
+            ShopeeMoveOut shopeeMoveOut = (ShopeeMoveOut) moveOut;
+            return ((ShopeeOrder)shopeeMoveOut.getOrder()).getStatus();
+        }
+        if(moveOut instanceof TikTokMoveOut) {
+            TikTokMoveOut tikTokMoveOut = (TikTokMoveOut) moveOut;
+            return ((TikTokOrder) tikTokMoveOut.getOrder()).getStatus();
+        }
+        return null;
+    }
 }
