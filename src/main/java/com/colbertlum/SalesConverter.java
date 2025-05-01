@@ -4,7 +4,9 @@ import java.util.ArrayList;
 import java.util.Comparator;
 import java.util.List;
 
+import com.colbertlum.Imputer.Utils.Lookup;
 import com.colbertlum.entity.Meas;
+import com.colbertlum.entity.MeasPlatformName;
 import com.colbertlum.entity.MoveOut;
 import com.colbertlum.entity.Order;
 
@@ -15,6 +17,7 @@ public class SalesConverter {
     private List<MoveOut> EmptySkuMoveOuts;
     private List<MoveOut> notExistSkuMoveOuts;
     private List<MoveOut> advanceFillMoveOuts;
+    private List<MeasPlatformName> measPlatformNameList; // TODO: this have not implement sources and auto mapping.
 
     public List<MoveOut> getAdvanceFillMoveOuts() {
         return advanceFillMoveOuts;
@@ -52,7 +55,7 @@ public class SalesConverter {
 
         // this.advanceFillMoveOuts = advanceFillEmptySku(moveOuts);
         this.EmptySkuMoveOuts = this.cleanEmptySku(this.moveOuts); // getting out emptry sku moveOut
-        this.calculateActualPrice(this.moveOuts);
+        // this.calculateActualPrice(this.moveOuts);
         this.convertMeas();
         return this.moveOuts;
     }
@@ -80,7 +83,7 @@ public class SalesConverter {
         
         for(MoveOut moveOut : moveOuts){
             if(moveOut.getSku() == null || moveOut.getSku().isEmpty()){
-                Meas meas = search(moveOut.getName(), measList);
+                Meas meas = Lookup.lookupMeasByName(measPlatformNameList, moveOut.getName());
                 if(meas != null) {
                     moveOut.setSku(meas.getRelativeId());
                     advanceFill.add(moveOut);
@@ -91,21 +94,21 @@ public class SalesConverter {
         return advanceFill;
     }
 
-    private void calculateActualPrice(List<MoveOut> moveOuts) {
+    // private void calculateActualPrice(List<MoveOut> moveOuts) {
         
-        for(MoveOut moveOut : moveOuts){
-            Order order = moveOut.getOrder();
+    //     for(MoveOut moveOut : moveOuts){
+    //         Order order = moveOut.getOrder();
 
-            double subtotal = moveOut.getPrice() * moveOut.getQuantity(); 
-            double totalFee = order.getManagementFee() + order.getTransactionFee() + order.getCommissionFee() + order.getServiceFee();
-            double totalAmountReduceShippingFee = order.getOrderTotalAmount() + order.getShopeeVoucher() - order.getShippingFee() + order.getShippingRebateEstimate();
+    //         double subtotal = moveOut.getPrice() * moveOut.getQuantity(); 
+    //         double totalFee = order.getManagementFee() + order.getTransactionFee() + order.getCommissionFee() + order.getServiceFee();
+    //         double totalAmountReduceShippingFee = order.getOrderTotalAmount() + order.getShopeeVoucher() - order.getShippingFee() + order.getShippingRebateEstimate();
 
-            double subFee = totalFee * (subtotal / totalAmountReduceShippingFee);
-            double priceReduceFee = (subtotal - subFee) / moveOut.getQuantity();
+    //         double subFee = totalFee * (subtotal / totalAmountReduceShippingFee);
+    //         double priceReduceFee = (subtotal - subFee) / moveOut.getQuantity();
 
-            moveOut.setPrice(priceReduceFee);
-        }
-    }
+    //         moveOut.setPrice(priceReduceFee);
+    //     }
+    // }
 
     private void convertMeas() {
 
@@ -141,26 +144,26 @@ public class SalesConverter {
         }
     }
 
-    private Meas search(String name, List<Meas> measList){
-        int lo = 0;
-        int hi = measList.size()-1;
+    // private Meas search(String name, List<Meas> measList){
+    //     int lo = 0;
+    //     int hi = measList.size()-1;
 
-        while(lo <= hi) {
-            int mid = lo + (hi-lo) / 2;
-            String midProductName = measList.get(mid).getOnlineProductName();
-            String midVariationName = measList.get(mid).getOnlineVariationName();
-            if(midProductName == null) midProductName = "";
-            if(midVariationName == null) midVariationName = "";
-            if(midProductName.compareTo(productName) > 0) hi = mid-1; 
-            else if(midProductName.compareTo(productName) < 0) lo = mid+1;
-            else{
-                if(midVariationName.compareTo(variationName) > 0) hi = mid-1; 
-                else if(midVariationName.compareTo(variationName) < 0) lo = mid+1;
-                else return measList.get(mid);
-            }
-        }
-        return null;
-    }
+    //     while(lo <= hi) {
+    //         int mid = lo + (hi-lo) / 2;
+    //         String midProductName = measList.get(mid).getOnlineProductName();
+    //         String midVariationName = measList.get(mid).getOnlineVariationName();
+    //         if(midProductName == null) midProductName = "";
+    //         if(midVariationName == null) midVariationName = "";
+    //         if(midProductName.compareTo(productNampe) > 0) hi = mid-1; 
+    //         else if(midProductName.compareTo(productName) < 0) lo = mid+1;
+    //         else{
+    //             if(midVariationName.compareTo(variationName) > 0) hi = mid-1; 
+    //             else if(midVariationName.compareTo(variationName) < 0) lo = mid+1;
+    //             else return measList.get(mid);
+    //         }
+    //     }
+    //     return null;
+    // }
     
     private Meas binarySearch(MoveOut moveOut, List<Meas> measList){
 

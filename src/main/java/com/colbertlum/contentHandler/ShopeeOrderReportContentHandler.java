@@ -11,7 +11,6 @@ import java.util.Map;
 import org.apache.poi.xssf.model.SharedStrings;
 import org.apache.poi.xssf.model.StylesTable;
 import com.colbertlum.entity.MoveOut;
-import com.colbertlum.entity.Order;
 import com.colbertlum.entity.ShopeeMoveOut;
 import com.colbertlum.entity.ShopeeOrder;
 
@@ -44,7 +43,7 @@ public class ShopeeOrderReportContentHandler extends ContentHandler {
 
     private static final String REQUEST_REFUND_APPROVED = "Request Approved";
 
-    private List<ShopeeMoveOut> moveOuts;
+    private List<MoveOut> moveOuts;
     private Map<String, ShopeeOrder> orderMap;
     private ShopeeMoveOut moveOut;
     private ShopeeOrder order;
@@ -136,7 +135,7 @@ public class ShopeeOrderReportContentHandler extends ContentHandler {
         }
     }
 
-    public List<ShopeeMoveOut> getMoveOuts(){
+    public List<MoveOut> getMoveOuts(){
         return this.moveOuts;
     }
 
@@ -146,7 +145,7 @@ public class ShopeeOrderReportContentHandler extends ContentHandler {
 
 
     public ShopeeOrderReportContentHandler(SharedStrings sharedStrings, StylesTable stylesTable,
-            List<ShopeeMoveOut> moveOuts) {
+            List<MoveOut> moveOuts) {
         super(sharedStrings, stylesTable);
 
         this.moveOuts = moveOuts;

@@ -35,10 +35,10 @@ import com.colbertlum.Imputer.MeasImputer;
 import com.colbertlum.Imputer.StockImputer;
 import com.colbertlum.Imputer.Utils.BigSellerStockCountingFactory;
 import com.colbertlum.Imputer.Utils.OnlineSalesInfoFactory;
-import com.colbertlum.contentHandler.BigSellerReportContentHandler;
 import com.colbertlum.contentHandler.MeasContentHandler;
 import com.colbertlum.contentHandler.ShopeeOrderReportContentHandler;
 import com.colbertlum.contentHandler.StockReportContentReader;
+import com.colbertlum.contentHandler.TikTokOrderReportContentHandler;
 import com.colbertlum.contentHandler.uomContentHandler;
 import com.colbertlum.entity.ListingStock;
 import com.colbertlum.entity.Meas;
@@ -79,6 +79,7 @@ public class ShopeeSalesConvertApplication extends Application {
     public static final String BIG_SELLER = "Big Seller";
     public static final String SHOPEE_ORDER = "Shopee Order";
     public static final String SHOPEE = "Shopee";
+    public static final String TIKTOK_ORDER = "TikTok Order";
 
     public static final String DATA_SOURCE_TYPE = "data-source-type";
     public static final String OUTPUT_PATH = "output-path";
@@ -106,6 +107,9 @@ public class ShopeeSalesConvertApplication extends Application {
     private Stage dialogStage;
     private StockImputingController stockImputingController;
     private String DATE_PATTERN = "yyyy-MM-dd";
+
+    private String currentPlatformSources = getProperty(DATA_SOURCE_TYPE);
+
     public static void main(String[] args){
         Application.launch(args);
     }
@@ -426,9 +430,10 @@ public class ShopeeSalesConvertApplication extends Application {
         return uoms;
     }
 
-    public List<MoveOut> getMoveOuts() {
+    public List<MoveOut> getMoveOuts(String platformSources) {
+        if(platformSources == null || platformSources.isEmpty()) throw new NullPointerException("parameter platformSource is null");
 
-        ArrayList<MoveOut> moveOuts = new ArrayList<MoveOut>();
+        List<MoveOut> moveOuts = new ArrayList<MoveOut>();
         
         try {
             String pathStr = getProperty(REPORT);
@@ -436,12 +441,12 @@ public class ShopeeSalesConvertApplication extends Application {
             File file = new File(pathStr);
             XSSFReader xssfReader = new XSSFReader(OPCPackage.open(file));
             XMLReader xmlReader = XMLHelper.newXMLReader();
-            if(getProperty(DATA_SOURCE_TYPE).equals(SHOPEE_ORDER)) {
+            if(platformSources.equals(SHOPEE_ORDER)) {
                 ShopeeOrderReportContentHandler contentHandler = new ShopeeOrderReportContentHandler(xssfReader.getSharedStringsTable(), xssfReader.getStylesTable(), moveOuts);
                 xmlReader.setContentHandler(contentHandler);
 
-            } else {
-                BigSellerReportContentHandler contentHandler = new BigSellerReportContentHandler(xssfReader.getSharedStringsTable(), xssfReader.getStylesTable(), moveOuts);
+            } else if(platformSources.equals(TIKTOK_ORDER)) {
+                TikTokOrderReportContentHandler contentHandler = new TikTokOrderReportContentHandler(xssfReader.getSharedStringsTable(), xssfReader.getStylesTable(), moveOuts);
                 xmlReader.setContentHandler(contentHandler);
             }
             InputSource sheetData = new InputSource(xssfReader.getSheetsData().next());
@@ -456,43 +461,6 @@ public class ShopeeSalesConvertApplication extends Application {
             // TODO Auto-generated catch block
             e.printStackTrace();
         }
-
-        // filtering by start and end date.
-        if(getProperty(DATA_SOURCE_TYPE).equals(SHOPEE_ORDER)) {
-
-            // if(startDate == null || endDate == null){
-            //     new Alert(AlertType.ERROR, "please choose valid date.", ButtonType.OK).showAndWait();
-            //     throw new IllegalArgumentException("not valid start or end date");
-            // } 
-
-            // if(startDate.isAfter(endDate)){
-            //     new Alert(AlertType.ERROR, "start date could not greater than end date", ButtonType.OK).showAndWait();
-            //     throw new IllegalArgumentException("not valid start or end date");
-            // } 
-
-            // ArrayList<MoveOut> newMoveOuts = new ArrayList<MoveOut>();
-
-            // for(MoveOut moveOut : moveOuts){
-
-            //     String status = moveOut.getOrder().getStatus();
-            //     if(Order.STATUS_UNPAID.equals(status) || Order.STATUS_TO_SHIP.equals(status)){
-            //         continue;
-            //     }
-            //     LocalDate shipOutDate = moveOut.getOrder().getShipOutDate();
-            //     if(shipOutDate == null){
-            //         continue;
-            //     }
-
-            //     if(shipOutDate.isBefore(startDate) || shipOutDate.isAfter(endDate)){
-            //         continue;
-            //     }
-            //     newMoveOuts.add(moveOut);
-            // }
-            // return newMoveOuts;
-
-            return moveOuts;
-        }
-
         return moveOuts;
     }
 
