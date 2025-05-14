@@ -4,12 +4,16 @@ import java.util.List;
 
 public class ProductStock {
 
-    String id;
-    Double stock;
-    Double minKeepStock;
+    private String id;
+    private double stock;
+    private double minKeepStock;
+
+    private String productName;
+    private double allocatedStock;
+    private double availableStock;
 
     public Double getAvailableStock(){
-        if(stock > 0) return stock - (minKeepStock == null ? 0 : minKeepStock);
+        if(stock > 0) return stock - minKeepStock;
         else return 0d;
     }
 

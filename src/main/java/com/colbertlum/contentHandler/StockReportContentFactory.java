@@ -7,11 +7,27 @@ import java.io.IOException;
 import java.util.ArrayList;
 import java.util.HashMap;
 import java.util.List;
+import java.util.Map;
+
+import javax.xml.parsers.ParserConfigurationException;
+
+import org.apache.poi.openxml4j.exceptions.OpenXML4JException;
+import org.apache.poi.openxml4j.opc.OPCPackage;
+import org.apache.poi.util.XMLHelper;
+import org.apache.poi.xssf.eventusermodel.XSSFReader;
+import org.xml.sax.InputSource;
+import org.xml.sax.SAXException;
+import org.xml.sax.XMLReader;
 
 import com.colbertlum.ShopeeSalesConvertApplication;
 import com.colbertlum.entity.ProductStock;
 
-public class StockReportContentReader {
+import javafx.scene.control.Alert;
+import javafx.scene.control.Alert.AlertType;
+import javafx.stage.Stage;
+import javafx.stage.Window;
+
+public class StockReportContentFactory {
 
 
     private static final String STOCK = "Stock";
@@ -70,5 +86,37 @@ public class StockReportContentReader {
 
         return stocks;
     }
+
+    public static Map<String, Double> getManualReservingStock(){
+
+        String path = ShopeeSalesConvertApplication.getProperty(ShopeeSalesConvertApplication.MANUAL_RESERVING_STOCK_FILE);
+        File file = new File(path);
+        if(path == null || !file.isFile() || !file.exists()) {
+            throw new NullPointerException(String.format("property %s is not valid", ShopeeSalesConvertApplication.MANUAL_RESERVING_STOCK_FILE));
+        }
+
+        Map<String, Double> manualReservingStockMap = new HashMap<String, Double>();
+
+        try {
+            XSSFReader xssfReader = new XSSFReader(OPCPackage.open(file));
+            ManualReservingStockByBiztoryFormattedContentHandler contentHandler = new ManualReservingStockByBiztoryFormattedContentHandler(xssfReader.getSharedStringsTable(), xssfReader.getStylesTable(),
+                manualReservingStockMap);
+            XMLReader xmlReader = XMLHelper.newXMLReader();
+            xmlReader.setContentHandler(contentHandler);
+            InputSource sheetData = new InputSource(xssfReader.getSheetsData().next());
+            xmlReader.parse(sheetData);
+        } catch (IOException | OpenXML4JException | SAXException | ParserConfigurationException e) {
+            if(Window.getWindows() != null) {
+                Alert alert = new Alert(AlertType.ERROR);
+                alert.setContentText(e.getMessage());
+                alert.show();
+            } else {
+                e.printStackTrace();
+            }
+        }
+        return manualReservingStockMap;
+
+    }
+
 }
     

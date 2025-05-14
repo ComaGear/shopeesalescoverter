@@ -1,7 +1,5 @@
 package com.colbertlum.Imputer.Utils;
 
-import java.util.Collections;
-import java.util.Comparator;
 import java.util.List;
 
 import com.colbertlum.entity.Meas;
@@ -47,6 +45,22 @@ public class Lookup {
         for(Order listOrder : list) {
             String listOrderId = listOrder.getId().trim();
             if(listOrderId.equals(orderId)) return listOrder;
+        }
+        return null;
+    }
+
+    public static Meas lookupMeas(String relativeId, List<Meas> measList){
+
+        int lo = 0;
+        int hi = measList.size()-1;
+
+        while(lo <= hi) {
+            int mid = lo + (hi-lo) / 2;
+            if(measList.get(mid).getRelativeId().compareTo(relativeId) > 0) hi = mid-1; 
+            else if(measList.get(mid).getRelativeId().compareTo(relativeId) < 0) lo = mid+1;
+            else{
+                return measList.get(mid);
+            }
         }
         return null;
     }

@@ -10,6 +10,7 @@ import java.util.List;
 import java.util.Map;
 
 import com.colbertlum.Imputer.Utils.Lookup;
+import com.colbertlum.entity.Meas;
 import com.colbertlum.entity.MoveOut;
 import com.colbertlum.entity.Order;
 import com.colbertlum.entity.ProductStock;
@@ -510,6 +511,30 @@ public class OrderService {
             }
         }
         return map;
+    }
+
+    public Map<String, Double> getOnShippingStockQuantity() {
+        List<Order> shippingOrders = orderRepository.getShippingOrders();
+        Map<String, Double> stockMap = new HashMap<String, Double>();
+        ArrayList<Meas> measList = ShopeeSalesConvertApplication.getMeasList();
+
+        for(Order order : shippingOrders) {
+            List<SoftReference<MoveOut>> moveOutList = order.getMoveOutList();
+            for(SoftReference<MoveOut> softMoveOut : moveOutList) {
+                MoveOut moveOut = softMoveOut.get();
+                Meas meas = Lookup.lookupMeas(moveOut.getSku(), measList);
+                double moveOutQuantity = moveOut.getQuantity() * meas.getMeasurement();
+                
+                if(stockMap.containsKey(moveOut.getId())) {
+
+                    stockMap.put(moveOut.getId(), stockMap.get(moveOut.getId()) + moveOutQuantity);
+                } else {
+                    stockMap.put(moveOut.getId(), moveOutQuantity);
+                }
+            }
+        }
+
+        return stockMap;
     }
 
     public List<Order> getBeingDeliveredOrderList(){

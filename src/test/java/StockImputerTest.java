@@ -24,7 +24,7 @@ import com.colbertlum.Exception.ListingStockException;
 import com.colbertlum.Imputer.StockImputer;
 import com.colbertlum.Imputer.Utils.OnlineSalesInfoFactory;
 import com.colbertlum.contentHandler.OnlineSalesInfoContentHandler;
-import com.colbertlum.contentHandler.StockReportContentReader;
+import com.colbertlum.contentHandler.StockReportContentFactory;
 import com.colbertlum.entity.Meas;
 import com.colbertlum.entity.OnlineSalesInfo;
 import com.colbertlum.entity.ListingStockReason;
@@ -44,7 +44,7 @@ public class StockImputerTest {
         InputSource sheetData = new InputSource(xssfReader.getSheetsData().next());
         xmlReader.parse(sheetData);
 
-        StockImputer stockImputer = new StockImputer(StockReportContentReader.getStockReport(), ShopeeSalesConvertApplication.getMeasList());
+        StockImputer stockImputer = new StockImputer(StockReportContentFactory.getStockReport(), ShopeeSalesConvertApplication.getMeasList());
         // try {
         //     stockImputer.figureStock(onlineSalesInfoList);
         // } catch (ListingStockException e) {
@@ -86,7 +86,7 @@ public class StockImputerTest {
     // @Test
     public void figureStockShouldSuccess() throws IOException, SAXException, InvalidFormatException, OpenXML4JException, ParserConfigurationException{
         List<ProductStock> stockReport;
-        stockReport = StockReportContentReader.getStockReport();
+        stockReport = StockReportContentFactory.getStockReport();
         ArrayList<Meas> measList = ShopeeSalesConvertApplication.getMeasList();
         StockImputer stockImputer = new StockImputer(stockReport, measList);
 
@@ -130,7 +130,7 @@ public class StockImputerTest {
     public void readingStockReport(){
         List<ProductStock> stockReport = null;
         try {
-            stockReport = StockReportContentReader.getStockReport();
+            stockReport = StockReportContentFactory.getStockReport();
         } catch (IOException e) {
             e.printStackTrace();
         }

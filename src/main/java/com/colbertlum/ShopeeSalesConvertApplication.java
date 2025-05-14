@@ -38,7 +38,7 @@ import com.colbertlum.Imputer.Utils.OnlineSalesInfoFactory;
 import com.colbertlum.contentHandler.BigSellerReportContentHandler;
 import com.colbertlum.contentHandler.MeasContentHandler;
 import com.colbertlum.contentHandler.ShopeeOrderReportContentHandler;
-import com.colbertlum.contentHandler.StockReportContentReader;
+import com.colbertlum.contentHandler.StockReportContentFactory;
 import com.colbertlum.contentHandler.uomContentHandler;
 import com.colbertlum.entity.ListingStock;
 import com.colbertlum.entity.Meas;
@@ -96,7 +96,9 @@ public class ShopeeSalesConvertApplication extends Application {
     public static final String BIG_SELLER_STOCK_COUNTING_EXPORT_FILE_PATH = "big_seller_stock_counting_export_file_path";
     public static final String BIG_SELLER_STOCK_COUNTING_IMPORT_FILE_PATH = "big_seller_stock_counting_import_file_path";
     public static final String STOCK_IMPUTING_MODE = "stock_imputing_mode";
+
     public static final String IS_RESERVING_STOCK = "is_reserving_stock";
+    public static final String MANUAL_RESERVING_STOCK_FILE = "manual_reserving_stock_file";
 
     // private List<UOM> uoms;
 
@@ -251,17 +253,21 @@ public class ShopeeSalesConvertApplication extends Application {
     private void handleStockImputeAction() {
         StockImputer stockImputer = null;
         try {
-            List<ProductStock> stockReport = StockReportContentReader.getStockReport();
+            List<ProductStock> stockReport = StockReportContentFactory.getStockReport();
             OrderService orderService = new OrderService(new OrderRepository(true));
             orderService.reduceStockMap(stockReport, orderService.getReservedDamagedStockQuantity());
             orderService.reduceStockMap(stockReport, orderService.getReservedInReturningStockQuantity());
+            orderService.reduceStockMap(stockReport, orderService.getOnShippingStockQuantity());
 
             if(getProperty(IS_RESERVING_STOCK) != null && getProperty(IS_RESERVING_STOCK).equals("true")) {
                 Map<String, Double> pendingOrderStockMap = orderService.calculatePendingOrderStockRequirement(getMoveOuts());
                 orderService.reduceStockMap(stockReport, pendingOrderStockMap);
             }
 
-            if(getProperty(MANUAL_RESERVING_STOCK) != null && getProperty(MANUAL_RESERVING_STOCK))
+            if(getProperty(MANUAL_RESERVING_STOCK_FILE) != null && getProperty(MANUAL_RESERVING_STOCK_FILE).equals("true")){
+                Map<String, Double> manualReservingStock = StockReportContentFactory.getManualReservingStock();
+                orderService.reduceStockMap(stockReport, manualReservingStock);
+            }
 
             stockImputer = new StockImputer(stockReport, getMeasList());
         } catch (IOException e1) {
