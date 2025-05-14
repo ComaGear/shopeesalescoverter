@@ -1,11 +1,9 @@
 package com.colbertlum.cellFactory;
 
 import java.time.format.DateTimeFormatter;
-import java.util.List;
 
 import com.colbertlum.HandleOpenOrderFormListener;
 import com.colbertlum.entity.Order;
-import com.colbertlum.entity.ReturnMoveOut;
 import com.colbertlum.entity.ReturnOrder;
 
 import javafx.event.ActionEvent;

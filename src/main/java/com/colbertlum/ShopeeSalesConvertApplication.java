@@ -96,6 +96,7 @@ public class ShopeeSalesConvertApplication extends Application {
     public static final String BIG_SELLER_STOCK_COUNTING_EXPORT_FILE_PATH = "big_seller_stock_counting_export_file_path";
     public static final String BIG_SELLER_STOCK_COUNTING_IMPORT_FILE_PATH = "big_seller_stock_counting_import_file_path";
     public static final String STOCK_IMPUTING_MODE = "stock_imputing_mode";
+    public static final String IS_RESERVING_STOCK = "is_reserving_stock";
 
     // private List<UOM> uoms;
 
@@ -254,8 +255,13 @@ public class ShopeeSalesConvertApplication extends Application {
             OrderService orderService = new OrderService(new OrderRepository(true));
             orderService.reduceStockMap(stockReport, orderService.getReservedDamagedStockQuantity());
             orderService.reduceStockMap(stockReport, orderService.getReservedInReturningStockQuantity());
-            Map<String, Double> pendingOrderStockMap = orderService.calculatePendingOrderStockRequirement(getMoveOuts());
-            orderService.reduceStockMap(stockReport, pendingOrderStockMap);
+
+            if(getProperty(IS_RESERVING_STOCK) != null && getProperty(IS_RESERVING_STOCK).equals("true")) {
+                Map<String, Double> pendingOrderStockMap = orderService.calculatePendingOrderStockRequirement(getMoveOuts());
+                orderService.reduceStockMap(stockReport, pendingOrderStockMap);
+            }
+
+            if(getProperty(MANUAL_RESERVING_STOCK) != null && getProperty(MANUAL_RESERVING_STOCK))
 
             stockImputer = new StockImputer(stockReport, getMeasList());
         } catch (IOException e1) {
