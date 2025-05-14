@@ -20,10 +20,10 @@ import com.colbertlum.OrderRepository;
 import com.colbertlum.OrderService;
 import com.colbertlum.ShopeeSalesConvertApplication;
 import com.colbertlum.Imputer.Utils.Lookup;
+import com.colbertlum.Imputer.Utils.OrderFactory;
 import com.colbertlum.constants.OrderInternalStatus;
 import com.colbertlum.entity.Meas;
 import com.colbertlum.entity.Order;
-import com.colbertlum.entity.OrderFactory;
 import com.colbertlum.entity.ReturnMoveOut;
 import com.colbertlum.entity.ReturnOrder;
 
@@ -163,7 +163,7 @@ public class HandleReturnImputer {
                         returnedClone.setReturnStatus(ReturnMoveOut.RECEIVED);
 
                         // only issue credit note when it was return after completed (has generated invoice)
-                        if(returnOrder.getInternalStatus().equals(OrderInternalStatus.AFTER_RETURN)) {
+                        if(returnOrder.getInternalStatus().equals(OrderInternalStatus.AFTER_SALES_RETURN)) {
                             // returnedItemMoveOuts.add(returnedClone);
                             figureToPutLocalDate(returnedClone, returnedItemMoveOutsLocalDateMap);
                         }
@@ -176,7 +176,7 @@ public class HandleReturnImputer {
                         break;
                     case ReturnMoveOut.RECEIVED:
                         // only issue credit note when it was return after completed (has generated invoice)
-                        if(returnOrder.getInternalStatus().equals(OrderInternalStatus.AFTER_RETURN)) {
+                        if(returnOrder.getInternalStatus().equals(OrderInternalStatus.AFTER_SALES_RETURN)) {
                             // returnedItemMoveOuts.add(returnMoveOut);
                             figureToPutLocalDate(returnMoveOut, returnedItemMoveOutsLocalDateMap);
                         }

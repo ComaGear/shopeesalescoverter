@@ -67,7 +67,7 @@ public class ReturnOrderCellFactory implements Callback<ListView<ReturnOrder>, L
                     orderCompletedDate.setText("");
                 }
                 // if(returnOrder.getStatus().equals(OrderService.STATUS_COMPLETE) && returnOrder.isRequestApproved()){
-                if(returnOrder.getInternalStatus().equals(OrderInternalStatus.AFTER_RETURN)){
+                if(returnOrder.getInternalStatus().equals(OrderInternalStatus.AFTER_SALES_RETURN)){
                     returnType.setText("Return After Completed");
                 } else {
                     returnType.setText("Failed Delivery");

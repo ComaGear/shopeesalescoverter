@@ -2,15 +2,19 @@ package com.colbertlum.Imputer.Utils;
 
 import java.util.List;
 
+import org.apache.log4j.LogManager;
+import org.apache.log4j.Logger;
+
 import com.colbertlum.entity.Meas;
 import com.colbertlum.entity.MeasPlatformName;
 import com.colbertlum.entity.Order;
-import com.colbertlum.entity.OrderFactory;
 import com.colbertlum.entity.ProductStock;
 import com.colbertlum.entity.ReturnMoveOut;
 import com.colbertlum.entity.ReturnOrder;
 
 public class Lookup {
+
+    private static Logger logger = LogManager.getLogger(Lookup.class);
 
     public static Order lookupOrder(List<Order> list, String orderId){
 
@@ -33,9 +37,11 @@ public class Lookup {
             if(o1lo.compareTo(o2lo) > 0) hi = mid-1;
             else if(o1lo.compareTo(o2lo) < 0) lo = mid+1;
             else {
+                logger.debug(String.format("searching Order by '%s', returning %s", o2lo, list.get(mid).getId()));
                 return list.get(mid);
             }
         }
+        logger.debug(String.format("searching Order by '%s', returning null", o2lo));
         return null;
     }
 

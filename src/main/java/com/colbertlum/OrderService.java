@@ -11,7 +11,13 @@ import java.util.Map;
 
 import javax.sound.midi.SysexMessage;
 
+import org.apache.log4j.LogManager;
+import org.apache.log4j.Logger;
+
 import com.colbertlum.Imputer.Utils.Lookup;
+import com.colbertlum.Imputer.Utils.OrderFactory;
+import com.colbertlum.constants.OrderInternalStatus;
+import com.colbertlum.constants.ShopeeOrderStatus;
 import com.colbertlum.entity.MoveOut;
 import com.colbertlum.entity.Order;
 import com.colbertlum.entity.ProductStock;
@@ -21,26 +27,36 @@ import com.colbertlum.reporting.TempMovementReporting;
 
 public class OrderService {
 
-    public static final String STATUS_CANCEL = "Cancelled";
-    public static final String STATUS_COMPLETE = "Completed";
-    public static final String STATUS_TO_SHIP = "To ship";
-    public static final String STATUS_UNPAID = "Unpaid";
-    public static final String STATUS_SHIPPING = "Shipping";
-    public static final String STATUS_DELIVERED = "Delivered";
-    public static final String STATUS_RECEIVED = "Order Received";
-
-
     private List<Order> beingCompleteOrderList;
     private List<Order> beingShippingOrderList;
     private List<Order> beingReturningAfterShippingOrderList;
     private List<Order> beingReturningAfterCompleteOrderList;
-    private List<Order> beingReceivedOrderList;
-    private List<Order> beingDeliveredOrderList;
     private List<Order> beingPendingOrderList;
+    private List<Order> beingCancelledOrderList;
+
     private OrderRepository orderRepository;
 
-    public static void inspectDataValidation(DataValidationInterface dataValidation){
-        dataValidation.appendHandlingColumnExpectData("Order Status", STATUS_CANCEL);
+    private static Logger logger = LogManager.getLogger(OrderService.class);
+    
+    private final Comparator<Order> orderIdComparator = new Comparator<Order>() {
+
+        @Override
+        public int compare(Order o1, Order o2) {
+            return o1.getId().compareTo(o2.getId());
+        }
+        
+    };
+    private final Comparator<Order> orderCompletedDateComparator =  new Comparator<Order>() {
+
+        @Override
+        public int compare(Order o1, Order o2) {
+            return o1.getOrderCompleteDate().compareTo(o2.getOrderCompleteDate());
+        }
+        
+    };
+
+    // public static void inspectDataValidation(DataValidationInterface dataValidation){
+    //     dataValidation.appendHandlingColumnExpectData("Order Status", ShopeeOrderStatus.STATUS_TO_SHIP);
         // appendHandlingColumnToMap("Order Status", "Cancelled");
         // appendHandlingColumnToMap("Order Status", "Completed");
         // appendHandlingColumnToMap("Order Status", "Unpaid");
@@ -48,50 +64,45 @@ public class OrderService {
 
         // appendHandlingColumnContainsTextInDataToMap("Order Status", "Order Received, But");
         // TODO write all status to inspecting. upsert ShopeeOderReportContentHandler's override method 'appendHanding()' using this method
-    }
-
-    private void cleanPending(List<MoveOut> moveOuts) {
-        moveOuts.removeIf(moveOut -> 
-            STATUS_UNPAID.equals(moveOut.getOrder().getStatus()) 
-                || STATUS_TO_SHIP.equals(moveOut.getOrder().getStatus())
-        );
-    }
+    // }
 
     public void process(List<MoveOut> moveOuts){
 
-        cleanPending(moveOuts);
-
+        
         List<Order> orders = new ArrayList<Order>();
         for(MoveOut moveOut : moveOuts){
             if(!orders.contains(moveOut.getOrder())) orders.add(moveOut.getOrder());
         }
 
+        orders.removeIf(order -> order.getInternalStatus().equals(OrderInternalStatus.PENDING));
         for(Order order : orders){
-            determineStatus(order);
+            OrderFactory.mappingOrderInternalStatus(order);
+            if(!order.getInternalStatus().equals(OrderInternalStatus.PENDING)) determineStatus(order);
         }
-
+        
         // record completed order
         ArrayList<Order> newCompletedOrders = figureOutNewCompletedOrder(orderRepository);
-        System.out.println("Repository completed orders size : " + orderRepository.getCompletedOrders().size());
-        System.out.println("new completed orders size : " + newCompletedOrders.size());
+        logger.info(String.format("Repository completed orders size : %,d", orderRepository.getCompletedOrders().size()));
+        logger.info(String.format("new completed orders size : %,d", newCompletedOrders.size()));
+        
         // save on completed order to repository
         orderRepository.addCompletedOrders(newCompletedOrders);
         orderRepository.removeShippingOrders(newCompletedOrders);
-
-        // record received order
-        List<Order> newReceivedOrders = figureOutNewReceivedOrder(orderRepository);
-        orderRepository.addCompletedOrders(newReceivedOrders);
-        orderRepository.removeShippingOrders(newReceivedOrders);
-        System.out.println("new received orders size : " + newReceivedOrders.size());
-
         // figureOut toReport orders from newCompleted order with not record in repository.
         ArrayList<Order> toReportOrders = new ArrayList<Order>();
         if(!newCompletedOrders.isEmpty()) {
             toReportOrders.addAll(newCompletedOrders);
         }
-        if(!newReceivedOrders.isEmpty()) {
-            toReportOrders.addAll(newReceivedOrders);
-        }
+
+        // record received order
+        // List<Order> newReceivedOrders = figureOutNewReceivedOrder(orderRepository);
+        // orderRepository.addCompletedOrders(newReceivedOrders);
+        // orderRepository.removeShippingOrders(newReceivedOrders);
+        // System.out.println("new received orders size : " + newReceivedOrders.size());
+
+        // if(!newReceivedOrders.isEmpty()) {
+        //     toReportOrders.addAll(newReceivedOrders);
+        // }
 
         // toReportOrders.addAll(lookupOrderNotYetOnShipping(figureOutNewInReturnOrder(orderRepository), orderRepository));
         // toReportOrders.addAll(lookupOrderNotYetOnShipping(figureOutNewInReturnAfterCompletedOrder(orderRepository), orderRepository));
@@ -113,8 +124,8 @@ public class OrderService {
         orderRepository.addReturnAfterCompletedOrder(newReturnAfterCompletedOrder);
 
         // record delivered order
-        List<Order> newDeliveredOrders = figureOutNewDeliveredOrders(orderRepository);
-        orderRepository.addShippingOrders(newDeliveredOrders);
+        // List<Order> newDeliveredOrders = figureOutNewDeliveredOrders(orderRepository);
+        // orderRepository.addShippingOrders(newDeliveredOrders);
 
         // reporting being Shipping and Delivered MoveOut.
         ArrayList<MoveOut> shippingMoveOuts = new ArrayList<MoveOut>();
@@ -146,14 +157,7 @@ public class OrderService {
 
         // reporting completed order by date.
         if(!toReportOrders.isEmpty()){
-            toReportOrders.sort(new Comparator<Order>() {
-
-                @Override
-                public int compare(Order o1, Order o2) {
-                    return o1.getOrderCompleteDate().compareTo(o2.getOrderCompleteDate());
-                }
-                
-            });
+            toReportOrders.sort(orderCompletedDateComparator);
             HashMap<LocalDate, List<MoveOut>> dateDifferentMoveOuts = new HashMap<LocalDate, List<MoveOut>>();
             for(Order order : toReportOrders){
                 LocalDate orderCompleteDate = order.getOrderCompleteDate();
@@ -216,80 +220,25 @@ public class OrderService {
         return previousNotyetOnCompleted;
     }
 
-    private List<Order> lookupOrderNotYetOnShipping(List<Order> orders, OrderRepository orderRepository){
+    // private List<Order> lookupOrderNotYetOnShipping(List<Order> orders, OrderRepository orderRepository){
 
-        ArrayList<Order> previousNotYetOnShippingOrder = new ArrayList<Order>();
+    //     ArrayList<Order> previousNotYetOnShippingOrder = new ArrayList<Order>();
 
-        List<Order> shippingOrders = orderRepository.getShippingOrders();
-        shippingOrders.sort((o1, o2) ->{
-            return o1.getId().compareTo(o2.getId());
-        });
-        for(Order order : orders){
-            Order lookupOrder = Lookup.lookupOrder(shippingOrders, order.getId());
-            if(lookupOrder == null){
-                previousNotYetOnShippingOrder.add(order);
-            } else if (STATUS_SHIPPING.equals(lookupOrder.getStatus())){
-                previousNotYetOnShippingOrder.add(lookupOrder);
-            }
-        }
+    //     List<Order> shippingOrders = orderRepository.getShippingOrders();
+    //     shippingOrders.sort((o1, o2) ->{
+    //         return o1.getId().compareTo(o2.getId());
+    //     });
+    //     for(Order order : orders){
+    //         Order lookupOrder = Lookup.lookupOrder(shippingOrders, order.getId());
+    //         if(lookupOrder == null){
+    //             previousNotYetOnShippingOrder.add(order);
+    //         } else if (STATUS_SHIPPING.equals(lookupOrder.getStatus())){
+    //             previousNotYetOnShippingOrder.add(lookupOrder);
+    //         }
+    //     }
 
-        return previousNotYetOnShippingOrder;
-    }
-
-    private List<Order> figureOutNewReceivedOrder(OrderRepository orderRepository) {
-
-        if(beingReceivedOrderList == null) return new ArrayList<>();
-
-        List<Order> completedOrdersInRepository = new ArrayList<Order>(orderRepository.getCompletedOrders());
-
-        Comparator<Order> comparator = new Comparator<Order>() {
-
-            @Override
-            public int compare(Order o1, Order o2) {
-                return o1.getId().compareTo(o2.getId());
-            }
-            
-        };
-        completedOrdersInRepository.sort(comparator);
-        beingReceivedOrderList.sort(comparator);
-        
-        ArrayList<Order> newReceivedOrders = new ArrayList<Order>();
-        for(int i = 0; i < beingReceivedOrderList.size(); i++){
-            Order lookupOrder = Lookup.lookupOrder(completedOrdersInRepository, beingReceivedOrderList.get(i).getId());
-            if(lookupOrder == null && beingReceivedOrderList.get(i) != null){
-                newReceivedOrders.add(beingReceivedOrderList.get(i));
-            }
-        }
-
-        return newReceivedOrders;
-    }
-
-    private List<Order> figureOutNewDeliveredOrders(OrderRepository orderRepository) {
-
-        if(beingDeliveredOrderList == null) return new ArrayList<>();
-
-        List<Order> newDeliveredOrders = new ArrayList<Order>();
-
-        Comparator<Order> comparator = new Comparator<Order>() {
-
-            @Override
-            public int compare(Order o1, Order o2) {
-                return o1.getId().compareTo(o2.getId());
-            }
-            
-        };
-        List<Order> repositoryShippingOrders = new ArrayList<Order>(orderRepository.getShippingOrders());
-        repositoryShippingOrders.sort(comparator);
-        beingDeliveredOrderList.sort(comparator);
-        for(Order order : beingDeliveredOrderList){
-            Order lookupOrder = Lookup.lookupOrder(repositoryShippingOrders, order.getId());
-            if(lookupOrder == null) {
-                newDeliveredOrders.add(order);
-            }
-        }
-
-        return newDeliveredOrders;
-    }
+    //     return previousNotYetOnShippingOrder;
+    // }
 
     private List<Order> figureOutNewShippingOrder(OrderRepository orderRepository) {
 
@@ -297,20 +246,11 @@ public class OrderService {
 
         ArrayList<Order> newShippingOrders = new ArrayList<Order>();
 
-        Comparator<Order> comparator = new Comparator<Order>() {
-
-            @Override
-            public int compare(Order o1, Order o2) {
-                return o1.getId().compareTo(o2.getId());
-            }
-            
-        };
-
         List<Order> repositoryShippingOrders = new ArrayList<Order>(orderRepository.getShippingOrders());
         System.out.println("repository's shipping orders got : " + repositoryShippingOrders.size());
         System.out.println("beingShippingOrderList got : " + beingShippingOrderList.size());
-        repositoryShippingOrders.sort(comparator);
-        beingShippingOrderList.sort(comparator);
+        repositoryShippingOrders.sort(orderIdComparator);
+        beingShippingOrderList.sort(orderIdComparator);
         for(Order order : beingShippingOrderList){
             Order lookupOrder = Lookup.lookupOrder(repositoryShippingOrders, order.getId());
             if(lookupOrder == null) {
@@ -333,18 +273,10 @@ public class OrderService {
         // if(beingReturningAfterCompleteOrderList == null) return new ArrayList<>();
 
         ArrayList<Order> newInReturnAfterCompletedOrder = new ArrayList<Order>();
-       
-        Comparator<Order> comparator = new Comparator<Order>(){
-
-            @Override
-            public int compare(Order o1, Order o2) {
-                return o1.getId().compareTo(o2.getId());
-            }
-
-        };
+    
         ArrayList<Order> repositoryReturnAfterCompletedOrders = new ArrayList<Order>(orderRepository.getReturnAfterCompletedOrders());
-        repositoryReturnAfterCompletedOrders.sort(comparator);
-        beingReturningAfterCompleteOrderList.sort(comparator);
+        repositoryReturnAfterCompletedOrders.sort(orderIdComparator);
+        beingReturningAfterCompleteOrderList.sort(orderIdComparator);
         for(Order order : beingReturningAfterCompleteOrderList){
             Order lookupOrder = Lookup.lookupOrder(repositoryReturnAfterCompletedOrders, order.getId());
             if(lookupOrder == null){
@@ -362,16 +294,8 @@ public class OrderService {
 
         ArrayList<Order> returnOrders = new ArrayList<Order>(orderRepository.getReturnAfterShippingOrders());
 
-        Comparator<Order> comparator = new Comparator<Order>() {
-
-            @Override
-            public int compare(Order o1, Order o2) {
-                return o1.getId().compareTo(o2.getId());
-            }
-            
-        };
-        returnOrders.sort(comparator);
-        beingReturningAfterShippingOrderList.sort(comparator);
+        returnOrders.sort(orderIdComparator);
+        beingReturningAfterShippingOrderList.sort(orderIdComparator);
 
         ArrayList<Order> newReturnOrders = new ArrayList<Order>();
         for(Order order : beingReturningAfterShippingOrderList){
@@ -390,16 +314,8 @@ public class OrderService {
 
         ArrayList<Order> completedOrdersInRepository = new ArrayList<Order>(orderRepository.getCompletedOrders());
 
-        Comparator<Order> comparator = new Comparator<Order>() {
-
-            @Override
-            public int compare(Order o1, Order o2) {
-                return o1.getId().compareTo(o2.getId());
-            }
-            
-        };
-        completedOrdersInRepository.sort(comparator);
-        beingCompleteOrderList.sort(comparator);
+        completedOrdersInRepository.sort(orderIdComparator);
+        beingCompleteOrderList.sort(orderIdComparator);
         
         ArrayList<Order> newCompletedOrders = new ArrayList<Order>();
         // int repositoryIndex = 0;
@@ -414,42 +330,24 @@ public class OrderService {
     }
 
     private void determineStatus(Order order){
-        if(order.getStatus().equals(OrderService.STATUS_COMPLETE) && order.isRequestApproved()){
+        if(order.getInternalStatus().equals(OrderInternalStatus.AFTER_SALES_RETURN)){
             beingReturningAfterCompleteOrderList.add(order);
-            return;
-        }
-        if(order.getStatus().equals(OrderService.STATUS_DELIVERED) && order.isRequestApproved()){
-            beingReturningAfterCompleteOrderList.add(order);
-            return;
-        }
-        if(order.getStatus().equals(OrderService.STATUS_RECEIVED) && order.isRequestApproved()){
-            beingReturningAfterCompleteOrderList.add(order);
-            return;
-        }
-        if(order.getStatus().equals(OrderService.STATUS_DELIVERED)) {
-            beingDeliveredOrderList.add(order);
-            return;
-        }
-        if(order.getStatus().contains(OrderService.STATUS_RECEIVED)) {
-            beingReceivedOrderList.add(order);
-            return;
-        }
-        if(order.getStatus().equals(OrderService.STATUS_COMPLETE)){
-            beingCompleteOrderList.add(order);
-            return;
-        }
-        if(order.getStatus().equals(OrderService.STATUS_SHIPPING)){
+
+        } else if(order.getInternalStatus().equals(OrderInternalStatus.SHIPPING)) {
             beingShippingOrderList.add(order);
-            return;
-        }
-        if(order.getStatus().equals(OrderService.STATUS_CANCEL) && order.getShipOutDate() != null){
-            // beingCompleteOrderList.add(order);
+
+        } else if(order.getInternalStatus().equals(OrderInternalStatus.COMPLETED)) {
+            beingCompleteOrderList.add(order);
+        
+        } else if(order.getInternalStatus().equals(OrderInternalStatus.RETURNING)){
             beingReturningAfterShippingOrderList.add(order);
-            return;
-        }
-        if(order.getStatus().equals(OrderService.STATUS_TO_SHIP)){
+
+        } else if(order.getInternalStatus().equals(OrderInternalStatus.PENDING)){
             beingPendingOrderList.add(order);
-            return;
+
+        } else if(order.getInternalStatus().equals(OrderInternalStatus.CANCELLED)) {
+            beingCancelledOrderList.add(order);
+
         }
     }
 
@@ -467,8 +365,7 @@ public class OrderService {
         ArrayList<MoveOut> moveOuts = new ArrayList<>(oriMoveOuts);
 
         moveOuts.removeIf(moveOut -> {
-            if(moveOut.getOrder().getStatus().equals(OrderService.STATUS_TO_SHIP)
-                || moveOut.getOrder().getStatus().equals(OrderService.STATUS_UNPAID)){
+            if(moveOut.getOrder().getInternalStatus().equals(OrderInternalStatus.PENDING)){
                 return false;
             } else {
                 return true;

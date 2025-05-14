@@ -80,7 +80,7 @@ public class ShopeeSalesConvertApplication extends Application {
     public static final String SHOPEE_ORDER = "Shopee Order";
     public static final String SHOPEE = "Shopee";
     public static final String TIKTOK_ORDER = "TikTok Order";
-
+    
     public static final String DATA_SOURCE_TYPE = "data-source-type";
     public static final String OUTPUT_PATH = "output-path";
     public static final String MEAS = "meas";
@@ -97,7 +97,8 @@ public class ShopeeSalesConvertApplication extends Application {
     public static final String BIG_SELLER_STOCK_COUNTING_EXPORT_FILE_PATH = "big_seller_stock_counting_export_file_path";
     public static final String BIG_SELLER_STOCK_COUNTING_IMPORT_FILE_PATH = "big_seller_stock_counting_import_file_path";
     public static final String STOCK_IMPUTING_MODE = "stock_imputing_mode";
-
+    public static final String IS_RESERVE_PENDING_STOCK = "reserve_pending";
+    
     // private List<UOM> uoms;
 
     private String reportPath = "";
@@ -179,7 +180,7 @@ public class ShopeeSalesConvertApplication extends Application {
         
         processButton.setOnAction(e ->{
             processSales();
-            // String outputFilePath = getProperty(OUTPUT_PATH) + "\\"+ outputFileNameTextField.getText() + ".xlsx";
+            // String outputFilePath = getProperty(OUTPUT_PATH) + "\"+ outputFileNameTextField.getText() + ".xlsx";
             // if(this.uoms == null) uoms = getIrsUoms();
             // saveOutputToFile(processedMoveOuts, uoms, outputFilePath);
         });
@@ -258,8 +259,11 @@ public class ShopeeSalesConvertApplication extends Application {
             OrderService orderService = new OrderService(new OrderRepository(true));
             orderService.reduceStockMap(stockReport, orderService.getReservedDamagedStockQuantity());
             orderService.reduceStockMap(stockReport, orderService.getReservedInReturningStockQuantity());
-            Map<String, Double> pendingOrderStockMap = orderService.calculatePendingOrderStockRequirement(getMoveOuts());
-            orderService.reduceStockMap(stockReport, pendingOrderStockMap);
+            if(getProperty(IS_RESERVE_PENDING_STOCK).equals("true")) {
+                String dataSourceType = getProperty(DATA_SOURCE_TYPE);
+                Map<String, Double> pendingOrderStockMap = orderService.calculatePendingOrderStockRequirement(getMoveOuts(dataSourceType));
+                orderService.reduceStockMap(stockReport, pendingOrderStockMap);
+            }
 
             stockImputer = new StockImputer(stockReport, getMeasList());
         } catch (IOException e1) {
@@ -345,7 +349,7 @@ public class ShopeeSalesConvertApplication extends Application {
 
     private void processSales() {
         LocalDate cutoffLocalDate = LocalDate.parse(ShopeeSalesConvertApplication.getProperty(OLD_VERSION_CUTOFF_DATE), DateTimeFormatter.ofPattern("yyyy-MM-dd"));
-        List<MoveOut> moveOuts = cutoffBeforeDate(getMoveOuts(), cutoffLocalDate);
+        List<MoveOut> moveOuts = cutoffBeforeDate(getMoveOuts(this.currentPlatformSources), cutoffLocalDate);
         
 
         if(this.measImputer == null) this.measImputer = new MeasImputer(); 
@@ -361,7 +365,7 @@ public class ShopeeSalesConvertApplication extends Application {
             salesImputingController.initDialog(dialogStage, priStage);
             salesImputingController.getStage().showAndWait();
 
-            moveOuts = cutoffBeforeDate(getMoveOuts(), cutoffLocalDate);
+            moveOuts = cutoffBeforeDate(getMoveOuts(this.currentPlatformSources), cutoffLocalDate);
             salesConverter = new SalesConverter(moveOuts, new MeasImputer().getMeasList());
             salesConverter.process();
         }

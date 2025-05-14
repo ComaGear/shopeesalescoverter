@@ -21,6 +21,8 @@ public class TikTokOrder extends Order {
     private String trackingNumber;
     private String status;
 
+    private boolean isReturnRefund;
+
     public String getStatus() {
         return status;
     }
@@ -153,6 +155,14 @@ public class TikTokOrder extends Order {
 
     public void setTrackingNumber(String trackingNumber) {
         this.trackingNumber = trackingNumber;
+    }
+
+    public boolean isReturnRefund() {
+        return isReturnRefund;
+    }
+
+    public void setReturnRefund(boolean isReturnRefund) {
+        this.isReturnRefund = isReturnRefund;
     }
 
     
