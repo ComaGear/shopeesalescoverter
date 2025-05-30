@@ -12,11 +12,6 @@ public class ProductStock {
     private double allocatedStock;
     private double availableStock;
 
-    public Double getAvailableStock(){
-        if(stock > 0) return stock - minKeepStock;
-        else return 0d;
-    }
-
     public String getId() {
         return id;
     }
@@ -46,4 +41,39 @@ public class ProductStock {
         return null;
     }
 
+    public double getStock() {
+        return stock;
+    }
+
+    public double getMinKeepStock() {
+        return minKeepStock;
+    }
+
+    public void setMinKeepStock(double minKeepStock) {
+        this.minKeepStock = minKeepStock;
+    }
+
+    public String getProductName() {
+        return productName;
+    }
+
+    public void setProductName(String productName) {
+        this.productName = productName;
+    }
+
+    public double getAllocatedStock() {
+        return allocatedStock;
+    }
+
+    public void setAllocatedStock(double allocatedStock) {
+        this.allocatedStock = allocatedStock;
+    }
+
+    public void setAvailableStock(double availableStock) {
+        this.availableStock = availableStock;
+    }
+
+    public double getAvailableStock(){
+        return availableStock;
+    }
 }

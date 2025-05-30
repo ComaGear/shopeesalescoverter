@@ -10,7 +10,6 @@ import com.colbertlum.HandleOpenOrderFormListener;
 import com.colbertlum.Imputer.HandleReturnImputer;
 import com.colbertlum.cellFactory.ReturnMoveOutCellFactory;
 import com.colbertlum.cellFactory.ReturnOrderCellFactory;
-import com.colbertlum.entity.MoveOut;
 import com.colbertlum.entity.ReturnMoveOut;
 import com.colbertlum.entity.ReturnOrder;
 

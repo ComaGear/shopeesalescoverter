@@ -131,15 +131,13 @@ public class BigSellerStockCountingFactory {
                     shelfCell.setCellValue(info.getShelf());
                 }
 
-                // column 4 is warehouse area
-
-                Cell onHandCell = row.createCell(5);
+                Cell onHandCell = row.createCell(4);
                 onHandCell.setCellValue(info.getOnHand());
 
-                Cell countCell = row.createCell(6);
+                Cell countCell = row.createCell(5);
                 countCell.setCellValue(info.getStock());
 
-                Cell noteCell = row.createCell(7);
+                Cell noteCell = row.createCell(6);
                 if(info.getNote() != null && !info.getNote().isEmpty()) {
                     noteCell.setCellValue(info.getNote());
                 }
