@@ -14,13 +14,11 @@
    <children>
       <HBox prefHeight="26.0" prefWidth="600.0">
          <children>
-            <MenuButton fx:id="sortingMenuButton1" layoutX="13.0" layoutY="13.0" mnemonicParsing="false" style="-fx-padding: 1;" text="Search By Name">
+            <MenuButton fx:id="searchByMenuButton" layoutX="13.0" layoutY="13.0" mnemonicParsing="false" style="-fx-padding: 1;" text="Search By Name">
                <items>
-                  <MenuItem mnemonicParsing="false" onAction="#handleSortingByMenuItem" text="SKU" />
-                  <MenuItem mnemonicParsing="false" onAction="#handleSortingByMenuItem" text="NAME" />
-                  <MenuItem mnemonicParsing="false" onAction="#handleSortingByMenuItem" text="STOCK" />
-                  <MenuItem mnemonicParsing="false" onAction="#handleSortingByMenuItem" text="ALLOCATED STOCK" />
-                  <MenuItem mnemonicParsing="false" onAction="#handleSortingByMenuItem" text="AVAILABLE STOCK" />
+                  <MenuItem mnemonicParsing="false" onAction="#handleSearchByMenuItem" text="ID" />
+                  <MenuItem mnemonicParsing="false" onAction="#handleSearchByMenuItem" text="NAME" />
+                  <MenuItem mnemonicParsing="false" onAction="#handleSearchByMenuItem" text="COST" />
                </items>
             </MenuButton>
             <TextField fx:id="searchBar" prefHeight="25.0" prefWidth="300.0" promptText="search by name" />

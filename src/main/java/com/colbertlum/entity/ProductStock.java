@@ -7,6 +7,8 @@ public class ProductStock {
     private String id;
     private double stock;
     private double minKeepStock;
+    private double unitPrice;
+    private double totalAvailableStockCost;
 
     private String productName;
     private double allocatedStock;
@@ -76,4 +78,17 @@ public class ProductStock {
     public double getAvailableStock(){
         return availableStock;
     }
+
+    public double getUnitPrice() {
+        return unitPrice;
+    }
+
+    public void setUnitPrice(double unitPrice) {
+        this.unitPrice = unitPrice;
+    }
+
+    public double getTotalAvailableStockCost() {
+        return availableStock * unitPrice;
+    }
+    
 }

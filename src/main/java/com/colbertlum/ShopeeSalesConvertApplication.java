@@ -33,6 +33,7 @@ import com.colbertlum.Controller.StockImputingController;
 import com.colbertlum.Exception.ListingStockException;
 import com.colbertlum.Imputer.MeasImputer;
 import com.colbertlum.Imputer.StockImputer;
+import com.colbertlum.Imputer.StockReportInspectorImputer;
 import com.colbertlum.Imputer.Utils.BigSellerStockCountingFactory;
 import com.colbertlum.Imputer.Utils.OnlineSalesInfoFactory;
 import com.colbertlum.contentHandler.BigSellerReportContentHandler;
@@ -557,6 +558,13 @@ public class ShopeeSalesConvertApplication extends Application {
 
                 handleStockImputeAction();
             }
+        });
+
+        MenuItem inspectStockReportMenuItem = new MenuItem("Inspect Stock");
+        helpMenu.getItems().add(inspectStockReportMenuItem);
+        inspectStockReportMenuItem.setOnAction((e) -> {
+            StockReportInspectorImputer stockReportInspectorImputer = new StockReportInspectorImputer();
+            stockReportInspectorImputer.initStageAndShow(priStage, stockReportInspectorImputer.loadProductStocks());
         });
 
         MenuItem handleReturnMenuItem = new MenuItem("handle returning");

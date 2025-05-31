@@ -32,6 +32,8 @@ public class StockReportContentFactory {
 
     private static final String STOCK = "Stock";
     private static final String PRODUCT_CODE = "Product Code";
+    private static final String PRODUCT_NAME = "Product Name";
+    private static final String UNIT_PRICE = "Unit Cost";
     private static final String COMMA_DELIMITER = ",";
 
     public static List<ProductStock> getStockReport() throws IOException{
@@ -55,6 +57,12 @@ public class StockReportContentFactory {
                             case STOCK:
                                 headerMap.put(i, STOCK);
                                 break;
+                            case PRODUCT_NAME:
+                                headerMap.put(i, PRODUCT_NAME);
+                                break;
+                            case UNIT_PRICE:
+                                headerMap.put(i, UNIT_PRICE);
+                                break;
                         }
                     }
                     readHeader = true;
@@ -74,6 +82,12 @@ public class StockReportContentFactory {
                             break;
                         case STOCK:
                             productStock.setStock(Double.parseDouble(value));
+                            break;
+                        case PRODUCT_NAME:
+                            productStock.setProductName(value);
+                            break;
+                        case UNIT_PRICE:
+                            productStock.setUnitPrice(Double.valueOf(value));
                             break;
                     }
                     

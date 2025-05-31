@@ -1,5 +1,6 @@
 package com.colbertlum.Controller;
 
+import java.util.Comparator;
 import java.util.List;
 
 import com.colbertlum.cellFactory.ProductStockCell;
@@ -8,6 +9,7 @@ import com.colbertlum.entity.ProductStock;
 import javafx.collections.FXCollections;
 import javafx.collections.ObservableList;
 import javafx.collections.transformation.FilteredList;
+import javafx.collections.transformation.SortedList;
 import javafx.event.ActionEvent;
 import javafx.fxml.FXML;
 
@@ -20,12 +22,14 @@ public class StockReportInspectorController {
 
     private static final String SEARCH_BY_ID = "ID";
     private static final String SEARCH_BY_NAME = "NAME";
+    private static final String SEARCH_BY_TOTAL_AVAILABLE_STOCK = "COST";
+
     private static final String SORTING_BY_AVAILABLE_STOCK = "AVAILABLE STOCK";
     private static final String SORTING_BY_ALLOCATED_STOCK = "ALLOCATED STOCK";
     private static final String SORTING_BY_STOCK = "STOCK";
     private static final String SORTING_BY_NAME = "NAME";
     private static final String SORTING_BY_ID = "ID";
-
+    private static final String SORTING_BY_TOTAL_AVAILABLE_STOCK_COST = "COST";
     public static final String fxmlFile = "views/StockReportInspectorPage.fxml";
 
     @FXML
@@ -33,10 +37,13 @@ public class StockReportInspectorController {
     @FXML
     TextField searchBar;
     @FXML
+    MenuButton searchByMenuButton;
+    @FXML
     ListView<ProductStock> productStockListView;
 
     private FilteredList<ProductStock> filteredProductStockList;
     private ObservableList<ProductStock> observableProductStockList;
+    private SortedList<ProductStock> sortedProductStocks;
 
     private List<ProductStock> productStockList;
     private String sortingMode;
@@ -56,7 +63,9 @@ public class StockReportInspectorController {
     public void handleSortingByMenuItem(ActionEvent event) {
         MenuItem clickedItem = (MenuItem) event.getSource();
 
+        
         clickedItem.getText();
+        
 
         switch (clickedItem.getText()) {
             case SORTING_BY_ID:
@@ -79,26 +88,42 @@ public class StockReportInspectorController {
                 sortingMenuButton.setText("Sorting By AVAILABLE STOCK");
                 this.sortingMode = SORTING_BY_AVAILABLE_STOCK;
                 break;
+            case SORTING_BY_TOTAL_AVAILABLE_STOCK_COST:
+                sortingMenuButton.setText("Sorting By Cost");
+                this.sortingMode = SORTING_BY_TOTAL_AVAILABLE_STOCK_COST;
+                break;
         }
         sortingFilteredList();
+
+        event.consume();
+    }
+
+    @FXML
+    public void handleSearchByMenuItem(ActionEvent event){
+        MenuItem clickedItem = (MenuItem) event.getSource();
+        this.searchMode = clickedItem.getText();
+        searchByMenuButton.setText("Search By " + this.searchMode);
     }
 
     private void sortingFilteredList(){
         switch (this.sortingMode) {
             case SORTING_BY_ID:
-                filteredProductStockList.sort((o1, o2) -> o1.getId().compareTo(o2.getId()));
+                sortedProductStocks.setComparator(Comparator.comparing(ProductStock::getId));
                 break;
             case SORTING_BY_NAME:
-                filteredProductStockList.sort((o1, o2) -> o1.getProductName().compareTo(o2.getProductName()));
+                sortedProductStocks.setComparator(Comparator.comparing(ProductStock::getProductName));
                 break;
             case SORTING_BY_STOCK:
-                filteredProductStockList.sort((o1, o2) -> (o1.getStock() >= (o2.getStock())) ? 1 : -1);
+                sortedProductStocks.setComparator(Comparator.comparing(ProductStock::getStock));
                 break;
             case SORTING_BY_ALLOCATED_STOCK:
-                filteredProductStockList.sort((o1, o2) -> (o1.getAllocatedStock() >= (o2.getAllocatedStock())) ? 1 : -1);
+                sortedProductStocks.setComparator(Comparator.comparing(ProductStock::getAllocatedStock));
                 break;
             case SORTING_BY_AVAILABLE_STOCK:
-                filteredProductStockList.sort((o1, o2) -> (o1.getAvailableStock() >= (o2.getAvailableStock())) ? 1 : -1);
+                sortedProductStocks.setComparator(Comparator.comparing(ProductStock::getAvailableStock));
+                break;
+            case SORTING_BY_TOTAL_AVAILABLE_STOCK_COST:
+                sortedProductStocks.setComparator(Comparator.comparing(ProductStock::getTotalAvailableStockCost));
                 break;
         }
     }
@@ -145,9 +170,10 @@ public class StockReportInspectorController {
 
         this.observableProductStockList = FXCollections.observableArrayList();
         this.filteredProductStockList = new FilteredList<>(this.observableProductStockList);
+        this.sortedProductStocks = new SortedList<>(filteredProductStockList);
         searchBar.textProperty().addListener((observable, oldValue, newValue) -> handleSearchBar(oldValue, newValue));
         productStockListView.setCellFactory(ListView -> new ProductStockCell());
-        productStockListView.setItems(filteredProductStockList);
+        productStockListView.setItems(sortedProductStocks);
         sortingFilteredList();
     }
 
