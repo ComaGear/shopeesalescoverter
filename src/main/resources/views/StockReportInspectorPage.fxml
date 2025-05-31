@@ -10,20 +10,21 @@
 <?import javafx.scene.layout.Region?>
 <?import javafx.scene.layout.VBox?>
 
-<VBox maxHeight="-Infinity" maxWidth="-Infinity" minHeight="-Infinity" minWidth="-Infinity" prefHeight="400.0" prefWidth="800.0" xmlns="http://javafx.com/javafx/23.0.1" xmlns:fx="http://javafx.com/fxml/1" fx:controller="com.colbertlum.Controller.StockReportInspectorController">
+<VBox maxHeight="-Infinity" maxWidth="-Infinity" minHeight="-Infinity" minWidth="-Infinity" prefHeight="400.0" prefWidth="900.0" xmlns="http://javafx.com/javafx/23.0.1" xmlns:fx="http://javafx.com/fxml/1" fx:controller="com.colbertlum.Controller.StockReportInspectorController">
    <children>
       <HBox prefHeight="26.0" prefWidth="600.0">
          <children>
-            <MenuButton fx:id="searchByMenuButton" layoutX="13.0" layoutY="13.0" mnemonicParsing="false" style="-fx-padding: 1;" text="Search By Name">
+            <MenuButton fx:id="searchByMenuButton" layoutX="13.0" layoutY="13.0" mnemonicParsing="false" prefWidth="130.0" style="-fx-padding: 1;" text="Search By Name">
                <items>
                   <MenuItem mnemonicParsing="false" onAction="#handleSearchByMenuItem" text="ID" />
                   <MenuItem mnemonicParsing="false" onAction="#handleSearchByMenuItem" text="NAME" />
                   <MenuItem mnemonicParsing="false" onAction="#handleSearchByMenuItem" text="COST" />
                </items>
             </MenuButton>
-            <TextField fx:id="searchBar" prefHeight="25.0" prefWidth="300.0" promptText="search by name" />
-            <Region fx:id="spacer" prefHeight="200.0" prefWidth="200.0" />
-            <MenuButton fx:id="sortingMenuButton" mnemonicParsing="false" popupSide="TOP" style="-fx-padding: 1;" text="Sort By SKU">
+            <Region fx:id="spacer1" layoutX="434.0" layoutY="13.0" prefHeight="200.0" prefWidth="100.0" HBox.hgrow="ALWAYS" />
+            <TextField fx:id="searchBar" prefHeight="25.0" prefWidth="400.0" promptText="search by name" />
+            <Region fx:id="spacer" prefHeight="200.0" prefWidth="100.0" HBox.hgrow="ALWAYS" />
+            <MenuButton fx:id="sortingMenuButton" mnemonicParsing="false" popupSide="TOP" prefWidth="130.0" style="-fx-padding: 1;" text="Sort By SKU">
               <items>
                 <MenuItem mnemonicParsing="false" onAction="#handleSortingByMenuItem" text="SKU" />
                 <MenuItem mnemonicParsing="false" onAction="#handleSortingByMenuItem" text="NAME" />
@@ -47,11 +48,12 @@
             <Label fx:id="stock" prefWidth="80.0" text="Stock" />
             <Label fx:id="allocatedStock" prefWidth="100.0" text="Allocated Stock" />
             <Label fx:id="availableStock" prefWidth="100.0" text="Available Stock" />
+            <Label fx:id="totalCost" layoutX="725.0" layoutY="10.0" prefWidth="100.0" text="Total Cost" />
          </children>
          <VBox.margin>
             <Insets left="5.0" right="5.0" />
          </VBox.margin>
       </HBox>
-      <ListView fx:id="productStockListView" prefHeight="353.0" prefWidth="800.0" />
+      <ListView fx:id="productStockListView" prefHeight="353.0" prefWidth="1000.0" />
    </children>
 </VBox>

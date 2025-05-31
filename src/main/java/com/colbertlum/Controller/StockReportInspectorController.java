@@ -142,6 +142,9 @@ public class StockReportInspectorController {
                 case SEARCH_BY_ID:
                     matchStr = productStock.getId().toLowerCase();
                     break;
+                case SEARCH_BY_TOTAL_AVAILABLE_STOCK:
+                    matchStr = Double.toString(productStock.getTotalAvailableStockCost());
+                    break;
             }
 
             int i = 0;

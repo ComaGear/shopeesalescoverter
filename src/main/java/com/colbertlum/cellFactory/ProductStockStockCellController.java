@@ -18,6 +18,8 @@ public class ProductStockStockCellController {
     Label allocatedStock;
     @FXML
     Label availableStock;
+    @FXML
+    Label totalCost;
 
     public void setData(ProductStock productStock) {
         productId.setText(productStock.getId());
@@ -25,5 +27,6 @@ public class ProductStockStockCellController {
         stock.setText(Double.toString(productStock.getStock()));
         allocatedStock.setText(Double.toString(productStock.getAllocatedStock()));
         availableStock.setText(Double.toString(productStock.getAvailableStock()));
+        totalCost.setText(Double.toString(productStock.getTotalAvailableStockCost()));
     }
 }
