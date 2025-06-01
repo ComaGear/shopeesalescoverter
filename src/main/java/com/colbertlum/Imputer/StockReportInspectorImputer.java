@@ -53,6 +53,7 @@ public class StockReportInspectorImputer {
 
         for(String key : allocatedMap.keySet()) {
             ProductStock lookupProductStock = Lookup.lookupProductStock(key, productStocks);
+            if(lookupProductStock == null) continue;
             lookupProductStock.setAllocatedStock(allocatedMap.get(key));
             lookupProductStock.setAvailableStock(lookupProductStock.getStock() - lookupProductStock.getAllocatedStock());
         }
@@ -73,7 +74,7 @@ public class StockReportInspectorImputer {
         }
 
         if(ShopeeSalesConvertApplication.getProperty(ShopeeSalesConvertApplication.MANUAL_RESERVING_STOCK_FILE) != null 
-            && ShopeeSalesConvertApplication.getProperty(ShopeeSalesConvertApplication.IS_RESERVING_STOCK).equals("true")){
+            && ShopeeSalesConvertApplication.getProperty(ShopeeSalesConvertApplication.IS_RESERVING_MANUAL_RESERVING_STOCK).equals("true")){
             Map<String, Double> manualReservingStock = StockReportContentFactory.getManualReservingStock();
             addAllocatedStock(stockReport, manualReservingStock);
         }

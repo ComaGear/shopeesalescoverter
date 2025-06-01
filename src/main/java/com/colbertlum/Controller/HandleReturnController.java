@@ -42,7 +42,8 @@ public class HandleReturnController implements HandleOpenOrderFormListener {
     
     private static final String FILTED_BY_ALL = "All";
     private static final String FILTED_BY_RETURN_REFUND = "Return/Refund";
-    private static final String INCOMPLETED_RETURN = "Incompleted Return";
+    private static final String INCOMPLETED_FAILED_DELIVERY = "Incompleted Failed Delivery";
+    private static final String FILTED_BY_INCOMPLETED_RETURN_REFUND = "Incompleted After Sales";
     private DecimalFormat decimalFormat = new DecimalFormat("##.00");
     private Stage stage;
     private Stack<Scene> sceneStack; 
@@ -61,14 +62,16 @@ public class HandleReturnController implements HandleOpenOrderFormListener {
         HBox.setMargin(scaningSearchBar, new Insets(5));
 
         MenuButton filterOrderMenuButton = new MenuButton("filter by All");
-        filterOrderMenuButton.setPrefWidth(100);
+        filterOrderMenuButton.setPrefWidth(150);
         HBox.setMargin(filterOrderMenuButton, new Insets(5));
         MenuItem filterByAllItem = new MenuItem(FILTED_BY_ALL);
         MenuItem filteringRequestReturnRefundMenuItem = new MenuItem(FILTED_BY_RETURN_REFUND);
-        MenuItem filteringByIncompletedMenuItem = new MenuItem(INCOMPLETED_RETURN);
+        MenuItem filteringByIncompletedMenuItem = new MenuItem(INCOMPLETED_FAILED_DELIVERY);
+        MenuItem filteringByIncompletedAfterSalesMenuItem = new MenuItem(FILTED_BY_INCOMPLETED_RETURN_REFUND);
         filterOrderMenuButton.getItems().add(filterByAllItem);
         filterOrderMenuButton.getItems().add(filteringRequestReturnRefundMenuItem);
         filterOrderMenuButton.getItems().add(filteringByIncompletedMenuItem);
+        filterOrderMenuButton.getItems().add(filteringByIncompletedAfterSalesMenuItem);
         filterMode = FILTED_BY_ALL;
         filterByAllItem.setOnAction((e) -> {
             filterOrderMenuButton.setText("filter by All");
@@ -84,7 +87,13 @@ public class HandleReturnController implements HandleOpenOrderFormListener {
         });
         filteringByIncompletedMenuItem.setOnAction((e) ->{
             filterOrderMenuButton.setText("filter by Incompleted Return");
-            filterMode = INCOMPLETED_RETURN;
+            filterMode = INCOMPLETED_FAILED_DELIVERY;
+            scaningSearchBar.setText("");
+            refillOrderListView(imputer.getReturnOrderList());
+        });
+        filteringByIncompletedAfterSalesMenuItem.setOnAction((e) -> {
+            filterOrderMenuButton.setText("filter by Incompleted After Sales");
+            filterMode = FILTED_BY_INCOMPLETED_RETURN_REFUND;
             scaningSearchBar.setText("");
             refillOrderListView(imputer.getReturnOrderList());
         });
@@ -154,14 +163,36 @@ public class HandleReturnController implements HandleOpenOrderFormListener {
                 break;
             case FILTED_BY_RETURN_REFUND:
                 for(ReturnOrder order : returnOrders){
-                    if(order.getReturnType().equals(FILTED_BY_RETURN_REFUND)){
+                    if(order.getReturnType().equals(ReturnOrder.REQUEST_RETURN_REFUND)){
                         filtedOrders.add(order);
                     }
                 }
                 break;
-            case INCOMPLETED_RETURN:
+            case FILTED_BY_INCOMPLETED_RETURN_REFUND:
                 for(ReturnOrder order : returnOrders){
-                    if(!order.getReturnMoveOutList().get(0).get().getReturnStatus().equals(ReturnMoveOut.RETURNING)){
+
+                    if(!order.getReturnType().equals(ReturnOrder.REQUEST_RETURN_REFUND)) continue;
+                    boolean addToList = false;
+                    for(SoftReference<ReturnMoveOut> softReturnMoveOut : order.getReturnMoveOutList()) {
+                        if(softReturnMoveOut.get().getReturnStatus().equals(ReturnMoveOut.RETURNING)){
+                            addToList = true;
+                        }
+                    }
+                    if(addToList) {
+                        filtedOrders.add(order);
+                    }
+                }
+                break;
+            case INCOMPLETED_FAILED_DELIVERY:
+                for(ReturnOrder order : returnOrders){
+                    if(!order.getReturnType().equals(ReturnOrder.FAILED_DELIVERY_TYPE)) continue;
+                    boolean isIncompleted = false;
+                    for(SoftReference<ReturnMoveOut> softReturnMoveOut : order.getReturnMoveOutList()) {
+                        if(softReturnMoveOut.get().getReturnStatus().equals(ReturnMoveOut.RETURNING)){
+                            isIncompleted = true;
+                        }
+                    }
+                    if(isIncompleted) {
                         filtedOrders.add(order);
                     }
                 }

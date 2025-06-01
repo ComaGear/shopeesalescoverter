@@ -31,6 +31,7 @@
                   <MenuItem mnemonicParsing="false" onAction="#handleSortingByMenuItem" text="STOCK" />
                   <MenuItem mnemonicParsing="false" onAction="#handleSortingByMenuItem" text="ALLOCATED STOCK" />
                   <MenuItem mnemonicParsing="false" onAction="#handleSortingByMenuItem" text="AVAILABLE STOCK" />
+                  <MenuItem mnemonicParsing="false" onAction="#handleSortingByMenuItem" text="COST" />
               </items>
             </MenuButton>
          </children>
@@ -41,18 +42,18 @@
             <Insets bottom="3.0" left="3.0" right="3.0" top="3.0" />
          </padding>
       </HBox>
-      <HBox prefWidth="200.0">
+      <HBox prefWidth="900.0">
          <children>
-            <TextField fx:id="productId" editable="false" style="-fx-background-color: transparent; -fx-border-width: 0; -fx-padding: 0;" text="product id" />
+            <Label fx:id="productId" prefWidth="130.0"  text="product id" />
             <Label fx:id="productName" prefWidth="400.0" text="Product Name" />
             <Label fx:id="stock" prefWidth="80.0" text="Stock" />
             <Label fx:id="allocatedStock" prefWidth="100.0" text="Allocated Stock" />
             <Label fx:id="availableStock" prefWidth="100.0" text="Available Stock" />
-            <Label fx:id="totalCost" layoutX="725.0" layoutY="10.0" prefWidth="100.0" text="Total Cost" />
+            <Label fx:id="totalCost" prefWidth="100.0" text="Total Cost" />
          </children>
-         <VBox.margin>
+         <HBox.margin>
             <Insets left="5.0" right="5.0" />
-         </VBox.margin>
+         </HBox.margin>
       </HBox>
       <ListView fx:id="productStockListView" prefHeight="353.0" prefWidth="1000.0" />
    </children>

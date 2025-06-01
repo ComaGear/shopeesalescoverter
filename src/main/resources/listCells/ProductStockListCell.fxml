@@ -7,14 +7,17 @@
 
 <HBox maxHeight="-Infinity" maxWidth="-Infinity" minHeight="-Infinity" minWidth="-Infinity" prefWidth="900.0" xmlns="http://javafx.com/javafx/23.0.1" xmlns:fx="http://javafx.com/fxml/1" fx:controller="com.colbertlum.cellFactory.ProductStockStockCellController">
    <children>
-      <TextField fx:id="productId" editable="false" style="-fx-background-color: transparent; -fx-border-width: 0; -fx-padding: 0;" text="product id" />
+      <TextField fx:id="productId" editable="false" prefWidth="130.0" style="-fx-background-color: transparent; -fx-border-width: 0; -fx-padding: 0;" text="product id" />
       <Label fx:id="productName" prefWidth="400.0" text="Product Name" />
-      <Label fx:id="stock" prefWidth="80.0" text="Stock" />
+      <Label fx:id="stock" prefWidth="100.0" text="Stock" />
       <Label fx:id="allocatedStock" prefWidth="100.0" text="Allocated Stock" />
       <Label fx:id="availableStock" prefWidth="100.0" text="Available Stock" />
-      <Label fx:id="totalCost" layoutX="710.0" layoutY="12.0" prefWidth="100.0" text="Total Cost" />
+      <Label fx:id="totalCost" prefWidth="100.0" text="Total Cost" />
    </children>
-   <padding>
+   <HBox.margin>
+      <Insets left="5.0" right="5.0" top="1.0" bottom="1.0" />
+   </HBox.margin>
+   <!-- <padding>
       <Insets bottom="2.0" left="5.0" right="5.0" top="2.0" />
-   </padding>
+   </padding> -->
 </HBox>

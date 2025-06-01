@@ -7,8 +7,8 @@ import org.apache.poi.xssf.model.StylesTable;
 
 public class ManualReservingStockByBiztoryFormattedContentHandler extends ContentHandler {
 
-    private static final String CODE = "Code";
-    private static final String QTY = "Qty";
+    private static final String CODE = "Barcode";
+    private static final String QTY = "Quantity";
     private String id;
     private Double quantity;
 

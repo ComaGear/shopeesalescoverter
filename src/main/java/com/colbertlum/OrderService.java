@@ -523,7 +523,12 @@ public class OrderService {
             for(SoftReference<MoveOut> softMoveOut : moveOutList) {
                 MoveOut moveOut = softMoveOut.get();
                 Meas meas = Lookup.lookupMeas(moveOut.getSku(), measList);
-                double moveOutQuantity = moveOut.getQuantity() * meas.getMeasurement();
+                double moveOutQuantity = 0.0d;
+                if(meas == null) {
+                    moveOutQuantity = moveOut.getQuantity();
+                } else {
+                    moveOutQuantity = moveOut.getQuantity() * meas.getMeasurement();
+                }
                 
                 if(stockMap.containsKey(moveOut.getId())) {
 

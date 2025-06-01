@@ -273,7 +273,7 @@ public class OrderRepository {
         }
         for(Order order : returnAfterShippingOrders){
             ReturnOrder returnOrder = new ReturnOrder(order);
-            returnOrder.setReturnType(ReturnOrder.REQUEST_RETURN_REFUND);
+            returnOrder.setReturnType(ReturnOrder.FAILED_DELIVERY_TYPE);
             returnOrder.setReturnMoveOutList(returnOrderIdMap.get(returnOrder.getId()));
             returnOrders.add(returnOrder);
         }

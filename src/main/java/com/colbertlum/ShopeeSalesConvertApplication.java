@@ -98,8 +98,9 @@ public class ShopeeSalesConvertApplication extends Application {
     public static final String BIG_SELLER_STOCK_COUNTING_IMPORT_FILE_PATH = "big_seller_stock_counting_import_file_path";
     public static final String STOCK_IMPUTING_MODE = "stock_imputing_mode";
 
-    public static final String IS_RESERVING_STOCK = "is_reserving_stock";
+    public static final String IS_RESERVING_PENDING_STOCK = "is_reserving_pending_stock";
     public static final String MANUAL_RESERVING_STOCK_FILE = "manual_reserving_stock_file";
+    public static final String IS_RESERVING_MANUAL_RESERVING_STOCK = "is_reserving_manual_reserving_stock";
 
     // private List<UOM> uoms;
 
@@ -260,12 +261,12 @@ public class ShopeeSalesConvertApplication extends Application {
             orderService.reduceStockMap(stockReport, orderService.getReservedInReturningStockQuantity());
             orderService.reduceStockMap(stockReport, orderService.getOnShippingStockQuantity());
 
-            if(getProperty(IS_RESERVING_STOCK) != null && getProperty(IS_RESERVING_STOCK).equals("true")) {
+            if(getProperty(IS_RESERVING_PENDING_STOCK) != null && getProperty(IS_RESERVING_PENDING_STOCK).equals("true")) {
                 Map<String, Double> pendingOrderStockMap = orderService.calculatePendingOrderStockRequirement(getMoveOuts());
                 orderService.reduceStockMap(stockReport, pendingOrderStockMap);
             }
 
-            if(getProperty(MANUAL_RESERVING_STOCK_FILE) != null && getProperty(MANUAL_RESERVING_STOCK_FILE).equals("true")){
+            if(getProperty(MANUAL_RESERVING_STOCK_FILE) != null && getProperty(IS_RESERVING_MANUAL_RESERVING_STOCK).equals("true")){
                 Map<String, Double> manualReservingStock = StockReportContentFactory.getManualReservingStock();
                 orderService.reduceStockMap(stockReport, manualReservingStock);
             }
