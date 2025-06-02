@@ -516,19 +516,20 @@ public class OrderService {
     public Map<String, Double> getOnShippingStockQuantity() {
         List<Order> shippingOrders = orderRepository.getShippingOrders();
         Map<String, Double> stockMap = new HashMap<String, Double>();
-        ArrayList<Meas> measList = ShopeeSalesConvertApplication.getMeasList();
+        // ArrayList<Meas> measList = ShopeeSalesConvertApplication.getMeasList();
 
         for(Order order : shippingOrders) {
             List<SoftReference<MoveOut>> moveOutList = order.getMoveOutList();
             for(SoftReference<MoveOut> softMoveOut : moveOutList) {
                 MoveOut moveOut = softMoveOut.get();
-                Meas meas = Lookup.lookupMeas(moveOut.getSku(), measList);
-                double moveOutQuantity = 0.0d;
-                if(meas == null) {
-                    moveOutQuantity = moveOut.getQuantity();
-                } else {
-                    moveOutQuantity = moveOut.getQuantity() * meas.getMeasurement();
-                }
+                double moveOutQuantity = moveOut.getQuantity(); // in repository already inserted with after calculated measurement
+                // Meas meas = Lookup.lookupMeas(moveOut.getSku(), measList);
+                // double moveOutQuantity = 0.0d;
+                // if(meas == null) {
+                //     moveOutQuantity = moveOut.getQuantity();
+                // } else {
+                //     moveOutQuantity = moveOut.getQuantity() * meas.getMeasurement();
+                // }
                 
                 if(stockMap.containsKey(moveOut.getId())) {
 
