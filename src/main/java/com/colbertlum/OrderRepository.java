@@ -621,7 +621,7 @@ public class OrderRepository {
 
             Cell shopeeVoucherCell = row.getCell(12);
             if(shopeeVoucherCell == null) shopeeVoucherCell = row.createCell(12);
-            shopeeVoucherCell.setCellValue(order.getServiceFee());
+            shopeeVoucherCell.setCellValue(order.getShopeeVoucher());
 
             Cell shippingFeeCell = row.getCell(13);
             if(shippingFeeCell == null) shippingFeeCell = row.createCell(13);
@@ -629,7 +629,7 @@ public class OrderRepository {
 
             Cell shippingRebateCell = row.getCell(14);
             if(shippingRebateCell == null) shippingRebateCell = row.createCell(14);
-            shippingRebateCell.setCellValue(order.getServiceFee());
+            shippingRebateCell.setCellValue(order.getShippingRebateEstimate());
         }
 
         while(orderSheet.getRow(index) != null) {

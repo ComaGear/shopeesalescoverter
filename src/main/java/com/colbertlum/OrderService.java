@@ -455,7 +455,7 @@ public class OrderService {
         for(String key : toReduceMap.keySet()) {
             ProductStock productStock = ProductStock.binarySearch(key, stockList);
             if(productStock != null) {
-                Double d = productStock.getAvailableStock() - toReduceMap.get(key);
+                Double d = productStock.getStock() - toReduceMap.get(key);
                 productStock.setStock(d);
             }
         }

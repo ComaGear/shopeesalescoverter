@@ -69,7 +69,7 @@ public class StockImputer {
             } catch (Throwable e) {
                 updateRuleDouble = 0.5d;
             }
-            double availableStock = (productStock.getAvailableStock() / meas.getMeasurement()) * updateRuleDouble;
+            double availableStock = (productStock.getStock() / meas.getMeasurement()) * updateRuleDouble;
             if(availableStock > 0) {
                 int floor = (int) Math.floor(availableStock);
                 info.setStock(floor);
