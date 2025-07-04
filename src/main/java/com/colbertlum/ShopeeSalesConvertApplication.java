@@ -258,7 +258,7 @@ public class ShopeeSalesConvertApplication extends Application {
             List<ProductStock> stockReport = StockReportContentFactory.getStockReport();
             OrderService orderService = new OrderService(new OrderRepository(true));
             orderService.reduceStockMap(stockReport, orderService.getReservedDamagedStockQuantity());
-            orderService.reduceStockMap(stockReport, orderService.getReservedInReturningStockQuantity());
+            // orderService.reduceStockMap(stockReport, orderService.getReservedInReturningStockQuantity());
             orderService.reduceStockMap(stockReport, orderService.getOnShippingStockQuantity());
 
             if(getProperty(IS_RESERVING_PENDING_STOCK) != null && getProperty(IS_RESERVING_PENDING_STOCK).equals("true")) {
