@@ -16,7 +16,7 @@ public class Lookup {
 
     private static Logger logger = LogManager.getLogger(Lookup.class);
 
-    public static Order lookupOrder(List<Order> list, String orderId){
+    public static Order lookupOrder(List<? extends Order> list, String orderId){
 
         // int index = Collections.binarySearch(list, new Order(orderId), Comparator.comparing(Order::getId));
         // return index >= 0 ? list.get(index) : null;

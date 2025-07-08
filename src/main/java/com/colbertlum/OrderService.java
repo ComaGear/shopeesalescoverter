@@ -143,11 +143,11 @@ public class OrderService {
                 shippingMoveOuts.add(moveOut.get());
             }
         }
-        for(Order order : newDeliveredOrders) {
-            for(SoftReference<MoveOut> moveOut : order.getMoveOutList()) {
-                shippingMoveOuts.add(moveOut.get());
-            }
-        }
+        // for(Order order : newDeliveredOrders) {
+        //     for(SoftReference<MoveOut> moveOut : order.getMoveOutList()) {
+        //         shippingMoveOuts.add(moveOut.get());
+        //     }
+        // }
         File tempMovementFile = new File(ShopeeSalesConvertApplication.getProperty(ShopeeSalesConvertApplication.TEMP_MOVEMENT_FILE_PATH));
         TempMovementReporting.reporting(tempMovementFile, new ArrayList<MoveOut>(shippingMoveOuts));
         // save on shipping and delivered order to repository
@@ -411,15 +411,7 @@ public class OrderService {
         }
         return map;
     }
-
-    public List<Order> getBeingDeliveredOrderList(){
-        return beingDeliveredOrderList;
-    }
-
-    public List<Order> getBeingReceivedOrderList(){
-        return beingReceivedOrderList;
-    }
-
+    
     public List<Order> getBeingCompleteOrderList() {
         return beingCompleteOrderList;
     }
@@ -444,8 +436,6 @@ public class OrderService {
         this.beingShippingOrderList = new ArrayList<Order>();
         this.beingReturningAfterShippingOrderList = new ArrayList<Order>();
         this.beingReturningAfterCompleteOrderList = new ArrayList<Order>();
-        this.beingReceivedOrderList = new ArrayList<Order>();
-        this.beingDeliveredOrderList = new ArrayList<Order>();
         this.beingPendingOrderList = new ArrayList<Order>();
 
         this.orderRepository = orderRepository;

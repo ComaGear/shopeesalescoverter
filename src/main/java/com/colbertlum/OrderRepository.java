@@ -33,7 +33,7 @@ import org.xml.sax.XMLReader;
 
 import com.colbertlum.Imputer.MeasImputer;
 import com.colbertlum.Imputer.Utils.Lookup;
-import com.colbertlum.contentHandler.RepositoryShopeeItemMovementStatusContentHandler;
+import com.colbertlum.contentHandler.RepositoryItemMovementStatusContentHandler;
 import com.colbertlum.contentHandler.RepositoryShopeeOrderStatusContentHandler;
 import com.colbertlum.contentHandler.RepositoryReturnMovementContentHandler;
 import com.colbertlum.entity.Meas;
@@ -168,7 +168,7 @@ public class OrderRepository {
 
                     } else if(sheetName.equals("Movements")) {
 
-                        RepositoryShopeeItemMovementStatusContentHandler contentHandler = new RepositoryShopeeItemMovementStatusContentHandler(xssfReader.getSharedStringsTable(), xssfReader.getStylesTable(), moveOutList);
+                        RepositoryItemMovementStatusContentHandler contentHandler = new RepositoryItemMovementStatusContentHandler(xssfReader.getSharedStringsTable(), xssfReader.getStylesTable(), moveOutList);
                         xmlReader.setContentHandler(contentHandler);
                         xmlReader.parse(new InputSource(inputStream));
 

@@ -26,6 +26,25 @@ public class Order {
     private LocalDate shipOutDate;
     private LocalDate orderCreationDate;
     private LocalDate orderCompleteDate;
+    private LocalDate settledDate;
+
+    private double platformReleaseAmount;
+
+    public double getPlatformReleaseAmount() {
+        return platformReleaseAmount;
+    }
+
+    public void setPlatformReleaseAmount(double platformReleaseAmount) {
+        this.platformReleaseAmount = platformReleaseAmount;
+    }
+
+    public LocalDate getSettledDate() {
+        return settledDate;
+    }
+
+    public void setSettledDate(LocalDate settledDate) {
+        this.settledDate = settledDate;
+    }
 
     private List<SoftReference<MoveOut>> MoveOutList;
 

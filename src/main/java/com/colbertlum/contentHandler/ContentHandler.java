@@ -36,6 +36,14 @@ public class ContentHandler extends DefaultHandler implements DataValidationInte
     private int readingRow;
     private HashMap<String, String> columnHeaderMapper;
 
+    protected int getHeaderRow(){
+        return 0;
+    }
+
+    protected int getStartDataRow(){
+        return 1;
+    }
+
     protected void onRow(int row){
 
     }
@@ -85,7 +93,7 @@ public class ContentHandler extends DefaultHandler implements DataValidationInte
                     break;
             }
 
-            if (readingRow == 0 && string != null) {
+            if (readingRow == getHeaderRow() && string != null) {
                 columnHeaderMapper.put(columnString, string);
                 return;
             }
@@ -94,13 +102,17 @@ public class ContentHandler extends DefaultHandler implements DataValidationInte
             if(columnHeaderMapper.containsKey(columnString)){
                 column = columnHeaderMapper.get(columnString);
             }
-            onCell(column, readingRow, string);
-            monitorData(column, string);
+
+            if(readingRow >= getStartDataRow()){
+                onCell(column, readingRow, string);
+                monitorData(column, string);
+            }
         }
 
         if ("row".equals(qName)) {
-            if (readingRow > 0)
+            if (readingRow >= getStartDataRow()){
                 onRow(readingRow);
+            }
 
             this.readingRow += 1;
         }

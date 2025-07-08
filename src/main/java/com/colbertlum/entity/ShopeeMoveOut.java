@@ -7,6 +7,7 @@ public class ShopeeMoveOut extends MoveOut{
     private String parentSku;
 
     private double productSubtotal;
+    private double platformDiscount;
     
     public double getProductSubtotal() {
         return productSubtotal;
@@ -65,5 +66,13 @@ public class ShopeeMoveOut extends MoveOut{
             .append("'Price : " + getPrice() + "', ")
             .append("; /n")
             .toString();
+    }
+
+    public double getPlatformDiscount() {
+        return platformDiscount;
+    }
+
+    public void setPlatformDiscount(double platformDiscount) {
+        this.platformDiscount = platformDiscount;
     }
 }

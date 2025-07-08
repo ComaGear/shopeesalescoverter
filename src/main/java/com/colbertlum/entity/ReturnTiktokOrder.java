@@ -13,6 +13,7 @@ public class ReturnTiktokOrder extends ReturnOrder {
     private double platformShippingFeeDiscount;
     private double customerPaidShippingFee;
     private double actualShippingFee;
+    private double sellerShippingFee;
 
     private double affiliateShopAdsCommision;
     private double affiliateCommision;
@@ -45,6 +46,7 @@ public class ReturnTiktokOrder extends ReturnOrder {
         this.setTotalSettlementAmount(clone.getTotalSettlementAmount());
         this.setTotalRevenue(clone.getTotalRevenue());
         this.setSellerDiscount(clone.getSellerDiscount());
+        this.setSellerShippingFee(clone.getSellerShippingFee());
 
         this.setReturnMoveOutList(clone.getReturnMoveOutList());
     }
@@ -84,13 +86,13 @@ public class ReturnTiktokOrder extends ReturnOrder {
             this.setTotalSettlementAmount(tiktokOrder.getTotalSettlementAmount());
             this.setTotalRevenue(tiktokOrder.getTotalRevenue());
             this.setSellerDiscount(tiktokOrder.getSellerDiscount());
+            this.setSellerShippingFee(tiktokOrder.getSellerShippingFee());
         }
     }
 
     public ReturnTiktokOrder() {
 
     }
-
 
     public double getTransactionFee() {
         return transactionFee;
@@ -195,4 +197,13 @@ public class ReturnTiktokOrder extends ReturnOrder {
     public void setTrackingNumber(String trackingNumber) {
         this.trackingNumber = trackingNumber;
     }
+
+    public double getSellerShippingFee() {
+        return sellerShippingFee;
+    }
+
+    public void setSellerShippingFee(double sellerShippingFee) {
+        this.sellerShippingFee = sellerShippingFee;
+    }
+    
 }

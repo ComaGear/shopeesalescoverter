@@ -8,6 +8,7 @@ public class TikTokOrder extends Order {
     private double platformShippingFeeDiscount;
     private double customerPaidShippingFee;
     private double actualShippingFee;
+    private double sellerShippingFee;
 
     private double affiliateShopAdsCommision;
     private double affiliateCommision;
@@ -32,24 +33,24 @@ public class TikTokOrder extends Order {
     }
 
     @Override
-    public double getManagementFee(){
+    public double getManagementFee() {
         double affiliateTotal = affiliateShopAdsCommision + affiliateCommision + affiliatePartnerCommision;
         double totalFee = transactionFee + tiktokShopCommisionFee + SFPserviceFee;
-        return (affiliateTotal + totalFee) * -1;
+        return affiliateTotal + totalFee;
     }
 
     @Override
-    public double getAdjustmentShippingFee(){
+    public double getAdjustmentShippingFee() {
         return platformShippingFeeDiscount + customerPaidShippingFee + actualShippingFee;
     }
 
     @Override
-    public double getSellerRebate(){
-        return sellerDiscount;
+    public double getSellerRebate() {
+        return 0;
     }
 
     @Override
-    public double getPlatformRebate(){
+    public double getPlatformRebate() {
         return 0;
     }
 
@@ -164,6 +165,12 @@ public class TikTokOrder extends Order {
     public void setReturnRefund(boolean isReturnRefund) {
         this.isReturnRefund = isReturnRefund;
     }
-
     
+    public double getSellerShippingFee() {
+        return sellerShippingFee;
+    }
+
+    public void setSellerShippingFee(double sellerShippingFee) {
+        this.sellerShippingFee = sellerShippingFee;
+    }
 }

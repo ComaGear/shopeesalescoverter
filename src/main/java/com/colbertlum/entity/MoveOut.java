@@ -11,6 +11,8 @@ public class MoveOut {
     private String orderId;
     private String productId;
 
+    private Double atTimeCost;
+
     private int foundRow;
 
     // private String sku;
@@ -201,6 +203,14 @@ public class MoveOut {
             .append("'Price : " + getPrice() + "', ")
             .append("; /n")
             .toString();
+    }
+
+    public Double getAtTimeCostDouble() {
+        return atTimeCost;
+    }
+
+    public void setAtTimeCost(Double atTimeCost) {
+        this.atTimeCost = atTimeCost;
     }
     
 }

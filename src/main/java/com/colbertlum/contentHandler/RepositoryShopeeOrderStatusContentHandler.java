@@ -1,35 +1,18 @@
 package com.colbertlum.contentHandler;
 
-import java.time.LocalDate;
-import java.time.format.DateTimeFormatter;
 import java.util.List;
 
 import org.apache.poi.xssf.model.SharedStrings;
 import org.apache.poi.xssf.model.StylesTable;
 
-import com.colbertlum.entity.Order;
+import com.colbertlum.constants.Columns.RepositoryShopeeOrderColumn;
 import com.colbertlum.entity.ShopeeOrder;
 
 public class RepositoryShopeeOrderStatusContentHandler extends ContentHandler {
 
-    private static final String DATE_PATTERN = "yyyy-MM-dd";
-
-    private static final String ORDER_ID = "Order Id";
-    private static final String TRACKING_NUMBER = "Tracking Number";
-    private static final String CREATION_DATE = "Creation Date";
-    private static final String SHIP_OUT_DATE = "ShipOut Date";
-    private static final String COMPLETED_DATE = "Completed Date";
-    private static final String REQUEST_RETURN_REFUND = "Request Return/Refund";
-    private static final String STATUS = "Status";
-    private static final String ORDER_TOTAL_AMOUNT = "Order Total Amount";
-    private static final String MANAGEMENT_FEE = "Management Fee";
-    private static final String TRANSACTION_FEE = "Transaction Fee";
-    private static final String SERVICE_FEE = "Service Fee";
-    private static final String COMMISION_FEE = "Commission Fee";
-    private static final String SHOPEE_VOUCHER = "Shopee Voucher";
-    private static final String SHIPPING_FEE = "Shipping Fee";
-    private static final String SHIPPING_REBATE = "Shipping Rebate";
-
+    // private static final String SHIPPING_FEE = "Shipping Fee";
+    // private static final String SHIPPING_REBATE = "Shipping Rebate";
+    
     private List<ShopeeOrder> orders;
     private ShopeeOrder order;
 
@@ -45,50 +28,35 @@ public class RepositoryShopeeOrderStatusContentHandler extends ContentHandler {
     @Override
     protected void onCell(String header, int row, String value) {
         switch (header) {
-            case ORDER_ID:
+            case RepositoryShopeeOrderColumn.ORDER_ID:
                 order.setId(value);
                 break;
-            case TRACKING_NUMBER:
+            case RepositoryShopeeOrderColumn.TRACKING_NUMBER:
                 order.setTrackingNumber(value);
                 break;
-            case CREATION_DATE:
-                order.setOrderCreationDate(LocalDate.parse(value, DateTimeFormatter.ofPattern(DATE_PATTERN)));
-                break;
-            case SHIP_OUT_DATE:
-                order.setShipOutDate(LocalDate.parse(value, DateTimeFormatter.ofPattern(DATE_PATTERN)));
-                break;
-            case COMPLETED_DATE:
-                order.setOrderCompleteDate(LocalDate.parse(value, DateTimeFormatter.ofPattern(DATE_PATTERN)));
-                break;
-            case REQUEST_RETURN_REFUND:
+            case RepositoryShopeeOrderColumn.REQUEST_RETURN_REFUND:
                 order.setRequestApproved(value.equals("Request Approved"));
                 break;
-            case STATUS:
+            case RepositoryShopeeOrderColumn.STATUS:
                 order.setStatus(value);
                 break;
-            case ORDER_TOTAL_AMOUNT:
-                order.setOrderTotalAmount(Double.parseDouble(value));
-                break;
-            case MANAGEMENT_FEE:
-                order.setManagementFee(Double.parseDouble(value));
-                break;
-            case TRANSACTION_FEE:
+            case RepositoryShopeeOrderColumn.TRANSACTION_FEE:
                 order.setTransactionFee(Double.parseDouble(value));
                 break;
-            case SERVICE_FEE:
+            case RepositoryShopeeOrderColumn.SERVICE_FEE:
                 order.setServiceFee(Double.parseDouble(value));
                 break;
-            case COMMISION_FEE:
+            case RepositoryShopeeOrderColumn.COMMISION_FEE:
                 order.setCommissionFee(Double.parseDouble(value));
                 break;
-            case SHOPEE_VOUCHER:
+            case RepositoryShopeeOrderColumn.SHOPEE_VOUCHER:
                 order.setShopeeVoucher(Double.parseDouble(value));
                 break;
-            case SHIPPING_FEE:
-                order.setShippingFee(Double.parseDouble(value));
+            case RepositoryShopeeOrderColumn.SELLER_ABSORBED_COIN_CASHBACK:
+                order.setSellerAbsorbedCoinCashback(Double.parseDouble(value));
                 break;
-            case SHIPPING_REBATE:
-                order.setShippingRebateEstimated(Double.parseDouble(value));
+            case RepositoryShopeeOrderColumn.SELLER_VOUCHER:
+                order.setSellerVoucher(Double.parseDouble(value));
                 break;
             default:
                 break;

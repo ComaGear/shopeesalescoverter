@@ -5,6 +5,7 @@ import java.util.List;
 import org.apache.poi.xssf.model.SharedStrings;
 import org.apache.poi.xssf.model.StylesTable;
 
+import com.colbertlum.Imputer.Utils.MoveOutFactory;
 import com.colbertlum.entity.ReturnMoveOut;
 
 public class RepositoryReturnMovementContentHandler extends ContentHandler {
@@ -31,10 +32,10 @@ public class RepositoryReturnMovementContentHandler extends ContentHandler {
                 returnMoveOut.setSku(value);
                 break;
             case PRODUCT_NAME:
-                returnMoveOut.setProductName(value);
+                MoveOutFactory.setProductName(returnMoveOut, value);
                 break;
             case VARIATION_NAME:
-                returnMoveOut.setVariationName(value);
+                MoveOutFactory.setVariationName(returnMoveOut, value);
                 break;
             case QUANTITY:
                 returnMoveOut.setQuantity(Double.parseDouble(value));

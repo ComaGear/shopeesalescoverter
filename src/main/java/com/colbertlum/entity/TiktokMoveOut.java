@@ -7,7 +7,6 @@ public class TikTokMoveOut extends MoveOut {
 
     private double SKUsubtotalAfterDiscount;
     private double SKUplatformDiscount;
-    private double quantity;
 
     @Override
     public String getName() {
@@ -58,14 +57,6 @@ public class TikTokMoveOut extends MoveOut {
 
     public void setSKUplatformDiscount(double sKUplatformDiscount) {
         SKUplatformDiscount = sKUplatformDiscount;
-    }
-
-    public double getQuantity() {
-        return quantity;
-    }
-
-    public void setQuantity(double quantity) {
-        this.quantity = quantity;
     }
 
     @Override

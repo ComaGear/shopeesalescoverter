@@ -5,6 +5,7 @@ public class ShopeeOrder extends Order {
     private double commissionFee;
     private double serviceFee;
 
+    private double actualShippingFee;
     private double estimatedShippingFee;
     private double buyerPaidShippingFee;
     private double shippingRebateEstimated;
@@ -18,6 +19,16 @@ public class ShopeeOrder extends Order {
 
     private String status;
     private boolean requestApproved;
+
+    private double returnToSellerFee;
+    private double sellerPaidShippingFeeSST;
+    private double reverseShippingFee;
+    private double reverseShippingFeeSST;
+    private double shopeeRebate;
+    private double amsCommisionFee;
+    private double saverProgrammeFee;
+    private double buyerPaidInstallationFee;
+    private double actualInstallationFee;
 
     @Override
     public double getManagementFee(){
@@ -133,5 +144,85 @@ public class ShopeeOrder extends Order {
 
     public void setRequestApproved(boolean requestApproved) {
         this.requestApproved = requestApproved;
+    }
+
+    public double getReturnToSellerFee() {
+        return returnToSellerFee;
+    }
+
+    public void setReturnToSellerFee(double returnToSellerFee) {
+        this.returnToSellerFee = returnToSellerFee;
+    }
+
+    public double getSellerPaidShippingFeeSST() {
+        return sellerPaidShippingFeeSST;
+    }
+
+    public void setSellerPaidShippingFeeSST(double sellerPaidShippingFeeSST) {
+        this.sellerPaidShippingFeeSST = sellerPaidShippingFeeSST;
+    }
+
+    public double getReverseShippingFee() {
+        return reverseShippingFee;
+    }
+
+    public void setReverseShippingFee(double reverseShippingFee) {
+        this.reverseShippingFee = reverseShippingFee;
+    }
+
+    public double getReverseShippingFeeSST() {
+        return reverseShippingFeeSST;
+    }
+
+    public void setReverseShippingFeeSST(double reverseShippingFeeSST) {
+        this.reverseShippingFeeSST = reverseShippingFeeSST;
+    }
+
+    public double getShopeeRebate() {
+        return shopeeRebate;
+    }
+
+    public void setShopeeRebate(double shopeeRebate) {
+        this.shopeeRebate = shopeeRebate;
+    }
+
+    public double getAmsCommisionFee() {
+        return amsCommisionFee;
+    }
+
+    public void setAmsCommisionFee(double amsCommisionFee) {
+        this.amsCommisionFee = amsCommisionFee;
+    }
+
+    public double getSaverProgrammeFee() {
+        return saverProgrammeFee;
+    }
+
+    public void setSaverProgrammeFee(double saverProgrammeFee) {
+        this.saverProgrammeFee = saverProgrammeFee;
+    }
+
+    public double getBuyerPaidInstallationFee() {
+        return buyerPaidInstallationFee;
+    }
+
+    public void setBuyerPaidInstallationFee(double buyerPaidInstallationFee) {
+        this.buyerPaidInstallationFee = buyerPaidInstallationFee;
+    }
+
+    public double getActualInstallationFee() {
+        return actualInstallationFee;
+    }
+
+    public void setActualInstallationFee(double actualInstallationFee) {
+        this.actualInstallationFee = actualInstallationFee;
+    }
+
+    public double getActualShippingFee() {
+        return actualShippingFee;
+    }
+
+    public void setActualShippingFee(double actualShippingFee) {
+        this.actualShippingFee = actualShippingFee;
     }
 }
