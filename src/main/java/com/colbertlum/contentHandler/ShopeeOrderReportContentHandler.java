@@ -33,6 +33,8 @@ public class ShopeeOrderReportContentHandler extends ContentHandler {
     private static final String PRICE = "Deal Price";
     private static final String QUANTITY = "Quantity";
 
+    private static final String SELLER_VOUCHER = "Seller Voucher";
+
     private static final String ORDER_STATUS = "Order Status";
     private static final String SHIP_TIME = "Ship Time";
     private static final String ORDER_CREATION_TIME = "Order Creation Date";
@@ -106,6 +108,8 @@ public class ShopeeOrderReportContentHandler extends ContentHandler {
             case TRACKING_NUMBER:
                 order.setTrackingNumber(value);
                 break;
+            case SELLER_VOUCHER:
+                order.setSellerVoucher(Double.parseDouble(value));
             case RETURN_REFUND_REQUEST:
                 order.setRequestApproved(value.equals(REQUEST_REFUND_APPROVED));
             default:

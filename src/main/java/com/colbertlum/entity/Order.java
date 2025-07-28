@@ -25,6 +25,16 @@ public class Order {
     private double commissionFee;
     private double shippingRebateEstimate; 
 
+
+    private double sellerVoucher;
+    
+    public double getSellerVoucher() {
+        return sellerVoucher;
+    }
+    public void setSellerVoucher(double sellerVoucher) {
+        this.sellerVoucher = sellerVoucher;
+    }
+
     private List<SoftReference<MoveOut>> MoveOutList;
     private LocalDate orderCreationDate;
     private LocalDate orderCompleteDate;

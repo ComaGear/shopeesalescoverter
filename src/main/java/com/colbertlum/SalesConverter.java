@@ -96,12 +96,14 @@ public class SalesConverter {
         for(MoveOut moveOut : moveOuts){
             Order order = moveOut.getOrder();
 
-            double subtotal = moveOut.getPrice() * moveOut.getQuantity(); 
+            double subtotal = moveOut.getPrice() * moveOut.getQuantity();
+            double sellerVoucher = moveOut.getOrder().getSellerVoucher();
             double totalFee = order.getManagementFee() + order.getTransactionFee() + order.getCommissionFee() + order.getServiceFee();
             double totalAmountReduceShippingFee = order.getOrderTotalAmount() + order.getShopeeVoucher() - order.getShippingFee() + order.getShippingRebateEstimate();
 
+            double subVoucher = sellerVoucher * (subtotal / totalAmountReduceShippingFee); 
             double subFee = totalFee * (subtotal / totalAmountReduceShippingFee);
-            double priceReduceFee = (subtotal - subFee) / moveOut.getQuantity();
+            double priceReduceFee = (subtotal - subFee - subVoucher) / moveOut.getQuantity();
 
             moveOut.setPrice(priceReduceFee);
         }
