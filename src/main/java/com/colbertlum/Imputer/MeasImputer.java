@@ -96,8 +96,8 @@ public class MeasImputer {
 
         while(lo <= hi) {
             int mid = lo + (hi-lo) / 2;
-            if(measList.get(mid).getRelativeId().toLowerCase().compareTo(sku.toLowerCase()) > 0) hi = mid-1; 
-            else if(measList.get(mid).getRelativeId().toLowerCase().compareTo(sku.toLowerCase()) < 0) lo = mid+1;
+            if(measList.get(mid).getRelativeId().compareTo(sku) > 0) hi = mid-1; 
+            else if(measList.get(mid).getRelativeId().compareTo(sku) < 0) lo = mid+1;
             else{
                 return measList.get(mid);
             }

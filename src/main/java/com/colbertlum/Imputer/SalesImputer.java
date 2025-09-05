@@ -98,7 +98,7 @@ public class SalesImputer {
             Cell skuHeaderCell;
             if(ShopeeSalesConvertApplication.getProperty(ShopeeSalesConvertApplication.DATA_SOURCE_TYPE)
             .equals(ShopeeSalesConvertApplication.SHOPEE_ORDER)){
-                skuHeaderCell = headerRow.getCell(13);
+                skuHeaderCell = headerRow.getCell(14);
             } else{
                 skuHeaderCell = headerRow.getCell(30);
             }
