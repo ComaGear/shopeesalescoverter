@@ -38,25 +38,28 @@ import com.colbertlum.OrderService;
 import com.colbertlum.SalesConverter;
 import com.colbertlum.ShopeeSalesConvertApplication;
 import com.colbertlum.Imputer.Utils.Lookup;
+import com.colbertlum.Imputer.Utils.OrderFactory;
+import com.colbertlum.constants.OrderInternalStatus;
 import com.colbertlum.contentHandler.ShopeeOrderReportContentHandler;
 import com.colbertlum.entity.Meas;
 import com.colbertlum.entity.MoveOut;
 import com.colbertlum.entity.Order;
+import com.colbertlum.entity.ShopeeOrder;
 
 public class OrderServiceTest {
 
-    private static final String COMPLETED = "completed";
-    private static final String SHIPPING = "shipping";
-    private static final String RETURN_AFTER_SHIPPING = "return after shipping";
-    private static final String RETURN_AFTER_COMPLETED = "return after completed";
-    private static final String PENDING = "pending";
-    private static final String CANCELLED = "cancelled";
+    // private static final String COMPLETED = "completed";
+    // private static final String SHIPPING = "shipping";
+    // private static final String RETURN_AFTER_SHIPPING = "return after shipping";
+    // private static final String RETURN_AFTER_COMPLETED = "return after completed";
+    // private static final String PENDING = "pending";
+    // private static final String CANCELLED = "cancelled";
 
     private static final String ORDER_REPOSITORY_XLSX = "./OrderRepository.xlsx";
     private static final String UOM_SOURCE = "uom.xlsx";
     private static final String MEAS_SOURCE = "meas.xlsx";
-    private static final String ORDER_SALES_REPORT = "orderSalesReport.xlsx";
-    private static final String SECOND_ORDER_SALES_REPORT = "orderSalesReport2.xlsx";
+    private static final String ORDER_SALES_REPORT = "ShopeeOrderSalesReport.xlsx";
+    private static final String SECOND_ORDER_SALES_REPORT = "ShopeeOrderSalesReport2.xlsx";
 
     private OrderRepository orderRepository;
     private OrderService orderService;
@@ -99,18 +102,15 @@ public class OrderServiceTest {
         xmlReader.parse(sheetData);
         orders = contentHandler.getOrders();
 
-        classificedMoveOuts = new HashMap<String, List<MoveOut>>();
-        classificedMoveOuts.put(OrderService.STATUS_CANCEL, new ArrayList<MoveOut>());
-        classificedMoveOuts.put(OrderService.STATUS_COMPLETE, new ArrayList<MoveOut>());
-        classificedMoveOuts.put(OrderService.STATUS_DELIVERED, new ArrayList<MoveOut>());
-        classificedMoveOuts.put(OrderService.STATUS_RECEIVED, new ArrayList<MoveOut>());
-        classificedMoveOuts.put(OrderService.STATUS_SHIPPING, new ArrayList<MoveOut>());
-        classificedMoveOuts.put(OrderService.STATUS_TO_SHIP, new ArrayList<MoveOut>());
-        classificedMoveOuts.put(OrderService.STATUS_UNPAID, new ArrayList<MoveOut>());
-        for(MoveOut moveOut : allMoveOuts) {
-            classificedMoveOuts.get(moveOut.getOrder().getStatus()).add(moveOut);
-        }
         classificedOrders = classifyOrders(orders);
+        classificedMoveOuts = new HashMap<String, List<MoveOut>>();
+        classificedMoveOuts.put(OrderInternalStatus.CANCELLED, new ArrayList<MoveOut>());
+        classificedMoveOuts.put(OrderInternalStatus.COMPLETED, new ArrayList<MoveOut>());
+        classificedMoveOuts.put(OrderInternalStatus.SHIPPING, new ArrayList<MoveOut>());
+        classificedMoveOuts.put(OrderInternalStatus.PENDING, new ArrayList<MoveOut>());
+        for(MoveOut moveOut : allMoveOuts) {
+            classificedMoveOuts.get(moveOut.getOrder().getInternalStatus()).add(moveOut);
+        }
 
         ShopeeSalesConvertApplication.saveProperty(ShopeeSalesConvertApplication.REPORT, 
             new File(ShopeeSalesConvertApplication.class.getClassLoader().getResource(SECOND_ORDER_SALES_REPORT).getFile()).getAbsolutePath());
@@ -126,15 +126,12 @@ public class OrderServiceTest {
         secondOrders = contentHandler2.getOrders();
 
         secondClassificedMoveOuts = new HashMap<String, List<MoveOut>>();
-        secondClassificedMoveOuts.put(OrderService.STATUS_CANCEL, new ArrayList<MoveOut>());
-        secondClassificedMoveOuts.put(OrderService.STATUS_COMPLETE, new ArrayList<MoveOut>());
-        secondClassificedMoveOuts.put(OrderService.STATUS_DELIVERED, new ArrayList<MoveOut>());
-        secondClassificedMoveOuts.put(OrderService.STATUS_RECEIVED, new ArrayList<MoveOut>());
-        secondClassificedMoveOuts.put(OrderService.STATUS_SHIPPING, new ArrayList<MoveOut>());
-        secondClassificedMoveOuts.put(OrderService.STATUS_TO_SHIP, new ArrayList<MoveOut>());
-        secondClassificedMoveOuts.put(OrderService.STATUS_UNPAID, new ArrayList<MoveOut>());
+        secondClassificedMoveOuts.put(OrderInternalStatus.CANCELLED, new ArrayList<MoveOut>());
+        secondClassificedMoveOuts.put(OrderInternalStatus.COMPLETED, new ArrayList<MoveOut>());
+        secondClassificedMoveOuts.put(OrderInternalStatus.SHIPPING, new ArrayList<MoveOut>());
+        secondClassificedMoveOuts.put(OrderInternalStatus.PENDING, new ArrayList<MoveOut>());
         for(MoveOut moveOut : secondMoveOutsList) {
-            secondClassificedMoveOuts.get(moveOut.getOrder().getStatus()).add(moveOut);
+            secondClassificedMoveOuts.get(moveOut.getOrder().getInternalStatus()).add(moveOut);
         }
         secondClassificedOrders = classifyOrders(secondOrders);
 
@@ -215,7 +212,7 @@ public class OrderServiceTest {
     public void newShippingOrderShouldExistedAtRepository(List<MoveOut> moveOuts){
 
         ArrayList<Order> shippingOrders = new ArrayList<Order>();
-        for(MoveOut moveOut : classificedMoveOuts.get(OrderService.STATUS_SHIPPING)) {
+        for(MoveOut moveOut : classificedMoveOuts.get(OrderInternalStatus.SHIPPING)) {
             if(shippingOrders.contains(moveOut.getOrder())) return;
             shippingOrders.add(moveOut.getOrder());
         }
@@ -248,9 +245,9 @@ public class OrderServiceTest {
 
         String firstStatus = "";
         String secondStatus = "";
-        if(!moveOuts.isEmpty()) firstStatus = moveOuts.get(0).getOrder().getStatus();
-        if(!secondMoveOuts.isEmpty()) secondStatus = secondMoveOuts.get(0).getOrder().getStatus();
-        if(firstStatus.equals(secondStatus) && !moveOuts.isEmpty() && !secondMoveOuts.isEmpty() && !firstStatus.equals(OrderService.STATUS_CANCEL)) {
+        if(!moveOuts.isEmpty()) firstStatus = moveOuts.get(0).getOrder().getInternalStatus();
+        if(!secondMoveOuts.isEmpty()) secondStatus = secondMoveOuts.get(0).getOrder().getInternalStatus();
+        if(firstStatus.equals(secondStatus) && !moveOuts.isEmpty() && !secondMoveOuts.isEmpty() && !firstStatus.equals(OrderInternalStatus.CANCELLED)) {
             String status = classifyOrder(moveOuts.get(0).getOrder());
             List<Order> list = classificedOrders.get(status);
             list.addAll(secondClassificedOrders.get(status));
@@ -264,12 +261,12 @@ public class OrderServiceTest {
             assertTrue(cloneList.isEmpty());
 
         } else {
-            if(!firstStatus.isEmpty() && !moveOuts.isEmpty() && !firstStatus.equals(OrderService.STATUS_CANCEL)) {
+            if(!firstStatus.isEmpty() && !moveOuts.isEmpty() && !firstStatus.equals(OrderInternalStatus.CANCELLED)) {
                 String status = classifyOrder(moveOuts.get(0).getOrder());
                 List<Order> list = classificedOrders.get(status);
                 List<Order> repositoryList = getRelativeStatusOrderListBySampleOrder(orderRepository, moveOuts.get(0).getOrder());
-                if(!moveOuts.get(0).getOrder().getStatus().equals(OrderService.STATUS_CANCEL) 
-                    && !moveOuts.get(0).getOrder().getStatus().equals(OrderService.STATUS_TO_SHIP)){
+                if(!moveOuts.get(0).getOrder().getInternalStatus().equals(OrderInternalStatus.CANCELLED) 
+                    && !moveOuts.get(0).getOrder().getInternalStatus().equals(OrderInternalStatus.PENDING)){
                     assertTrue(repositoryList.containsAll(list));
                 }
 
@@ -279,12 +276,12 @@ public class OrderServiceTest {
                     assertTrue(cloneList.isEmpty());
                 }
             }
-            if(!secondStatus.isEmpty() && !secondMoveOuts.isEmpty() && !secondStatus.equals(OrderService.STATUS_CANCEL)) {
+            if(!secondStatus.isEmpty() && !secondMoveOuts.isEmpty() && !secondStatus.equals(OrderInternalStatus.CANCELLED)) {
                 String status = classifyOrder(secondMoveOuts.get(0).getOrder());
                 List<Order> list = secondClassificedOrders.get(status);
                 List<Order> repositoryList = getRelativeStatusOrderListBySampleOrder(orderRepository, secondMoveOuts.get(0).getOrder());
-                if(!secondMoveOuts.get(0).getOrder().getStatus().equals(OrderService.STATUS_CANCEL) 
-                    && !secondMoveOuts.get(0).getOrder().getStatus().equals(OrderService.STATUS_TO_SHIP)){
+                if(!secondMoveOuts.get(0).getOrder().getInternalStatus().equals(OrderInternalStatus.CANCELLED) 
+                    && !secondMoveOuts.get(0).getOrder().getInternalStatus().equals(OrderInternalStatus.PENDING)){
                     assertTrue(repositoryList.containsAll(list));
                 }
 
@@ -346,83 +343,87 @@ public class OrderServiceTest {
     }
 
     private static String classifyOrder(Order order) {
-        if(order.getStatus().equals(OrderService.STATUS_COMPLETE) && order.isRequestApproved()) {
-            return RETURN_AFTER_COMPLETED;
-        }
-        if(order.getStatus().equals(OrderService.STATUS_DELIVERED) && order.isRequestApproved()) {
-            return RETURN_AFTER_COMPLETED;
-        }
-        if(order.getStatus().equals(OrderService.STATUS_RECEIVED) && order.isRequestApproved()) {
-            return RETURN_AFTER_COMPLETED;
-        }
-        if(order.getStatus().equals(OrderService.STATUS_RECEIVED)) {
-            return COMPLETED;
-        }
-        if(order.getStatus().equals(OrderService.STATUS_DELIVERED)) {
-            return COMPLETED;
-        }
-        if(order.getStatus().equals(OrderService.STATUS_COMPLETE)) {
-            return COMPLETED;
-        }
-        if(order.getStatus().equals(OrderService.STATUS_CANCEL) && order.getShipOutDate() != null){
-            return RETURN_AFTER_SHIPPING;
-        }
-        if(order.getStatus().equals(OrderService.STATUS_SHIPPING)) {
-            return SHIPPING;
-        }
-        if(order.getStatus().equals(OrderService.STATUS_TO_SHIP) || order.getStatus().equals(OrderService.STATUS_UNPAID)) {
-            return PENDING;
-        }
-        return null;
+        return OrderFactory.mappingOrderInternalStatus(order).getInternalStatus();
+        // if(order.getStatus().equals(OrderService.STATUS_COMPLETE) && order.isRequestApproved()) {
+        //     return RETURN_AFTER_COMPLETED;
+        // }
+        // if(order.getStatus().equals(OrderService.STATUS_DELIVERED) && order.isRequestApproved()) {
+        //     return RETURN_AFTER_COMPLETED;
+        // }
+        // if(order.getStatus().equals(OrderService.STATUS_RECEIVED) && order.isRequestApproved()) {
+        //     return RETURN_AFTER_COMPLETED;
+        // }
+        // if(order.getStatus().equals(OrderService.STATUS_RECEIVED)) {
+        //     return COMPLETED;
+        // }
+        // if(order.getStatus().equals(OrderService.STATUS_DELIVERED)) {
+        //     return COMPLETED;
+        // }
+        // if(order.getStatus().equals(OrderService.STATUS_COMPLETE)) {
+        //     return COMPLETED;
+        // }
+        // if(order.getStatus().equals(OrderService.STATUS_CANCEL) && order.getShipOutDate() != null){
+        //     return RETURN_AFTER_SHIPPING;
+        // }
+        // if(order.getStatus().equals(OrderService.STATUS_SHIPPING)) {
+        //     return SHIPPING;
+        // }
+        // if(order.getStatus().equals(OrderService.STATUS_TO_SHIP) || order.getStatus().equals(OrderService.STATUS_UNPAID)) {
+        //     return PENDING;
+        // }
+        // return null;
     }
 
     private static Map<String, List<Order>> classifyOrders(List<Order> orders) {
 
         Map<String, List<Order>> map = new HashMap<String, List<Order>>();
 
-        map.put(COMPLETED, new ArrayList<Order>());
-        map.put(SHIPPING, new ArrayList<Order>());
-        map.put(RETURN_AFTER_COMPLETED, new ArrayList<Order>());
-        map.put(RETURN_AFTER_SHIPPING, new ArrayList<Order>());
-        map.put(PENDING, new ArrayList<Order>());
+        map.put(OrderInternalStatus.COMPLETED, new ArrayList<Order>());
+        map.put(OrderInternalStatus.SHIPPING, new ArrayList<Order>());
+        map.put(OrderInternalStatus.AFTER_SALES_RETURN, new ArrayList<Order>());
+        map.put(OrderInternalStatus.RETURNING, new ArrayList<Order>());
+        map.put(OrderInternalStatus.PENDING, new ArrayList<Order>());
 
         for(Order order : orders) {
-            if(order.getStatus().equals(OrderService.STATUS_COMPLETE) && order.isRequestApproved()){
-                map.get(RETURN_AFTER_COMPLETED).add(order);
-                continue;
-            }
-            if(order.getStatus().equals(OrderService.STATUS_DELIVERED) && order.isRequestApproved()){
-                map.get(RETURN_AFTER_COMPLETED).add(order);
-                continue;
-            }
-            if(order.getStatus().equals(OrderService.STATUS_RECEIVED) && order.isRequestApproved()){
-                map.get(RETURN_AFTER_COMPLETED).add(order);
-                continue;
-            }
-            if(order.getStatus().equals(OrderService.STATUS_DELIVERED)){
-                map.get(COMPLETED).add(order);
-                continue;
-            }
-            if(order.getStatus().contains(OrderService.STATUS_RECEIVED)){
-                map.get(COMPLETED).add(order);
-                continue;
-            }
-            if(order.getStatus().equals(OrderService.STATUS_COMPLETE)){
-                map.get(COMPLETED).add(order);
-                continue;
-            }
-            if(order.getStatus().equals(OrderService.STATUS_SHIPPING)){
-                map.get(SHIPPING).add(order);
-                continue;
-            }
-            if(order.getStatus().equals(OrderService.STATUS_CANCEL) && order.getShipOutDate() != null){
-                map.get(RETURN_AFTER_SHIPPING).add(order);
-                continue;
-            }
-            if(order.getStatus().equals(OrderService.STATUS_TO_SHIP) || order.getStatus().equals(OrderService.STATUS_UNPAID)){
-                map.get(PENDING).add(order);
-                continue;
-            }
+            OrderFactory.mappingOrderInternalStatus(order);
+            map.get(order.getInternalStatus()).add(order);
+
+            // if(order.getStatus().equals(OrderService.STATUS_COMPLETE) && order.isRequestApproved()){
+            //     map.get(RETURN_AFTER_COMPLETED).add(order);
+            //     continue;
+            // }
+            // if(order.getStatus().equals(OrderService.STATUS_DELIVERED) && order.isRequestApproved()){
+            //     map.get(RETURN_AFTER_COMPLETED).add(order);
+            //     continue;
+            // }
+            // if(order.getStatus().equals(OrderService.STATUS_RECEIVED) && order.isRequestApproved()){
+            //     map.get(RETURN_AFTER_COMPLETED).add(order);
+            //     continue;
+            // }
+            // if(order.getStatus().equals(OrderService.STATUS_DELIVERED)){
+            //     map.get(COMPLETED).add(order);
+            //     continue;
+            // }
+            // if(order.getStatus().contains(OrderService.STATUS_RECEIVED)){
+            //     map.get(COMPLETED).add(order);
+            //     continue;
+            // }
+            // if(order.getStatus().equals(OrderService.STATUS_COMPLETE)){
+            //     map.get(COMPLETED).add(order);
+            //     continue;
+            // }
+            // if(order.getStatus().equals(OrderService.STATUS_SHIPPING)){
+            //     map.get(SHIPPING).add(order);
+            //     continue;
+            // }
+            // if(order.getStatus().equals(OrderService.STATUS_CANCEL) && order.getShipOutDate() != null){
+            //     map.get(RETURN_AFTER_SHIPPING).add(order);
+            //     continue;
+            // }
+            // if(order.getStatus().equals(OrderService.STATUS_TO_SHIP) || order.getStatus().equals(OrderService.STATUS_UNPAID)){
+            //     map.get(PENDING).add(order);
+            //     continue;
+            // }
             
         }
 
@@ -430,33 +431,48 @@ public class OrderServiceTest {
     }
 
     private List<Order> getRelativeStatusOrderListBySampleOrder(OrderRepository repository, Order order) {
-        if(order.getStatus().equals(OrderService.STATUS_COMPLETE) && order.isRequestApproved()){
-            return repository.getReturnAfterCompletedOrders();
+        String internalStatus = OrderFactory.mappingOrderInternalStatus(order).getInternalStatus();
+        switch (internalStatus) {
+            case OrderInternalStatus.COMPLETED:
+                return repository.getCompletedOrders();
+            case OrderInternalStatus.SHIPPING:
+                return repository.getShippingOrders();
+            case OrderInternalStatus.AFTER_SALES_RETURN:
+                return repository.getReturnAfterCompletedOrders();
+            case OrderInternalStatus.PENDING:
+                return new ArrayList<>();
+            case OrderInternalStatus.RETURNING:
+                return repository.getReturnAfterShippingOrders();
+            default:
+                return null;
         }
-        if(order.getStatus().equals(OrderService.STATUS_DELIVERED) && order.isRequestApproved()){
-            return repository.getReturnAfterCompletedOrders();
-        }
-        if(order.getStatus().equals(OrderService.STATUS_RECEIVED) && order.isRequestApproved()){
-            return repository.getReturnAfterCompletedOrders();
-        }
-        if(order.getStatus().equals(OrderService.STATUS_DELIVERED)) {
-            return repository.getCompletedOrders();
-        }
-        if(order.getStatus().contains(OrderService.STATUS_RECEIVED)) {
-            return repository.getCompletedOrders();
-        }
-        if(order.getStatus().equals(OrderService.STATUS_COMPLETE)){
-            return repository.getCompletedOrders();
-        }
-        if(order.getStatus().equals(OrderService.STATUS_SHIPPING)){
-            return repository.getShippingOrders();
-        }
-        if(order.getStatus().equals(OrderService.STATUS_CANCEL) && order.getShipOutDate() != null){
-            return repository.getReturnAfterShippingOrders();
-        }
-        if(order.getStatus().equals(OrderService.STATUS_TO_SHIP)){
-            return new ArrayList<>();
-        }
-        return null;
+        // if(order.getStatus().equals(OrderService.STATUS_COMPLETE) && order.isRequestApproved()){
+        //     return repository.getReturnAfterCompletedOrders();
+        // }
+        // if(order.getStatus().equals(OrderService.STATUS_DELIVERED) && order.isRequestApproved()){
+        //     return repository.getReturnAfterCompletedOrders();
+        // }
+        // if(order.getStatus().equals(OrderService.STATUS_RECEIVED) && order.isRequestApproved()){
+        //     return repository.getReturnAfterCompletedOrders();
+        // }
+        // if(order.getStatus().equals(OrderService.STATUS_DELIVERED)) {
+        //     return repository.getCompletedOrders();
+        // }
+        // if(order.getStatus().contains(OrderService.STATUS_RECEIVED)) {
+        //     return repository.getCompletedOrders();
+        // }
+        // if(order.getStatus().equals(OrderService.STATUS_COMPLETE)){
+        //     return repository.getCompletedOrders();
+        // }
+        // if(order.getStatus().equals(OrderService.STATUS_SHIPPING)){
+        //     return repository.getShippingOrders();
+        // }
+        // if(order.getStatus().equals(OrderService.STATUS_CANCEL) && order.getShipOutDate() != null){
+        //     return repository.getReturnAfterShippingOrders();
+        // }
+        // if(order.getStatus().equals(OrderService.STATUS_TO_SHIP)){
+        //     return new ArrayList<>();
+        // }
+        // return null;
     }
 }

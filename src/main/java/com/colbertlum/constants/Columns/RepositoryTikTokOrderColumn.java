@@ -11,6 +11,7 @@ public class RepositoryTikTokOrderColumn {
     public static final String TRANSACTION_FEE = "Transaction Fee";
     public static final String TIKTOK_SHOP_COMMISION_FEE = "TikTok Shop Commision Fee";
     public static final String SFPSERVICE_FEE = "SFP Service Fee";
+    public static final String TAP_SHOP_ADS_COMMISION = "TAP Shop Ads commission";
 
     public static final String AFFIlIATE_SHOP_ADS_COMMISION = "Affiliate Shop Ads Commision";
     public static final String AFFILIATE_COMMISION = "Affiliate Commision";

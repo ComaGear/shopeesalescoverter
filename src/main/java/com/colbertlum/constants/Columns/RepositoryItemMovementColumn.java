@@ -15,5 +15,5 @@ public class RepositoryItemMovementColumn {
     public static final String PRODUCT_NAME = "Product Name";
     public static final String VARIATION_NAME = "Variation Name";
     public static final String PRODUCT_SUBTOTAL = "Product SubTotal";
-    public static final String PLATFORM_DISCOUNT = "Platform Discount";
+    public static final String PLATFORM_DISCOUNT_SUBTOTAL = "Platform Discount Subtotal";
 }

@@ -4,6 +4,7 @@ public class TikTokOrder extends Order {
     private double transactionFee;
     private double tiktokShopCommisionFee;
     private double SFPserviceFee;
+    private double TAPShopAdsCommision;
 
     private double platformShippingFeeDiscount;
     private double customerPaidShippingFee;
@@ -35,7 +36,7 @@ public class TikTokOrder extends Order {
     @Override
     public double getManagementFee() {
         double affiliateTotal = affiliateShopAdsCommision + affiliateCommision + affiliatePartnerCommision;
-        double totalFee = transactionFee + tiktokShopCommisionFee + SFPserviceFee;
+        double totalFee = transactionFee + tiktokShopCommisionFee + SFPserviceFee + TAPShopAdsCommision;
         return affiliateTotal + totalFee;
     }
 
@@ -173,4 +174,13 @@ public class TikTokOrder extends Order {
     public void setSellerShippingFee(double sellerShippingFee) {
         this.sellerShippingFee = sellerShippingFee;
     }
+
+    public double getTAPShopAdsCommision() {
+        return TAPShopAdsCommision;
+    }
+
+    public void setTAPShopAdsCommision(double tAPShopAdsCommision) {
+        TAPShopAdsCommision = tAPShopAdsCommision;
+    }
+    
 }

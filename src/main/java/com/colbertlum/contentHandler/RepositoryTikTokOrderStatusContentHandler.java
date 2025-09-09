@@ -51,6 +51,10 @@ public class RepositoryTikTokOrderStatusContentHandler extends ContentHandler{
                 break;
             case RepositoryTikTokOrderColumn.TOTAL_REVENUE:
                 order.setTotalRevenue(Double.parseDouble(value));
+                break;
+            case RepositoryTikTokOrderColumn.TAP_SHOP_ADS_COMMISION:
+                order.setTAPShopAdsCommision(Double.parseDouble(value));
+                break;
             default:
                 break;
         }

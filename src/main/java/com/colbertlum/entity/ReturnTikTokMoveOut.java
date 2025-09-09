@@ -58,4 +58,30 @@ public class ReturnTikTokMoveOut extends ReturnMoveOut {
         this.quantity = quantity;
     }
 
+    @Override
+    public ReturnMoveOut clone() {
+        ReturnTikTokMoveOut returnTikTokMoveOut = new ReturnTikTokMoveOut();
+        
+        copy(returnTikTokMoveOut);
+
+        return returnTikTokMoveOut;
+    }
+    
+    @Override
+    public ReturnMoveOut copy(ReturnMoveOut moveOut) {
+        super.copy(moveOut);
+
+        if(moveOut instanceof ReturnTikTokMoveOut){
+            ReturnTikTokMoveOut rMoveOut = (ReturnTikTokMoveOut) moveOut;
+            rMoveOut.setProductName(this.getProductName());
+            rMoveOut.setVariationName(this.getVariationName());
+            rMoveOut.setFoundRow(this.getFoundRow());
+            rMoveOut.setSKUsubtotalAfterDiscount(this.getSKUsubtotalAfterDiscount());
+            rMoveOut.setSKUplatformDiscount(this.getSKUplatformDiscount());
+            rMoveOut.setQuantity(this.getQuantity());
+        }
+
+        return moveOut;
+    }
+    
 }

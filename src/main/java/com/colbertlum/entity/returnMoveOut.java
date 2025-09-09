@@ -90,18 +90,23 @@ public class ReturnMoveOut {
     public ReturnMoveOut clone(){
         ReturnMoveOut clone = new ReturnMoveOut();
 
-        clone.setSku(getSku());
-        clone.setName(getName());
-        clone.setQuantity(getQuantity());
-        clone.setOrderId(getOrderId());
-        clone.setPrice(getPrice());
-        clone.setOrderId(getOrderId());
-        clone.setReturnStatus(getReturnStatus());
-        clone.setStatusQuantity(getStatusQuantity());
-        clone.setProductId(getProductId());
-        clone.setReturnOrder(getReturnOrder());
+        return copy(clone);
+    }
 
-        return clone;
+    public ReturnMoveOut copy(ReturnMoveOut moveOut){
+
+        moveOut.setSku(getSku());
+        moveOut.setName(getName());
+        moveOut.setQuantity(getQuantity());
+        moveOut.setOrderId(getOrderId());
+        moveOut.setPrice(getPrice());
+        moveOut.setOrderId(getOrderId());
+        moveOut.setReturnStatus(getReturnStatus());
+        moveOut.setStatusQuantity(getStatusQuantity());
+        moveOut.setProductId(getProductId());
+        moveOut.setReturnOrder(getReturnOrder());
+
+        return moveOut;
     }
     public ReturnOrder getReturnOrder() {
         return returnOrder;

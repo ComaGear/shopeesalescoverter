@@ -55,6 +55,8 @@ public class TikTokIncomeReportContentHandler extends ContentHandler {
             case IncomeTikTokSettlementColumn.TOTAL_REVENUE:
                 order.setTotalRevenue(Double.parseDouble(value));
                 break;
+            case IncomeTikTokSettlementColumn.TAP_SHOP_ADS_COMMISION:
+                order.setTAPShopAdsCommision(Double.parseDouble(value));
             default:
                 break;
         }

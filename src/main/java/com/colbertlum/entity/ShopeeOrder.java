@@ -1,5 +1,9 @@
 package com.colbertlum.entity;
 
+import java.lang.ref.SoftReference;
+
+import com.colbertlum.Imputer.Utils.MoveOutFactory;
+
 public class ShopeeOrder extends Order {
     private double transactionFee;
     private double commissionFee;
@@ -29,6 +33,14 @@ public class ShopeeOrder extends Order {
     private double saverProgrammeFee;
     private double buyerPaidInstallationFee;
     private double actualInstallationFee;
+
+    public boolean isRequestReturnRefundApproved(){
+        boolean gotRequestRefund = false;
+        for(SoftReference<MoveOut> moveOut : this.getMoveOutList()){
+            if(MoveOutFactory.isRequestReturnRefundApproved(moveOut.get())) gotRequestRefund = true;
+        }
+        return isRequestApproved() && gotRequestRefund;
+    }
 
     @Override
     public double getManagementFee(){

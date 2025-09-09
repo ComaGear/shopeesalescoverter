@@ -28,6 +28,7 @@ import com.colbertlum.reporting.TempMovementReporting;
 public class OrderService {
 
     private List<Order> beingCompleteOrderList;
+    private List<Order> beingSettledOrderList;
     private List<Order> beingShippingOrderList;
     private List<Order> beingReturningAfterShippingOrderList;
     private List<Order> beingReturningAfterCompleteOrderList;
@@ -50,7 +51,7 @@ public class OrderService {
 
         @Override
         public int compare(Order o1, Order o2) {
-            return o1.getOrderCompleteDate().compareTo(o2.getOrderCompleteDate());
+            return o1.getCompletedDate().compareTo(o2.getCompletedDate());
         }
         
     };
@@ -79,11 +80,15 @@ public class OrderService {
             OrderFactory.mappingOrderInternalStatus(order);
             if(!order.getInternalStatus().equals(OrderInternalStatus.PENDING)) determineStatus(order);
         }
+
+        // processing new settled orders
+        List<Order> newSettledOrders = figureOutNewSettledOrder(orderRepository);
+        logger.info(String.format("Repository Settled orders size : %,d", orderRepository.getSettledOrders().size()));
+        logger.info(String.format("new Settled orders size : %,d", newSettledOrders.size()));
+        // change it up to generating report by settled orders. 
         
         // record completed order
         ArrayList<Order> newCompletedOrders = figureOutNewCompletedOrder(orderRepository);
-        logger.info(String.format("Repository completed orders size : %,d", orderRepository.getCompletedOrders().size()));
-        logger.info(String.format("new completed orders size : %,d", newCompletedOrders.size()));
         
         // save on completed order to repository
         orderRepository.addCompletedOrders(newCompletedOrders);
@@ -160,7 +165,7 @@ public class OrderService {
             toReportOrders.sort(orderCompletedDateComparator);
             HashMap<LocalDate, List<MoveOut>> dateDifferentMoveOuts = new HashMap<LocalDate, List<MoveOut>>();
             for(Order order : toReportOrders){
-                LocalDate orderCompleteDate = order.getOrderCompleteDate();
+                LocalDate orderCompleteDate = order.getCompletedDate();
                 // String fileName = String.format("SalesCompleted%d.%d.%d", orderCompleteDate.getYear(), orderCompleteDate.getMonthValue(), orderCompleteDate.getDayOfMonth());
                 if(!dateDifferentMoveOuts.containsKey(orderCompleteDate)){
                     dateDifferentMoveOuts.put(orderCompleteDate, new ArrayList<MoveOut>());
@@ -327,6 +332,26 @@ public class OrderService {
         }
 
         return newCompletedOrders;
+    }
+
+    private List<Order> figureOutNewSettledOrder(OrderRepository orderRepository) {
+        
+        if(beingSettledOrderList == null) return null;
+
+        ArrayList<Order> settledOrdersInRepository = new ArrayList<>(orderRepository.getSettledOrders());
+        
+        settledOrdersInRepository.sort(orderIdComparator);
+        beingSettledOrderList.sort(orderIdComparator);
+
+        List<Order> newSettledOrders = new ArrayList<Order>();
+        for(int i = 0; i < beingSettledOrderList.size(); i++) {
+            Order lookupOrder = Lookup.lookupOrder(newSettledOrders, beingSettledOrderList.get(i).getId());
+            if(lookupOrder == null && beingSettledOrderList.get(i) != null){
+                newSettledOrders.add(beingSettledOrderList.get(i));
+            } 
+        }
+
+        return newSettledOrders;
     }
 
     private void determineStatus(Order order){

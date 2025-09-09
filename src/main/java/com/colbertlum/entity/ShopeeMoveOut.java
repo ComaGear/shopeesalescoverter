@@ -8,6 +8,9 @@ public class ShopeeMoveOut extends MoveOut{
 
     private double productSubtotal;
     private double platformDiscount;
+
+    private boolean returnRefundRequest;
+    private double returnedQuantity;
     
     public double getProductSubtotal() {
         return productSubtotal;
@@ -32,7 +35,7 @@ public class ShopeeMoveOut extends MoveOut{
         double moveOutAdjustmentShippingFee = order.getAdjustmentShippingFee() * moveOutProportion;
         double moveOutSellerRebate = order.getSellerRebate() * moveOutProportion;
 
-        return (productSubtotal - moveOutTotalFee - moveOutAdjustmentShippingFee - moveOutSellerRebate) / getQuantity();
+        return (productSubtotal - moveOutTotalFee - moveOutAdjustmentShippingFee - moveOutSellerRebate + platformDiscount) / getQuantity();
     }
 
     public String getProductName() {
@@ -74,5 +77,21 @@ public class ShopeeMoveOut extends MoveOut{
 
     public void setPlatformDiscount(double platformDiscount) {
         this.platformDiscount = platformDiscount;
+    }
+
+    public boolean isReturnRefundRequest() {
+        return returnRefundRequest;
+    }
+
+    public void setReturnRefundRequest(boolean returnRefundRequest) {
+        this.returnRefundRequest = returnRefundRequest;
+    }
+
+    public double getReturnedQuantity() {
+        return returnedQuantity;
+    }
+
+    public void setReturnedQuantity(double returnedQuantity) {
+        this.returnedQuantity = returnedQuantity;
     }
 }

@@ -1,8 +1,6 @@
 package com.colbertlum.contentHandler;
 
 import java.lang.ref.SoftReference;
-import java.time.LocalDateTime;
-import java.time.format.DateTimeFormatter;
 import java.util.ArrayList;
 import java.util.HashMap;
 import java.util.List;
@@ -10,38 +8,15 @@ import java.util.Map;
 
 import org.apache.poi.xssf.model.SharedStrings;
 import org.apache.poi.xssf.model.StylesTable;
+
+import com.colbertlum.constants.DateTimePattern;
+import com.colbertlum.constants.Columns.ShopeeSalesOrderColumn;
 import com.colbertlum.entity.MoveOut;
+import com.colbertlum.entity.Order;
 import com.colbertlum.entity.ShopeeMoveOut;
 import com.colbertlum.entity.ShopeeOrder;
 
 public class ShopeeOrderReportContentHandler extends ContentHandler {
-
-
-    private static final String DATE_PATTERN = "yyyy-MM-dd HH:mm";
-
-    private static final String ORDER_ID = "Order ID";
-    private static final String ORDER_TOTAL = "Total Amount";
-    private static final String SERVICE_FEE = "Service Fee";
-    private static final String COMMISSION_FEE = "Commission Fee";
-    private static final String TRANSACTION_FEE = "Transaction Fee";
-    private static final String SHIPPING_FEE = "Estimated Shipping Fee";
-    private static final String SHIPPING_REBATE_ESTIMATE = "Shipping Rebate Estimate";
-
-    private static final String SKU = "SKU Reference No.";
-    private static final String PARENT_SKU = "Parent SKU Reference No.";
-    private static final String VARIATION_NAME = "Variation Name";
-    private static final String PRODUCT_NAME = "Product Name";
-    private static final String PRICE = "Deal Price";
-    private static final String QUANTITY = "Quantity";
-
-    private static final String ORDER_STATUS = "Order Status";
-    private static final String SHIP_TIME = "Ship Time";
-    private static final String ORDER_CREATION_TIME = "Order Creation Date";
-    private static final String ORDER_COMPLETED_TIME = "Order Complete Time";
-    private static final String TRACKING_NUMBER = "Tracking Number*";
-    private static final String RETURN_REFUND_REQUEST = "Return / Refund Status";
-
-    private static final String REQUEST_REFUND_APPROVED = "Request Approved";
 
     private List<MoveOut> moveOuts;
     private Map<String, ShopeeOrder> orderMap;
@@ -51,64 +26,71 @@ public class ShopeeOrderReportContentHandler extends ContentHandler {
     @Override
     protected void onCell(String header, int row, String value) {
         switch (header) {
-            case ORDER_ID:
+            case ShopeeSalesOrderColumn.ORDER_ID:
                 order.setId(value);
                 break;
-            case ORDER_TOTAL:
+            case ShopeeSalesOrderColumn.ORDER_TOTAL:
                 order.setOrderTotalAmount(Double.parseDouble(value));
                 break;
-            case SERVICE_FEE:
+            case ShopeeSalesOrderColumn.SERVICE_FEE:
                 order.setServiceFee(Double.parseDouble(value));
                 break;
-            case COMMISSION_FEE:
+            case ShopeeSalesOrderColumn.COMMISSION_FEE:
                 order.setCommissionFee(Double.parseDouble(value));
                 break;
-            case TRANSACTION_FEE:
+            case ShopeeSalesOrderColumn.TRANSACTION_FEE:
                 order.setTransactionFee(Double.parseDouble(value));
                 break;
-            case SHIPPING_FEE:
+            case ShopeeSalesOrderColumn.SHIPPING_FEE:
                 order.setEstimatedShippingFee(Double.parseDouble(value));
                 break;
-            case SKU:
+            case ShopeeSalesOrderColumn.SKU:
                 moveOut.setSku(value);
                 break;
-            case PARENT_SKU:
+            case ShopeeSalesOrderColumn.PARENT_SKU:
                 moveOut.setParentSku(value);
                 break;
-            case VARIATION_NAME:
+            case ShopeeSalesOrderColumn.VARIATION_NAME:
                 moveOut.setVariationName(value);
                 break;
-            case PRODUCT_NAME:
+            case ShopeeSalesOrderColumn.PRODUCT_NAME:
                 moveOut.setProductName(value);
                 break;
-            case PRICE:
+            case ShopeeSalesOrderColumn.PRICE:
                 moveOut.setPrice(Double.parseDouble(value));
                 break;
-            case QUANTITY:
+            case ShopeeSalesOrderColumn.QUANTITY:
                 moveOut.setQuantity(Double.parseDouble(value));
                 break;
-            case SHIP_TIME:
+            case ShopeeSalesOrderColumn.SHIP_TIME:
                 if(value.isEmpty()) break;
-                order.setShipOutDate(LocalDateTime.parse(value, DateTimeFormatter.ofPattern(DATE_PATTERN)).toLocalDate());
+                order.setShipOutDate(DateTimePattern.getLocalDate(value));
                 break;
-            case ORDER_STATUS:
+            case ShopeeSalesOrderColumn.ORDER_STATUS:
                 order.setStatus(value);
                 break;
-            case SHIPPING_REBATE_ESTIMATE:
+            case ShopeeSalesOrderColumn.SHIPPING_REBATE_ESTIMATE:
                 order.setShippingRebateEstimated(Double.parseDouble(value));
                 break;
-            case ORDER_CREATION_TIME:
-                order.setOrderCreationDate(LocalDateTime.parse(value, DateTimeFormatter.ofPattern(DATE_PATTERN)).toLocalDate());
+            case ShopeeSalesOrderColumn.ORDER_CREATION_TIME:
+                order.setCreationDate(DateTimePattern.getLocalDate(value));
                 break;
-            case ORDER_COMPLETED_TIME:
+            case ShopeeSalesOrderColumn.ORDER_COMPLETED_TIME:
                 if(value.isEmpty()) break;
-                order.setOrderCompleteDate(LocalDateTime.parse(value, DateTimeFormatter.ofPattern(DATE_PATTERN)).toLocalDate());
+                order.setCompletedDate(DateTimePattern.getLocalDate(value));
                 break;
-            case TRACKING_NUMBER:
+            case ShopeeSalesOrderColumn.TRACKING_NUMBER:
                 order.setTrackingNumber(value);
                 break;
-            case RETURN_REFUND_REQUEST:
-                order.setRequestApproved(value.equals(REQUEST_REFUND_APPROVED));
+            case ShopeeSalesOrderColumn.RETURN_REFUND_REQUEST:
+                if(!order.isRequestReturnRefundApproved()) {
+                    order.setRequestApproved(value.equals(ShopeeSalesOrderColumn.REQUEST_REFUND_APPROVED));
+                    moveOut.setReturnRefundRequest(value.equals(ShopeeSalesOrderColumn.REQUEST_REFUND_APPROVED));
+                }
+                break;
+            case ShopeeSalesOrderColumn.RETURNED_QUANTITY:
+                moveOut.setReturnedQuantity(Double.parseDouble(value));
+                break;
             default:
                 break;
         }
@@ -139,8 +121,12 @@ public class ShopeeOrderReportContentHandler extends ContentHandler {
         return this.moveOuts;
     }
 
-    public List<ShopeeOrder> getOrders(){
+    public List<ShopeeOrder> getShopeeOrders(){
         return new ArrayList<>(orderMap.values());
+    }
+
+    public List<Order> getOrders(){
+        return new ArrayList<Order>(orderMap.values());
     }
 
 

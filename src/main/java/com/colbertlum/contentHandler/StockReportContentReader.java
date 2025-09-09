@@ -32,14 +32,15 @@ public class StockReportContentReader {
                     for(int i = 0; i < values.length; i++){
                         String head = values[i];
                         head = head.replaceAll("[^a-zA-Z0-9\\s]", "");
-                        switch(head){
-                            case PRODUCT_CODE:
-                                headerMap.put(i, PRODUCT_CODE);
-                                break;
-                            case STOCK:
-                                headerMap.put(i, STOCK);
-                                break;
-                        }
+                        // switch(head){
+                        //     case PRODUCT_CODE:
+                        //         headerMap.put(i, PRODUCT_CODE);
+                        //         break;
+                        //     case STOCK:
+                        //         headerMap.put(i, STOCK);
+                        //         break;
+                        // }
+                        headerMap.put(i, head);
                     }
                     readHeader = true;
                     continue;

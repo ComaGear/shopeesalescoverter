@@ -53,7 +53,7 @@ public class RepositoryItemMovementStatusContentHandler extends ContentHandler{
             shopeeMoveOut.setProductName(valueMap.get(RepositoryItemMovementColumn.PRODUCT_NAME));
             shopeeMoveOut.setVariationName(valueMap.get(RepositoryItemMovementColumn.VARIATION_NAME));
             shopeeMoveOut.setProductSubtotal(Double.parseDouble(valueMap.get(RepositoryItemMovementColumn.PRODUCT_SUBTOTAL)));
-            shopeeMoveOut.setPlatformDiscount(Double.parseDouble(valueMap.get(RepositoryItemMovementColumn.PLATFORM_DISCOUNT)));
+            shopeeMoveOut.setPlatformDiscount(Double.parseDouble(valueMap.get(RepositoryItemMovementColumn.PLATFORM_DISCOUNT_SUBTOTAL)));
 
             moveOut = shopeeMoveOut;
         } else if (valueMap.get(RepositoryItemMovementColumn.PLATFORM).equals(PlatformType.TIKTOK)) {
@@ -67,7 +67,7 @@ public class RepositoryItemMovementStatusContentHandler extends ContentHandler{
             tikTokMoveOut.setProductName(valueMap.get(RepositoryItemMovementColumn.PRODUCT_NAME));
             tikTokMoveOut.setVariationName(valueMap.get(RepositoryItemMovementColumn.VARIATION_NAME));
             tikTokMoveOut.setSKUsubtotalAfterDiscount(Double.parseDouble(valueMap.get(RepositoryItemMovementColumn.PRODUCT_SUBTOTAL)));
-            tikTokMoveOut.setSKUplatformDiscount(Double.parseDouble(valueMap.get(RepositoryItemMovementColumn.PLATFORM_DISCOUNT)));
+            tikTokMoveOut.setSKUplatformDiscount(Double.parseDouble(valueMap.get(RepositoryItemMovementColumn.PLATFORM_DISCOUNT_SUBTOTAL)));
 
             moveOut = tikTokMoveOut;
         }

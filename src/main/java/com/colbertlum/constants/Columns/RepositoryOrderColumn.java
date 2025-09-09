@@ -1,6 +1,8 @@
 package com.colbertlum.constants.Columns;
 
 public class RepositoryOrderColumn {
+    public static final String PLATFORM = "Platform";
+
     public static final String ORDER_ID = "Order Id";
 
     public static final String CREATION_DATE = "Creation Date";

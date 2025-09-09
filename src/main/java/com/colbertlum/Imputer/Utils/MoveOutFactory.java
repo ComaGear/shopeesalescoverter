@@ -11,6 +11,14 @@ import com.colbertlum.entity.TikTokOrder;
 
 public class MoveOutFactory {
 
+    public static boolean isRequestReturnRefundApproved(MoveOut moveOut) {
+        if(moveOut instanceof ShopeeMoveOut) {
+            ShopeeMoveOut shopeeMoveOut = (ShopeeMoveOut) moveOut;
+            return shopeeMoveOut.isReturnRefundRequest();
+        }
+        return false;
+    }
+
     public static void setProductName(ReturnMoveOut moveOut, String productName) {
         if(moveOut instanceof ReturnShopeeMoveOut) {
             ReturnShopeeMoveOut returnShopeeMoveOut = (ReturnShopeeMoveOut) moveOut;
@@ -127,5 +135,49 @@ public class MoveOutFactory {
             return ((TikTokOrder) tikTokMoveOut.getOrder()).getStatus();
         }
         return null;
+    }
+
+    public static String getPlatform(MoveOut moveOut) {
+        if(moveOut instanceof ShopeeMoveOut) {
+            return "Shopee";
+        }
+        if(moveOut instanceof TikTokMoveOut) {
+            return "TikTok";
+        }
+        return null;
+    }
+    
+    public static String getPlatform(ReturnMoveOut moveOut) {
+        if(moveOut instanceof ReturnShopeeMoveOut) {
+            return "Shopee";
+        }
+        if(moveOut instanceof ReturnTikTokMoveOut) {
+            return "TikTok";
+        }
+        return null;
+    }
+
+    public static double getPlatformDiscount(MoveOut moveOut) {
+        if(moveOut instanceof ShopeeMoveOut) {
+            ShopeeMoveOut shopeeMoveOut = (ShopeeMoveOut) moveOut;
+            return shopeeMoveOut.getPlatformDiscount();
+        }
+        if(moveOut instanceof TikTokMoveOut) {
+            TikTokMoveOut tikTokMoveOut = (TikTokMoveOut) moveOut;
+            return tikTokMoveOut.getSKUplatformDiscount();
+        }
+        return 0d;
+    }
+
+    public static double getPlatformDiscount(ReturnMoveOut moveOut) {
+        if(moveOut instanceof ReturnShopeeMoveOut) {
+            ReturnShopeeMoveOut shopeeMoveOut = (ReturnShopeeMoveOut) moveOut;
+            return shopeeMoveOut.getPlatformDiscount();
+        }
+        if(moveOut instanceof ReturnTikTokMoveOut) {
+            ReturnTikTokMoveOut tikTokMoveOut = (ReturnTikTokMoveOut) moveOut;
+            return tikTokMoveOut.getSKUplatformDiscount();
+        }
+        return 0d;
     }
 }

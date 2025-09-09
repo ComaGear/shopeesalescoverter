@@ -38,6 +38,18 @@ public class ContentWriter<T> {
         }
     }
 
+    public void createHeader(){
+        int rowIndex = 0;
+        XSSFRow row = sheet.getRow(rowIndex);
+        if(row == null) row = sheet.createRow(rowIndex);
+        int columnIndex = 0;
+        for(String header : headerList){
+            Cell cell = row.getCell(columnIndex);
+            if(cell == null) cell = row.createCell(columnIndex);
+            cell.setCellValue(header);
+        }
+    }
+
     public void writeCells(){
         if (list == null || list.isEmpty()) return;
 

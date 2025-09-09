@@ -100,8 +100,8 @@ public class ReturnOrder {
         this.managementFee = order.getManagementFee();
         this.orderTotalAmount = order.getOrderTotalAmount();
         this.shipOutDate = order.getShipOutDate();
-        this.orderCreationDate = order.getOrderCreationDate();
-        this.orderCompleteDate = order.getOrderCompleteDate();
+        this.orderCreationDate = order.getCreationDate();
+        this.orderCompleteDate = order.getCompletedDate();
         this.adjustmentshipppingFee = order.getAdjustmentShippingFee();
         this.sellerRebate = order.getSellerRebate();
         this.internalStatus = order.getInternalStatus();

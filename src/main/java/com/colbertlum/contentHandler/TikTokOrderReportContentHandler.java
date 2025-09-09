@@ -33,7 +33,7 @@ public class TikTokOrderReportContentHandler extends ContentHandler {
                 order.setShipOutDate(DateTimePattern.getLocalDate(value));
                 break;
             case OrderReportTikTokOrderColumn.ORDER_CREATION_DATE:
-                order.setOrderCreationDate(DateTimePattern.getLocalDate(value));
+                order.setCreationDate(DateTimePattern.getLocalDate(value));
                 break;
             case OrderReportTikTokOrderColumn.SKU:
                 moveOut.setSku(value);

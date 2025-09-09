@@ -24,8 +24,8 @@ public class Order {
     private String internalStatus;
 
     private LocalDate shipOutDate;
-    private LocalDate orderCreationDate;
-    private LocalDate orderCompleteDate;
+    private LocalDate creationDate;
+    private LocalDate completedDate;
     private LocalDate settledDate;
 
     private double platformReleaseAmount;
@@ -59,18 +59,18 @@ public class Order {
         MoveOutList = moveOutList;
     }
 
-    public LocalDate getOrderCreationDate() {
-        return orderCreationDate;
+    public LocalDate getCreationDate() {
+        return creationDate;
     }
-    public void setOrderCreationDate(LocalDate orderCreationDate) {
-        this.orderCreationDate = orderCreationDate;
+    public void setCreationDate(LocalDate orderCreationDate) {
+        this.creationDate = orderCreationDate;
     }
 
-    public LocalDate getOrderCompleteDate() {
-        return orderCompleteDate;
+    public LocalDate getCompletedDate() {
+        return completedDate;
     }
-    public void setOrderCompleteDate(LocalDate orderCompleteDate) {
-        this.orderCompleteDate = orderCompleteDate;
+    public void setCompletedDate(LocalDate orderCompleteDate) {
+        this.completedDate = orderCompleteDate;
     }
 
     public LocalDate getShipOutDate() {

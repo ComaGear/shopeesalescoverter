@@ -7,6 +7,16 @@ public class ReturnShopeeMoveOut extends ReturnMoveOut{
     private String parentSku;
 
     private double productSubtotal;
+    private double platformDiscount;
+    
+
+    public double getPlatformDiscount() {
+        return platformDiscount;
+    }
+
+    public void setPlatformDiscount(double platformDiscount) {
+        this.platformDiscount = platformDiscount;
+    }
 
     public String getProductName() {
         return productName;
@@ -38,6 +48,31 @@ public class ReturnShopeeMoveOut extends ReturnMoveOut{
 
     public void setProductSubtotal(double productSubtotal) {
         this.productSubtotal = productSubtotal;
+    }
+
+    @Override
+    public ReturnMoveOut clone() {
+        ReturnShopeeMoveOut returnShopeeMoveOut = new ReturnShopeeMoveOut();
+        
+        copy(returnShopeeMoveOut);
+
+        return returnShopeeMoveOut;
+    }
+
+    @Override
+    public ReturnMoveOut copy(ReturnMoveOut moveOut) {
+        super.copy(moveOut);
+
+        if(moveOut instanceof ReturnShopeeMoveOut) {
+            ReturnShopeeMoveOut rMoveOut = (ReturnShopeeMoveOut) moveOut;
+            rMoveOut.setProductName(this.getProductName());
+            rMoveOut.setVariationName(this.getVariationName());
+            rMoveOut.setParentSku(this.getParentSku());
+            rMoveOut.setProductSubtotal(this.getProductSubtotal());
+            rMoveOut.setPlatformDiscount(this.getPlatformDiscount());
+        }
+
+        return moveOut;
     }
 
     

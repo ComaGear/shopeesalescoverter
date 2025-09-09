@@ -19,4 +19,7 @@ public class RepositoryShopeeOrderColumn {
     public static final String BUYER_PAID_SHIPPING_FEE = "Buyer Paid Shipping Fee";
     public static final String SHIPPING_REBATE_ESTIMATED = "Shipping Rebate Estimated";
     public static final String TRACKING_NUMBER = "Tracking Number";
+
+    public static final String REQUEST_REFUND_APPROVED = "Request Approved";
+    public static final String RETURNED_QUANTITY = "Returned quantity";
 }
