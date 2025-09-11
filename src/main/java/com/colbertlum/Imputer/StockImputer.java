@@ -37,6 +37,7 @@ public class StockImputer {
     public List<ListingStock> figureStock(List<ListingStock> listingStocks) throws ListingStockException{
         
         if(infoStatusList == null) infoStatusList = new ArrayList<ListingStockReason>();
+        productStocks.sort((o1, o2) -> o1.getId().compareTo(o2.getId()));
         
         for(ListingStock info : listingStocks){
 
