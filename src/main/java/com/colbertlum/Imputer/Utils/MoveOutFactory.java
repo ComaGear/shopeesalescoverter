@@ -11,6 +11,18 @@ import com.colbertlum.entity.TikTokOrder;
 
 public class MoveOutFactory {
 
+    public static double getReturnedQuantity(MoveOut moveOut) {
+        if(moveOut == null) return 0;
+        if(moveOut instanceof ShopeeMoveOut) {
+            ShopeeMoveOut shopeeMoveOut = (ShopeeMoveOut) moveOut;
+            return shopeeMoveOut.getReturnedQuantity();
+        } else if(moveOut instanceof TikTokMoveOut) {
+            // TODO add a way to retrieve returnedQuantity from TikTokMoveOut;
+            return 0;
+        }
+        return 0;
+    }
+
     public static boolean isRequestReturnRefundApproved(MoveOut moveOut) {
         if(moveOut instanceof ShopeeMoveOut) {
             ShopeeMoveOut shopeeMoveOut = (ShopeeMoveOut) moveOut;

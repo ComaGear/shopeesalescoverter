@@ -1,5 +1,7 @@
 package com.colbertlum.entity;
 
+import com.colbertlum.Imputer.Utils.MoveOutFactory;
+
 public class ReturnMoveOut {
     private String sku;
     private String name;
@@ -11,8 +13,21 @@ public class ReturnMoveOut {
     private String productId;
     private ReturnOrder returnOrder;
 
-
+    private boolean settled;
+    private double returnedQuantity;
     
+    public double getReturnedQuantity() {
+        return returnedQuantity;
+    }
+    public void setReturnedQuantity(double returnedQuantity) {
+        this.returnedQuantity = returnedQuantity;
+    }
+    public boolean isSettled() {
+        return settled;
+    }
+    public void setSettled(boolean settled) {
+        this.settled = settled;
+    }
     public static final String RETURNING = "returning";
     public static final String PARTICULAR_RECEIVED = "particular received";
     public static final String RECEIVED = "received";
@@ -81,6 +96,7 @@ public class ReturnMoveOut {
         setOrderId(moveOut.getOrder().getId());
         setReturnStatus(RETURNING);
         setProductId(moveOut.getProductId());
+        setReturnedQuantity(MoveOutFactory.getReturnedQuantity(moveOut));
     }
 
     public ReturnMoveOut(){
@@ -105,6 +121,7 @@ public class ReturnMoveOut {
         moveOut.setStatusQuantity(getStatusQuantity());
         moveOut.setProductId(getProductId());
         moveOut.setReturnOrder(getReturnOrder());
+        moveOut.setReturnedQuantity(getReturnedQuantity());
 
         return moveOut;
     }

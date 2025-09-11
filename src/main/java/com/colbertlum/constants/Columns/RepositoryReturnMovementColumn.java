@@ -12,4 +12,9 @@ public class RepositoryReturnMovementColumn {
     public static final String PLATFORM_DISCOUNT_SUBTOTAL = "platform_discount_subtotal";
     public static final String RETURN_STATUS = "return_status";
     public static final String STATUS_QUANTITY = "status_quantity";
+
+    public static final String IS_SETTLED = "is_settled";
+    public static final String RETURNED_QUANTITY = "returned_quantity";
+
+    public static final String SETTLED_VALUE_TRUE = "settled";
 }

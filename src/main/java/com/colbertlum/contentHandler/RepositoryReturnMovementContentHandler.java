@@ -52,7 +52,9 @@ public class RepositoryReturnMovementContentHandler extends ContentHandler {
             shopeeMoveOut.setPlatformDiscount(Double.parseDouble(valueMap.get(RepositoryReturnMovementColumn.PLATFORM_DISCOUNT_SUBTOTAL)));
             shopeeMoveOut.setReturnStatus(valueMap.get(RepositoryReturnMovementColumn.RETURN_STATUS));
             shopeeMoveOut.setStatusQuantity(Double.parseDouble(valueMap.get(RepositoryReturnMovementColumn.STATUS_QUANTITY)));
-
+            shopeeMoveOut.setSettled(valueMap.get(RepositoryReturnMovementColumn.IS_SETTLED).equals(RepositoryReturnMovementColumn.SETTLED_VALUE_TRUE));
+            shopeeMoveOut.setReturnedQuantity(Double.parseDouble(valueMap.get(RepositoryReturnMovementColumn.RETURNED_QUANTITY)));
+            
             returnMoveOut = shopeeMoveOut;
         } else if (valueMap.get(RepositoryItemMovementColumn.PLATFORM).equals(PlatformType.TIKTOK)) {
             ReturnTikTokMoveOut tikTokMoveOut = new ReturnTikTokMoveOut();
@@ -68,6 +70,8 @@ public class RepositoryReturnMovementContentHandler extends ContentHandler {
             tikTokMoveOut.setSKUplatformDiscount(Double.parseDouble(valueMap.get(RepositoryReturnMovementColumn.PLATFORM_DISCOUNT_SUBTOTAL)));
             tikTokMoveOut.setReturnStatus(valueMap.get(RepositoryReturnMovementColumn.RETURN_STATUS));
             tikTokMoveOut.setStatusQuantity(Double.parseDouble(valueMap.get(RepositoryReturnMovementColumn.STATUS_QUANTITY)));
+            tikTokMoveOut.setSettled(valueMap.get(RepositoryReturnMovementColumn.IS_SETTLED).equals(RepositoryReturnMovementColumn.SETTLED_VALUE_TRUE));
+            tikTokMoveOut.setReturnedQuantity(Double.parseDouble(valueMap.get(RepositoryReturnMovementColumn.RETURNED_QUANTITY)));
 
             returnMoveOut = tikTokMoveOut;
         }

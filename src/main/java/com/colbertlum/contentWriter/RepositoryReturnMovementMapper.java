@@ -33,6 +33,10 @@ public class RepositoryReturnMovementMapper implements ContentHeaderMapperInterf
                 return item.getReturnStatus();
             case RepositoryReturnMovementColumn.STATUS_QUANTITY:
                 return Double.toString(item.getStatusQuantity());
+            case RepositoryReturnMovementColumn.IS_SETTLED:
+                return item.isSettled() ? RepositoryReturnMovementColumn.SETTLED_VALUE_TRUE : "";
+            case RepositoryReturnMovementColumn.RETURNED_QUANTITY:
+                return Double.toString(item.getReturnedQuantity());
             default:
                 return "";
         }
@@ -51,7 +55,9 @@ public class RepositoryReturnMovementMapper implements ContentHeaderMapperInterf
             RepositoryReturnMovementColumn.PRODUCT_SUBTOTAL,
             RepositoryReturnMovementColumn.PLATFORM_DISCOUNT_SUBTOTAL,
             RepositoryReturnMovementColumn.RETURN_STATUS,
-            RepositoryReturnMovementColumn.STATUS_QUANTITY
+            RepositoryReturnMovementColumn.STATUS_QUANTITY,
+            RepositoryReturnMovementColumn.IS_SETTLED,
+            RepositoryReturnMovementColumn.RETURNED_QUANTITY
         );
     }
     

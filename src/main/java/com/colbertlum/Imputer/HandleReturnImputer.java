@@ -17,13 +17,11 @@ import org.apache.poi.xssf.usermodel.XSSFSheet;
 import org.apache.poi.xssf.usermodel.XSSFWorkbook;
 
 import com.colbertlum.OrderRepository;
-import com.colbertlum.OrderService;
 import com.colbertlum.ShopeeSalesConvertApplication;
 import com.colbertlum.Imputer.Utils.Lookup;
 import com.colbertlum.Imputer.Utils.OrderFactory;
 import com.colbertlum.constants.OrderInternalStatus;
 import com.colbertlum.entity.Meas;
-import com.colbertlum.entity.Order;
 import com.colbertlum.entity.ReturnMoveOut;
 import com.colbertlum.entity.ReturnOrder;
 
@@ -37,7 +35,7 @@ public class HandleReturnImputer {
     List<ReturnOrder> returnOrderList;
     List<ReturnMoveOut> returnMoveOutList;
     List<Meas> measList = ShopeeSalesConvertApplication.getMeasList();
-    private OrderRepository orderRepository;
+    // private OrderRepository orderRepository;
     private ArrayList<ReturnOrder> updatedReturnOrders;
 
     private Comparator<ReturnOrder> trackingNumberComparator =  new Comparator<ReturnOrder>() {
@@ -333,10 +331,12 @@ public class HandleReturnImputer {
         this.updatedReturnOrders.add(returnOrder);
     }
 
-    public HandleReturnImputer(){
-        orderRepository = new OrderRepository(true);
-        this.returnOrderList = orderRepository.getReturnOrders();
-        this.returnMoveOutList = orderRepository.getReturnMoveOuts();
+    public HandleReturnImputer(List<ReturnOrder> returnOrders, List<ReturnMoveOut> returnMoveOuts){
+        // orderRepository = new OrderRepository(true);
+        // this.returnOrderList = orderRepository.getReturnOrders();
+        // this.returnMoveOutList = orderRepository.getReturnMoveOuts();
+        this.returnOrderList = returnOrders;
+        this.returnMoveOutList = returnMoveOuts;
     }
 
     public void updateOrder(ReturnOrder returnOrder, ReturnOrder cloneReturnOrder) {
