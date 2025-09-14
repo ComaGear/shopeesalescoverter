@@ -1,0 +1,156 @@
+<?xml version="1.0" encoding="UTF-8"?>
+
+<?import javafx.geometry.Insets?>
+<?import javafx.scene.control.Button?>
+<?import javafx.scene.control.Label?>
+<?import javafx.scene.control.ListView?>
+<?import javafx.scene.control.MenuButton?>
+<?import javafx.scene.control.MenuItem?>
+<?import javafx.scene.control.Separator?>
+<?import javafx.scene.control.SplitPane?>
+<?import javafx.scene.control.TextField?>
+<?import javafx.scene.layout.HBox?>
+<?import javafx.scene.layout.Region?>
+<?import javafx.scene.layout.VBox?>
+<?import javafx.scene.text.Font?>
+<?import javafx.scene.text.Text?>
+
+<SplitPane dividerPositions="0.3076923076923077" maxHeight="-Infinity" maxWidth="-Infinity" minHeight="-Infinity" minWidth="-Infinity" prefHeight="800.0" prefWidth="1200.0" xmlns="http://javafx.com/javafx/23.0.1" xmlns:fx="http://javafx.com/fxml/1">
+   <items>
+      <VBox prefHeight="200.0" prefWidth="100.0">
+         <children>
+            <Label maxHeight="1.7976931348623157E308" maxWidth="1.7976931348623157E308" text="Search Order by Tracking Or ID" textAlignment="CENTER">
+               <VBox.margin>
+                  <Insets bottom="2.0" left="3.0" right="3.0" top="2.0" />
+               </VBox.margin>
+            </Label>
+            <TextField style="-fx-background-color: transparent; -fx-border-width: 1; -fx-border-color: gray; -fx-padding: 1;" text="fef">
+               <VBox.margin>
+                  <Insets bottom="5.0" left="5.0" right="5.0" top="2.0" />
+               </VBox.margin>
+            </TextField>
+            <HBox />
+            <HBox>
+               <children>
+                  <Label text="Total :">
+                     <HBox.margin>
+                        <Insets bottom="3.0" left="3.0" top="3.0" />
+                     </HBox.margin>
+                  </Label>
+                  <Text fx:id="SumOfFilterSizeText" text="0">
+                     <HBox.margin>
+                        <Insets left="3.0" top="3.0" />
+                     </HBox.margin>
+                  </Text>
+                  <Region fx:id="spacer1" HBox.hgrow="ALWAYS" />
+                  <Label text="Filter By">
+                     <HBox.margin>
+                        <Insets bottom="2.0" left="3.0" right="2.0" top="3.0" />
+                     </HBox.margin>
+                  </Label>
+                  <MenuButton fx:id="returnOrderFilterMenuButton" mnemonicParsing="false" text="MenuButton">
+                    <items>
+                      <MenuItem mnemonicParsing="false" text="Action 1" />
+                      <MenuItem mnemonicParsing="false" text="Action 2" />
+                    </items>
+                  </MenuButton>
+               </children>
+            </HBox>
+            <Separator prefWidth="200.0" />
+            <ListView maxHeight="1.7976931348623157E308" maxWidth="1.7976931348623157E308" prefHeight="770.0" prefWidth="366.0">
+               <padding>
+                  <Insets bottom="1.0" left="1.0" right="1.0" top="1.0" />
+               </padding>
+            </ListView>
+         </children>
+      </VBox>
+      <VBox prefHeight="200.0" prefWidth="100.0">
+         <children>
+            <HBox>
+               <children>
+                  <Label prefWidth="80.0" text="Order ID">
+                     <HBox.margin>
+                        <Insets bottom="3.0" left="3.0" right="3.0" top="3.0" />
+                     </HBox.margin>
+                  </Label>
+                  <TextField fx:id="ReturnOrderIdText" editable="false" promptText="ID" style="-fx-background-color: transpare; -fx-border-width: 1; -fx-padding: 1; -fx-border-color: gray;">
+                     <HBox.margin>
+                        <Insets bottom="2.0" left="2.0" right="2.0" top="2.0" />
+                     </HBox.margin></TextField>
+                  <Label layoutX="13.0" layoutY="13.0" prefWidth="80.0" text="Request ID">
+                     <HBox.margin>
+                        <Insets bottom="3.0" left="3.0" right="3.0" top="3.0" />
+                     </HBox.margin>
+                  </Label>
+                  <TextField fx:id="ReturnOrderRequestIdTest" layoutX="65.0" layoutY="13.0" promptText="ID" style="-fx-background-color: transparent; -fx-border-width: 1; -fx-padding: 1; -fx-border-color: gray;">
+                     <HBox.margin>
+                        <Insets bottom="2.0" left="2.0" right="2.0" top="2.0" />
+                     </HBox.margin>
+                  </TextField>
+                  <Region fx:id="spacer11" HBox.hgrow="ALWAYS" />
+                  <Label text="Refund Amount">
+                     <HBox.margin>
+                        <Insets bottom="3.0" left="3.0" right="3.0" top="3.0" />
+                     </HBox.margin>
+                  </Label>
+                  <TextField fx:id="ReturnOrderRefundAmountText" prefWidth="70.0" promptText="RM 0" style="-fx-background-color: transparent; -fx-border-width: 0; -fx-padding: 0;" text="RM 0">
+                     <HBox.margin>
+                        <Insets bottom="3.0" left="3.0" right="3.0" top="3.0" />
+                     </HBox.margin>
+                  </TextField>
+               </children>
+            </HBox>
+            <HBox prefHeight="100.0" prefWidth="200.0">
+               <children>
+                  <Label prefWidth="80.0" text="ShipOut Date :">
+                     <HBox.margin>
+                        <Insets bottom="3.0" left="3.0" right="3.0" top="3.0" />
+                     </HBox.margin>
+                  </Label>
+                  <TextField promptText="2025/05/05" style="-fx-background-color: transparent; -fx-border-width: 0; -fx-padding: 2;">
+                     <HBox.margin>
+                        <Insets bottom="2.0" left="2.0" right="2.0" top="2.0" />
+                     </HBox.margin>
+                  </TextField>
+                  <Label prefWidth="80.0" text="Request Date :">
+                     <HBox.margin>
+                        <Insets bottom="3.0" left="3.0" right="3.0" top="3.0" />
+                     </HBox.margin>
+                  </Label>
+                  <TextField layoutX="94.0" layoutY="10.0" promptText="2025/05/05" style="-fx-background-color: transparent; -fx-border-width: 0; -fx-padding: 2;">
+                     <HBox.margin>
+                        <Insets bottom="2.0" left="2.0" right="2.0" top="2.0" />
+                     </HBox.margin>
+                  </TextField>
+               </children>
+            </HBox>
+            <Separator prefWidth="200.0" />
+            <HBox prefHeight="100.0" prefWidth="200.0">
+               <children>
+                  <Label text="Barcode">
+                     <HBox.margin>
+                        <Insets bottom="3.0" left="3.0" right="3.0" top="3.0" />
+                     </HBox.margin>
+                     <font>
+                        <Font size="16.0" />
+                     </font>
+                  </Label>
+                  <TextField prefWidth="200.0">
+                     <HBox.margin>
+                        <Insets bottom="3.0" left="3.0" right="3.0" top="3.0" />
+                     </HBox.margin></TextField>
+                  <Button contentDisplay="RIGHT" mnemonicParsing="false" text="Search Item">
+                     <graphic>
+                        <Label opacity="0.5" text="F11" />
+                     </graphic>
+                     <HBox.margin>
+                        <Insets bottom="3.0" left="3.0" right="3.0" top="3.0" />
+                     </HBox.margin>
+                  </Button>
+               </children>
+            </HBox>
+            <ListView maxHeight="1.7976931348623157E308" maxWidth="1.7976931348623157E308" prefHeight="773.0" prefWidth="826.0" />
+         </children>
+      </VBox>
+   </items>
+</SplitPane>
