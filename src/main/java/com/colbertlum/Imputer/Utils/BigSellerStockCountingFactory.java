@@ -90,7 +90,7 @@ public class BigSellerStockCountingFactory {
     }
 
     public static void saveOutputToFile(List<ListingStock> listingInfoList, File file) throws IOException{
-        if(listingInfoList.isEmpty() && !(listingInfoList.get(0) instanceof OnlineSalesInfo)) {
+        if(!listingInfoList.isEmpty() && !(listingInfoList.get(0) instanceof OnlineSalesInfo)) {
             return;
         }
         List<BigSellerStockCounting> infoList = new ArrayList<BigSellerStockCounting>(listingInfoList.size());
